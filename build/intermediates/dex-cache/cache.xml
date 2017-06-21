@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="C:\Geometric Ascension\core\build\libs\core-1.0.jar"
+        jumboMode="false"
+        revision="25.0.3"
+        sha1="17692365d5d6cf5ddfb33f1b0b5f87860b70984c">
+        <dex dex="C:\Geometric Ascension\android\build\intermediates\pre-dexed\debug\core-1.0_3ca5825f552a6f21885c6dd0641d8115f5a5f4a8.jar" />
+    </item>
+
+</items>

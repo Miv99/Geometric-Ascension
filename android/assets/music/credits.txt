@@ -1,0 +1,6 @@
+world1 - https://opengameart.org/content/pack-of-loopable-game-music
+world2 - https://opengameart.org/content/crystal-cave-mysterious-ambience-seamless-loop
+world3 - https://opengameart.org/content/in-the-forest
+main_menu1 - https://opengameart.org/content/upbeat-visual-novel-music
+
+main_menu_background - https://opengameart.org/content/ocean-background
