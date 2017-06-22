@@ -1,6 +1,7 @@
 package com.miv;
 
 import com.badlogic.ashley.core.Entity;
+import com.badlogic.ashley.core.PooledEngine;
 
 import map.Map;
 
@@ -22,9 +23,15 @@ public class EntityActions {
         }
     }
 
-    public void playerEnterNewMapArea(Entity player, Map map, Direction directionOfTravel) {
+    public static void playerEnterNewMapArea(PooledEngine engine, Entity player, Map map, Direction directionOfTravel) {
         // TODO: make the player accelerate instead of constant speed
         Mappers.hitbox.get(player).setVelocity(directionOfTravel.deltaX * 50f, directionOfTravel.deltaY * 50f);
-        // TODO: wait a few seconds (until old map area is gone from camera) then change map.focus and generate new MapArea if one doesn't already exist
+        // TODO: wait a few seconds (until old map area is gone from camera)
+        map.enterNewArea(engine, (int)map.getFocus().x + directionOfTravel.deltaX, (int)map.getFocus().y + directionOfTravel.deltaY);
+    }
+
+    public static void playerEnterNewFloor(PooledEngine engine, Entity player, Map map, int newFloor) {
+        //TODO: random animations; make player fade out to 0 alpha or something???
+        map.enterNewFloor(newFloor);
     }
 }

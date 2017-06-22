@@ -92,12 +92,9 @@ public class MovementSystem extends EntitySystem {
 
                 if (isValidMovement) {
                     hitbox.setOrigin(origin.x + velocity.x, origin.y + velocity.y);
+                    hitbox.setVelocity(velocity.x + hitbox.getAcceleration().x, velocity.y + hitbox.getAcceleration().y);
                 }
             }
         }
-    }
-
-    private void moveEntity(Entity e) {
-
     }
 }

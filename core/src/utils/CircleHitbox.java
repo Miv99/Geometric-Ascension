@@ -27,8 +27,9 @@ public class CircleHitbox extends Circle {
         return color;
     }
 
-    public void setColor(Color color) {
+    public CircleHitbox setColor(Color color) {
         this.color = color;
+        return this;
     }
 
     public AttackPattern getAttackPattern() {

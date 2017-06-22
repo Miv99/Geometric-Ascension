@@ -21,10 +21,11 @@ import utils.Point;
  * Created by Miv on 5/25/2017.
  */
 public class RenderSystem extends EntitySystem {
+    public static Color STAIRS_COLOR = Color.GOLD;
     public static Color PLAYER_COLOR = Color.BLUE;
     public static Color ENEMY_COLOR = Color.ORANGE;
     public static Color ENEMY_BULLET_COLOR = Color.RED;
-    public static Color PLAYER_BULLET_COLOR = Color.CYAN;
+    public static Color PLAYER_BULLET_COLOR = Color.GREEN;
 
     private Map map;
 

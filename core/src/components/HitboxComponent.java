@@ -23,8 +23,10 @@ import utils.Point;
 public class HitboxComponent implements Component, Pool.Poolable {
     // Position of hitbox
     private Point origin;
-    // Velocity of hitbox
+    // Velocity of hitbox, in meters/frame
     private Vector2 velocity;
+    // Acceleration of hitbox, in meters/frame^2
+    private Vector2 acceleration;
     // Circle positions are relative to components.HitboxComponent#origin
     public ArrayList<CircleHitbox> circles;
     // If true, the hitbox will not make contact with anything
@@ -39,6 +41,7 @@ public class HitboxComponent implements Component, Pool.Poolable {
     public HitboxComponent() {
         origin = new Point();
         velocity = new Vector2();
+        acceleration = new Vector2();
         circles = new ArrayList<CircleHitbox>();
     }
 
@@ -47,6 +50,7 @@ public class HitboxComponent implements Component, Pool.Poolable {
         origin.x = 0;
         origin.y = 0;
         velocity.set(0, 0);
+        acceleration.set(0, 0);
         circles.clear();
     }
 
@@ -85,6 +89,14 @@ public class HitboxComponent implements Component, Pool.Poolable {
 
     public void setVelocity(float x, float y) {
         velocity.set(x, y);
+    }
+
+    public Vector2 getAcceleration() {
+        return acceleration;
+    }
+
+    public void setAcceleration(float x, float y) {
+        acceleration.set(x, y);
     }
 
     public boolean isIntangible() {

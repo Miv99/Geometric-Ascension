@@ -9,6 +9,7 @@ import java.util.ArrayList;
 
 import components.EnemyComponent;
 import components.PlayerComponent;
+import utils.CircleHitbox;
 
 /**
  * Class used by {@link map.MapArea} that contains the data to create an entity upon entering the MapArea.
@@ -18,19 +19,42 @@ import components.PlayerComponent;
 public class EntityCreationData {
     private int maxHealth;
     private boolean isEnemy;
-    private ArrayList<Circle> circleHitboxes;
+    private boolean isBoss;
+    private ArrayList<CircleHitbox> circleHitboxes;
 
     public EntityCreationData() {
-        circleHitboxes = new ArrayList<Circle>();
+        circleHitboxes = new ArrayList<CircleHitbox>();
     }
 
-    public Entity createEntity(PooledEngine engine) {
-        Entity e = engine.createEntity();
+    public int getMaxHealth() {
+        return maxHealth;
+    }
 
-        if(isEnemy) {
-            e.add(engine.createComponent(EnemyComponent.class));
-        }
+    public void setMaxHealth(int maxHealth) {
+        this.maxHealth = maxHealth;
+    }
 
-        return e;
+    public boolean isEnemy() {
+        return isEnemy;
+    }
+
+    public void setIsEnemy(boolean isEnemy) {
+        this.isEnemy = isEnemy;
+    }
+
+    public boolean isBoss() {
+        return isBoss;
+    }
+
+    public void setIsBoss(boolean isBoss) {
+        this.isBoss = isBoss;
+    }
+
+    public ArrayList<CircleHitbox> getCircleHitboxes() {
+        return circleHitboxes;
+    }
+
+    public void setCircleHitboxes(ArrayList<CircleHitbox> circleHitboxes) {
+        this.circleHitboxes = circleHitboxes;
     }
 }
