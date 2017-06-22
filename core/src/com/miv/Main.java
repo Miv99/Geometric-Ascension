@@ -98,7 +98,7 @@ public class Main extends Game {
 		}
 
 		// Add entity systems
-		engine.addSystem(new MovementSystem(map));
+		engine.addSystem(new MovementSystem(engine, map));
 		RenderSystem renderSystem = new RenderSystem(map);
 		engine.addSystem(renderSystem);
 		shootingSystem = new ShootingSystem(engine);

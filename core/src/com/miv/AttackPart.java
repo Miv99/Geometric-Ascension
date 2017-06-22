@@ -59,10 +59,10 @@ public class AttackPart {
 
         Entity e = engine.createEntity();
         if(Mappers.player.has(parent)) {
-            e.add(engine.createComponent(PlayerBulletComponent.class));
+            e.add(engine.createComponent(PlayerBulletComponent.class).setDamage(damage));
             color = RenderSystem.PLAYER_BULLET_COLOR;
         } else if(Mappers.enemy.has(parent)) {
-            e.add(engine.createComponent(EnemyBulletComponent.class));
+            e.add(engine.createComponent(EnemyBulletComponent.class).setDamage(damage));
             color = RenderSystem.ENEMY_BULLET_COLOR;
         }
 

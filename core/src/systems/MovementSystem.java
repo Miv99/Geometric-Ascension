@@ -4,6 +4,7 @@ import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.ashley.core.Family;
+import com.badlogic.ashley.core.PooledEngine;
 import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Vector2;
@@ -19,9 +20,11 @@ import utils.Point;
  */
 public class MovementSystem extends EntitySystem {
     private ImmutableArray<Entity> entities;
+    private PooledEngine engine;
     private Map map;
 
-    public MovementSystem(Map map) {
+    public MovementSystem(PooledEngine engine, Map map) {
+        this.engine = engine;
         this.map = map;
     }
 
