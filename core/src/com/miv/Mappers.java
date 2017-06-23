@@ -2,6 +2,7 @@ package com.miv;
 
 import com.badlogic.ashley.core.ComponentMapper;
 
+import components.AIComponent;
 import components.BossComponent;
 import components.CustomOnCollisionComponent;
 import components.EnemyBulletComponent;
@@ -24,4 +25,5 @@ public class Mappers {
     public static ComponentMapper<HitboxComponent> hitbox = ComponentMapper.getFor(HitboxComponent.class);
     public static ComponentMapper<PlayerBulletComponent> playerBullet = ComponentMapper.getFor(PlayerBulletComponent.class);
     public static ComponentMapper<PlayerComponent> player = ComponentMapper.getFor(PlayerComponent.class);
+    public static ComponentMapper<AIComponent> ai = ComponentMapper.getFor(AIComponent.class);
 }
