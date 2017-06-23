@@ -34,6 +34,7 @@ import map.Map;
 import map.MapArea;
 import screens.HUD;
 import screens.MainMenu;
+import systems.AISystem;
 import systems.MovementSystem;
 import systems.RenderSystem;
 import systems.ShootingSystem;
@@ -98,11 +99,12 @@ public class Main extends Game {
 		}
 
 		// Add entity systems
+		engine.addSystem(new AISystem());
 		engine.addSystem(new MovementSystem(engine, map));
-		RenderSystem renderSystem = new RenderSystem(map);
-		engine.addSystem(renderSystem);
 		shootingSystem = new ShootingSystem(engine);
 		engine.addSystem(shootingSystem);
+		RenderSystem renderSystem = new RenderSystem(map);
+		engine.addSystem(renderSystem);
 
 		camera = new Camera(renderSystem);
 		viewport = new FillViewport(SCREEN_WIDTH, SCREEN_HEIGHT, camera);
