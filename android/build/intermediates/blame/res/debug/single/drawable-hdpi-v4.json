@@ -1,6 +1,10 @@
 [
     {
-        "merged": "C:\\Geometric Ascension\\android\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\ic_launcher.png",
-        "source": "C:\\Geometric Ascension\\android\\res\\drawable-hdpi\\ic_launcher.png"
+        "merged": "/Users/dan/AndroidStudioProjects/Geometric-Ascension/android/build/intermediates/res/merged/debug/drawable-hdpi-v4/ic_launcher.png",
+        "source": "/Users/dan/AndroidStudioProjects/Geometric-Ascension/android/res/drawable-hdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/Users/dan/AndroidStudioProjects/Geometric-Ascension/C:\\Geometric Ascension\\android\\build\\intermediates\\res\\merged\\debug\\drawable-hdpi-v4\\ic_launcher.png",
+        "source": "/Users/dan/AndroidStudioProjects/Geometric-Ascension/C:\\Geometric Ascension\\android\\res\\drawable-hdpi\\ic_launcher.png"
     }
 ]
