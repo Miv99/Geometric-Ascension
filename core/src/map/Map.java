@@ -11,6 +11,7 @@ import java.util.HashMap;
 
 import components.EnemyComponent;
 import components.HitboxComponent;
+import components.IgnoreRespawnOnAreaResetComponent;
 import utils.Point;
 
 /**
@@ -69,7 +70,7 @@ public class Map {
         /**
          * Store all enemies currently in the engine as {@link map.EntityCreationData} objects inside {@link MapArea#entityCreationDataArrayList}
          */
-        for(Entity e : engine.getEntitiesFor(Family.all(EnemyComponent.class, HitboxComponent.class).get())) {
+        for(Entity e : engine.getEntitiesFor(Family.all(EnemyComponent.class, HitboxComponent.class).exclude(IgnoreRespawnOnAreaResetComponent.class).get())) {
             EntityCreationData ecd = new EntityCreationData();
             ecd.setIsEnemy(true);
             if(Mappers.health.has(e)) {

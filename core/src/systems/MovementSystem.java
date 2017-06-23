@@ -40,6 +40,7 @@ public class MovementSystem extends EntitySystem {
     public MovementSystem(PooledEngine engine, Map map) {
         this.engine = engine;
         this.map = map;
+        entitiesToHandle = new Array<Entity>();
     }
 
     @Override
@@ -52,6 +53,7 @@ public class MovementSystem extends EntitySystem {
     }
 
     private Array<Entity> checkForCollision(Circle c, ImmutableArray<Entity> arrayOfEntities) {
+        entitiesToHandle.clear();
         for (Entity entity : arrayOfEntities) {
             HitboxComponent entityHitbox = Mappers.hitbox.get(entity);
             for (Circle entityHitboxCircle : entityHitbox.circles) {
@@ -71,10 +73,12 @@ public class MovementSystem extends EntitySystem {
         if (Mappers.customOnCollision.has(e1)) {
             OnCollisionEvent customOnCollisionEvent = Mappers.customOnCollision.get(e1).getOnCollisionEvent();
             customOnCollisionEvent.onCollision(e1, e2);
-        } else if (Mappers.customOnCollision.has(e2)) {
+        }
+        if (Mappers.customOnCollision.has(e2)) {
             OnCollisionEvent customOnCollisionEvent = Mappers.customOnCollision.get(e2).getOnCollisionEvent();
             customOnCollisionEvent.onCollision(e2, e1);
-        } else if (Mappers.player.has(e1)) {
+        }
+        if (Mappers.player.has(e1)) {
             if (Mappers.enemyBullet.has(e2)) {
                 int currentHealth = Mappers.health.get(e1).getHealth();
                 Mappers.health.get(e1).setHealth(currentHealth - (int)Mappers.enemyBullet.get(e2).getDamage());
@@ -196,7 +200,6 @@ public class MovementSystem extends EntitySystem {
                     // If entity is an enemy bullet, check for collisions against the square boundaries of the MapArea, players
                     else if (Mappers.enemyBullet.has(e)) {
                         for (Circle c : hitbox.circles) {
-
                             // Against MapArea
                             checkIfOutsideCurrentMapArea(e, origin, velocity, c, mapArea, mapArea.getRadius() * 2f);
 

@@ -9,6 +9,7 @@ import components.EnemyBulletComponent;
 import components.EnemyComponent;
 import components.HealthComponent;
 import components.HitboxComponent;
+import components.IgnoreRespawnOnAreaResetComponent;
 import components.PlayerBulletComponent;
 import components.PlayerComponent;
 
@@ -26,4 +27,5 @@ public class Mappers {
     public static ComponentMapper<PlayerBulletComponent> playerBullet = ComponentMapper.getFor(PlayerBulletComponent.class);
     public static ComponentMapper<PlayerComponent> player = ComponentMapper.getFor(PlayerComponent.class);
     public static ComponentMapper<AIComponent> ai = ComponentMapper.getFor(AIComponent.class);
+    public static ComponentMapper<IgnoreRespawnOnAreaResetComponent> ignoreRespawn = ComponentMapper.getFor(IgnoreRespawnOnAreaResetComponent.class);
 }
