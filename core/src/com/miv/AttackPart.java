@@ -83,7 +83,7 @@ public class AttackPart {
         CircleHitbox circleHitbox = new CircleHitbox();
         circleHitbox.setColor(color);
         circleHitbox.setRadius(radius);
-        hitbox.circles.add(circleHitbox);
+        hitbox.addCircle(circleHitbox);
         e.add(hitbox);
 
         engine.addEntity(e);

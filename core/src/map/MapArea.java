@@ -29,7 +29,7 @@ public class MapArea {
 
     /**
      * Set to -1 if no stairs exist in this MapArea. Otherwise, an entity with an OnCollision event will be spawned in the middle of the MapArea
-     * when {@link MapArea#spawnEntities(PooledEngine)} is called.
+     * when {@link MapArea#spawnEntities(PooledEngine, Map)} is called.
      */
     private int stairsDestination = -1;
 
@@ -64,7 +64,7 @@ public class MapArea {
             }
             HitboxComponent hitbox = engine.createComponent(HitboxComponent.class);
             for(CircleHitbox c : ecd.getCircleHitboxes()) {
-                hitbox.circles.add(c);
+                hitbox.addCircle(c);
             }
             e.add(hitbox);
 
@@ -75,8 +75,11 @@ public class MapArea {
         if(stairsDestination != -1) {
             Entity e = engine.createEntity();
             HitboxComponent hitbox = engine.createComponent(HitboxComponent.class);
-            hitbox.circles.add(new CircleHitbox().setColor(RenderSystem.STAIRS_COLOR));
+            hitbox.addCircle(new CircleHitbox().setColor(RenderSystem.STAIRS_COLOR));
             e.add(hitbox);
+
+            // Add enemy component so it can collide with the player
+            e.add(engine.createComponent(EnemyComponent.class));
 
             // OnCollision event that moves player to new area
             OnCollisionEvent onCollisionEvent = new OnCollisionEvent() {

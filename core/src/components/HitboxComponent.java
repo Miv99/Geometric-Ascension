@@ -5,12 +5,14 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.PooledEngine;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Circle;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Pool;
 import com.miv.AttackPart;
 import com.miv.AttackPattern;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import utils.CircleHitbox;
 import utils.Point;
@@ -28,7 +30,11 @@ public class HitboxComponent implements Component, Pool.Poolable {
     // Acceleration of hitbox, in meters/frame^2
     private Vector2 acceleration;
     // Circle positions are relative to components.HitboxComponent#origin
-    public ArrayList<CircleHitbox> circles;
+    private ArrayList<CircleHitbox> circles;
+    // Original circle positions with the hitbox facing angle 0
+    // Used to prevent inaccuracies when rotating hitbox multiple times
+    // Must be in the same order as circles
+    private ArrayList<Point> originalCirclePositions;
     // If true, the hitbox will not make contact with anything
     private boolean intangible;
     // In radians
@@ -43,6 +49,7 @@ public class HitboxComponent implements Component, Pool.Poolable {
         velocity = new Vector2();
         acceleration = new Vector2();
         circles = new ArrayList<CircleHitbox>();
+        originalCirclePositions = new ArrayList<Point>();
     }
 
     @Override
@@ -52,6 +59,7 @@ public class HitboxComponent implements Component, Pool.Poolable {
         velocity.set(0, 0);
         acceleration.set(0, 0);
         circles.clear();
+        originalCirclePositions.clear();
     }
 
     public void update(PooledEngine engine, Entity parent, Entity player, float deltaTime) {
@@ -129,8 +137,14 @@ public class HitboxComponent implements Component, Pool.Poolable {
     }
 
     public void setLastFacedAngle(float lastFacedAngle) {
-        //TODO: rotate all circles around origin
         this.lastFacedAngle = lastFacedAngle;
+
+        // Rotate all circles around (0, 0)
+        for(int i = 0; i < circles.size(); i++) {
+            CircleHitbox c = circles.get(i);
+            Point circleOrigin = originalCirclePositions.get(i);
+            c.setPosition(circleOrigin.x * MathUtils.cos(-lastFacedAngle) - circleOrigin.y * MathUtils.sin(-lastFacedAngle), circleOrigin.x * MathUtils.sin(-lastFacedAngle) + circleOrigin.y * MathUtils.cos(-lastFacedAngle));
+        }
     }
 
     public boolean isShooting() {
@@ -145,5 +159,14 @@ public class HitboxComponent implements Component, Pool.Poolable {
                 c.setTime(0);
             }
         }
+    }
+
+    public ArrayList<CircleHitbox> getCircles() {
+        return circles;
+    }
+
+    public void addCircle(CircleHitbox circle) {
+        circles.add(circle);
+        originalCirclePositions.add(new Point(circle.x, circle.y));
     }
 }

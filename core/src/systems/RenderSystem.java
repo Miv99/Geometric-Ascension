@@ -80,7 +80,7 @@ public class RenderSystem extends EntitySystem {
             */
 
             // Draw hitboxes
-            for(CircleHitbox c : hitbox.circles) {
+            for(CircleHitbox c : hitbox.getCircles()) {
                 shapeRenderer.setColor(c.getColor());
                 shapeRenderer.circle(c.x + origin.x, c.y + origin.y, c.radius);
             }

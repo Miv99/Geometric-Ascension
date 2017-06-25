@@ -56,7 +56,7 @@ public class MovementSystem extends EntitySystem {
         entitiesToHandle.clear();
         for (Entity entity : arrayOfEntities) {
             HitboxComponent entityHitbox = Mappers.hitbox.get(entity);
-            for (Circle entityHitboxCircle : entityHitbox.circles) {
+            for (Circle entityHitboxCircle : entityHitbox.getCircles()) {
                 if (Math.sqrt(Math.pow((c.x - entityHitboxCircle.x), 2) + Math.pow((c.y - entityHitboxCircle.y), 2)) >= c.radius + entityHitboxCircle.radius) {
                     entitiesToHandle.add(entity);
                 }
@@ -130,7 +130,7 @@ public class MovementSystem extends EntitySystem {
                 if (!hitbox.isIntangible()) {
                     // If entity is a player, check for collisions against the edges of the MapArea, enemies, enemy bullets
                     if (Mappers.player.has(e)) {
-                        for (Circle c : hitbox.circles) {
+                        for (Circle c : hitbox.getCircles()) {
                             // Check if circle is outside map area radius
                             checkIfOutsideCurrentMapArea(e, origin, velocity, c, mapArea, mapAreaRadiusSquared);
 
@@ -155,7 +155,7 @@ public class MovementSystem extends EntitySystem {
                     }
                     // If entity is an enemy, check for collisions against the edges of the MapArea, players, player bullets
                     else if (Mappers.enemy.has(e)) {
-                        for (Circle c : hitbox.circles) {
+                        for (Circle c : hitbox.getCircles()) {
                             // Check if circle is outside map area radius
                             if (checkIfOutsideCurrentMapArea(e, origin, velocity, c, mapArea, mapAreaRadiusSquared)) {
                                 isValidMovement = false;
@@ -183,7 +183,7 @@ public class MovementSystem extends EntitySystem {
                     // If entity is a player bullet, check for collisions against the square boundaries of the MapArea, enemies
                     else if (Mappers.playerBullet.has(e)) {
                         // Square boundaries have side length of 4x the radius
-                        for (Circle c : hitbox.circles) {
+                        for (Circle c : hitbox.getCircles()) {
                             // Check if circle is outside map area radius
                             checkIfOutsideCurrentMapArea(e, origin, velocity, c, mapArea, mapArea.getRadius() * 2f);
 
@@ -199,7 +199,7 @@ public class MovementSystem extends EntitySystem {
                     }
                     // If entity is an enemy bullet, check for collisions against the square boundaries of the MapArea, players
                     else if (Mappers.enemyBullet.has(e)) {
-                        for (Circle c : hitbox.circles) {
+                        for (Circle c : hitbox.getCircles()) {
                             // Against MapArea
                             checkIfOutsideCurrentMapArea(e, origin, velocity, c, mapArea, mapArea.getRadius() * 2f);
 

@@ -79,7 +79,7 @@ public class Map {
             if(Mappers.boss.has(e)) {
                 ecd.setIsBoss(true);
             }
-            ecd.setCircleHitboxes(Mappers.hitbox.get(e).circles);
+            ecd.setCircleHitboxes(Mappers.hitbox.get(e).getCircles());
             oldMapArea.entityCreationDataArrayList.add(ecd);
         }
 
