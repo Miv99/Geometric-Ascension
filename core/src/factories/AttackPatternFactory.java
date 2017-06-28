@@ -1,13 +1,12 @@
 package factories;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.miv.AttackPart;
 import com.miv.AttackPattern;
 
 import java.util.HashMap;
 
 /**
- * Enemy attack pattern factory.
- * Uses a Singleton factory design so that only one instance of each type of attack pattern is created at max.
  * Created by Miv on 5/24/2017.
  */
 public class AttackPatternFactory {
@@ -15,23 +14,38 @@ public class AttackPatternFactory {
 
     public static AttackPattern getAttackPattern(String name) {
         if(name.equalsIgnoreCase("SINGLE_SHOT")) {
-            if(attackPatterns.containsKey(name)) return attackPatterns.get(name);
-            else {
-                AttackPattern ap = new AttackPattern(1);
-                ap.setAttackPart(0,
-                        new AttackPart()
-                        .setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.AIM_AT_PLAYER)
-                        .setAngleInRadians(0f)
-                        .setBulletSpriteName("")
-                        .setOriginX(0).setOriginY(0)
-                        .setDelay(0)
-                        .setSpeed(20f)
-                        .setDamage(10f)
-                        .scaleRadiusToDamage());
-                attackPatterns.put(name, ap);
-                return ap;
-            }
+            AttackPattern ap = new AttackPattern(1);
+            ap.setAttackPart(0,
+                    new AttackPart()
+                    .setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.AIM_AT_PLAYER)
+                    .setAngleInRadians(0f)
+                    .setBulletSpriteName("")
+                    .setOriginX(0).setOriginY(0)
+                    .setDelay(0)
+                    .setSpeed(20f)
+                    .setDamage(10f)
+                    .scaleRadiusToDamage());
+            attackPatterns.put(name, ap);
+            return ap;
         }
         return null;
+    }
+
+    public static AttackPattern getAttackPatternById(int id) {
+        switch (id) {
+            case 0:
+                return getAttackPattern("SINGLE_SHOT");
+            default:
+                return getAttackPattern("SINGLE_SHOT");
+        }
+    }
+
+    public static AttackPattern getRandomAttackPatternByFloor(int floor) {
+        switch(floor) {
+            case 0:
+                return getAttackPatternById(MathUtils.random(0, 0));
+            default:
+                return getAttackPatternById(0);
+        }
     }
 }

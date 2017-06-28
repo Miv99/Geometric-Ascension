@@ -17,20 +17,22 @@ import utils.CircleHitbox;
  * Created by Miv on 5/23/2017.
  */
 public class EntityCreationData {
-    private int maxHealth;
+    private float maxHealth;
     private boolean isEnemy;
     private boolean isBoss;
     private ArrayList<CircleHitbox> circleHitboxes;
+    private float spawnX;
+    private float spawnY;
 
     public EntityCreationData() {
         circleHitboxes = new ArrayList<CircleHitbox>();
     }
 
-    public int getMaxHealth() {
+    public float getMaxHealth() {
         return maxHealth;
     }
 
-    public void setMaxHealth(int maxHealth) {
+    public void setMaxHealth(float maxHealth) {
         this.maxHealth = maxHealth;
     }
 
@@ -56,5 +58,18 @@ public class EntityCreationData {
 
     public void setCircleHitboxes(ArrayList<CircleHitbox> circleHitboxes) {
         this.circleHitboxes = circleHitboxes;
+    }
+
+    public float getSpawnX() {
+        return spawnX;
+    }
+
+    public float getSpawnY() {
+        return spawnY;
+    }
+
+    public void setSpawnPosition(float x, float y) {
+        spawnX = x;
+        spawnY = y;
     }
 }

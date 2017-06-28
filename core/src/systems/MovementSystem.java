@@ -80,12 +80,12 @@ public class MovementSystem extends EntitySystem {
         }
         if (Mappers.player.has(e1)) {
             if (Mappers.enemyBullet.has(e2)) {
-                int currentHealth = Mappers.health.get(e1).getHealth();
+                float currentHealth = Mappers.health.get(e1).getHealth();
                 Mappers.health.get(e1).setHealth(currentHealth - (int)Mappers.enemyBullet.get(e2).getDamage());
             }
         } else if (Mappers.enemy.has(e1)) {
             if (Mappers.playerBullet.has(e2)) {
-                int currentHealth = Mappers.health.get(e1).getHealth();
+                float currentHealth = Mappers.health.get(e1).getHealth();
                 Mappers.health.get(e1).setHealth(currentHealth - (int)Mappers.playerBullet.get(e2).getDamage());
             }
         }

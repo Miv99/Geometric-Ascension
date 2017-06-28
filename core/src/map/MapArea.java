@@ -66,6 +66,7 @@ public class MapArea {
             for(CircleHitbox c : ecd.getCircleHitboxes()) {
                 hitbox.addCircle(c);
             }
+            hitbox.setOrigin(ecd.getSpawnX(), ecd.getSpawnY());
             e.add(hitbox);
 
             engine.addEntity(e);

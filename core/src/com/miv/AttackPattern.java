@@ -8,7 +8,6 @@ import utils.CircleHitbox;
 
 /**
  * WARNING: If an attack pattern is ever to be updated (player gains new abilities or something), a completely new attack pattern object must be created.
- * The same attack pattern object can be used by multiple entities and does not need to be cloned.
  * An attack pattern consists of multiple {@link com.miv.AttackPart} that have a {@link com.miv.AttackPart#delay} time value. After that much time has passed, the attack part is fired,
  * spawning a bullet. After {@link com.miv.AttackPattern#duration} seconds pass, the fields in {@link utils.CircleHitbox} relevant to AttackPattern (time and which attack parts have been fired)
  * are reset.
@@ -21,6 +20,9 @@ public class AttackPattern {
     private AttackPart[] attackParts;
     // Duration of attack pattern in seconds before it repeats
     private float duration;
+    // Total damage of all bullets in all attack parts
+    private float totalDamage;
+    private float totalRadius;
 
     public AttackPattern(int attackPartsCount) {
         attackParts = new AttackPart[attackPartsCount];
@@ -40,6 +42,8 @@ public class AttackPattern {
 
     public void setAttackPart(int index, AttackPart attackPart) {
         attackParts[index] = attackPart;
+        totalDamage += attackPart.getDamage();
+        totalRadius += attackPart.getRadius();
 
         // Sanity check to make sure attackParts is in correct order
         for(int i = 0; i < index; i++) {
@@ -47,5 +51,13 @@ public class AttackPattern {
                 System.out.println("you messed up #035230523");
             }
         }
+    }
+
+    public float getTotalDamage() {
+        return totalDamage;
+    }
+
+    public float getTotalRadius() {
+        return totalRadius;
     }
 }

@@ -12,7 +12,8 @@ import com.miv.AttackPattern;
  */
 public class CircleHitbox extends Circle {
     private Color color;
-
+    private float maxHealth;
+    private float health;
     private AttackPattern attackPattern;
     // Time in seconds since the last iteration of the attack pattern started
     private transient float time;
@@ -55,5 +56,21 @@ public class CircleHitbox extends Circle {
 
     public void setFired(boolean[] fired) {
         this.fired = fired;
+    }
+
+    public float getMaxHealth() {
+        return maxHealth;
+    }
+
+    public void setMaxHealth(float maxHealth) {
+        this.maxHealth = maxHealth;
+    }
+
+    public float getHealth() {
+        return health;
+    }
+
+    public void setHealth(float health) {
+        this.health = health;
     }
 }

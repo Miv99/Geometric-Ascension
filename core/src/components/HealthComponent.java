@@ -7,8 +7,8 @@ import com.badlogic.gdx.utils.Pool;
  * Created by Miv on 5/23/2017.
  */
 public class HealthComponent implements Component, Pool.Poolable {
-    private int health;
-    private int maxHealth;
+    private float health;
+    private float maxHealth;
 
     public HealthComponent() {
 
@@ -25,19 +25,19 @@ public class HealthComponent implements Component, Pool.Poolable {
         maxHealth = 0;
     }
 
-    public int getHealth() {
+    public float getHealth() {
         return health;
     }
 
-    public void setHealth(int health) {
+    public void setHealth(float health) {
         this.health = health;
     }
 
-    public int getMaxHealth() {
+    public float getMaxHealth() {
         return maxHealth;
     }
 
-    public void setMaxHealth(int maxHealth) {
+    public void setMaxHealth(float maxHealth) {
         this.maxHealth = maxHealth;
     }
 }
