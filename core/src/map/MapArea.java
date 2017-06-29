@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import components.BossComponent;
 import components.CustomOnCollisionComponent;
 import components.EnemyComponent;
-import components.HealthComponent;
 import components.HitboxComponent;
 import systems.RenderSystem;
 import utils.CircleHitbox;
@@ -55,12 +54,6 @@ public class MapArea {
             }
             if(ecd.isBoss()) {
                 e.add(engine.createComponent(BossComponent.class));
-            }
-            if(ecd.getMaxHealth() != 0) {
-                HealthComponent health = engine.createComponent(HealthComponent.class);
-                health.setMaxHealth(ecd.getMaxHealth());
-                health.setHealth(ecd.getMaxHealth());
-                e.add(health);
             }
             HitboxComponent hitbox = engine.createComponent(HitboxComponent.class);
             for(CircleHitbox c : ecd.getCircleHitboxes()) {

@@ -109,12 +109,15 @@ public class Map {
             for (Entity e : engine.getEntitiesFor(Family.all(EnemyComponent.class, HitboxComponent.class).exclude(IgnoreRespawnOnAreaResetComponent.class).get())) {
                 EntityCreationData ecd = new EntityCreationData();
                 ecd.setIsEnemy(true);
-                if (Mappers.health.has(e)) {
-                    ecd.setMaxHealth(Mappers.health.get(e).getMaxHealth());
-                }
                 if (Mappers.boss.has(e)) {
                     ecd.setIsBoss(true);
                 }
+
+                // Restore health
+                for(CircleHitbox c : Mappers.hitbox.get(e).getCircles()) {
+                    c.setHealth(c.getMaxHealth());
+                }
+
                 ecd.setCircleHitboxes(Mappers.hitbox.get(e).getCircles());
                 oldMapArea.entityCreationDataArrayList.add(ecd);
             }
@@ -242,11 +245,11 @@ public class Map {
 
             // Randomize hitbox origin with padding equal to the hitbox max size around the map area circumference
             float angle = MathUtils.random(0, MathUtils.PI2);
-            float distance = MathUtils.random(0, mapArea.getRadius() - maxSize);
+            float distance = MathUtils.random(100, mapArea.getRadius() - maxSize);
             boundingCircle.setPosition(distance*MathUtils.cos(angle), distance*MathUtils.sin(angle));
             while(Utils.overlaps(boundingCircle, enemyBoundingCircles)) {
                 angle = MathUtils.random(0, MathUtils.PI2);
-                distance = MathUtils.random(0, mapArea.getRadius() - maxSize);
+                distance = MathUtils.random(100, mapArea.getRadius() - maxSize);
                 boundingCircle.setPosition(distance*MathUtils.cos(angle), distance*MathUtils.sin(angle));
             }
 

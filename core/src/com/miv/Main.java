@@ -27,7 +27,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-import components.HealthComponent;
 import components.HitboxComponent;
 import components.PlayerComponent;
 import map.Map;
@@ -157,10 +156,6 @@ public class Main extends Game {
 
 		//TODO: delet this
 		Entity player = engine.createEntity();
-		HealthComponent hp = engine.createComponent(HealthComponent.class);
-		hp.setHealth(500);
-		hp.setMaxHealth(500);
-		player.add(hp);
 		player.add(engine.createComponent(PlayerComponent.class));
 		AttackPattern ap = new AttackPattern(1);
 		ap.setDuration(0.2f);
@@ -179,18 +174,24 @@ public class Main extends Game {
 		CircleHitbox c = new CircleHitbox();
 		c.setColor(RenderSystem.PLAYER_COLOR);
 		c.setRadius(50f);
+		c.setMaxHealth(500f);
+		c.setHealth(500f);
 		hc.addCircle(c);
 		CircleHitbox c2 = new CircleHitbox();
 		c2.setColor(RenderSystem.PLAYER_COLOR);
 		c2.setPosition(-70f, 0);
 		c2.setRadius(20f);
 		c2.setAttackPattern(ap);
+		c2.setMaxHealth(500f);
+		c2.setHealth(500f);
 		hc.addCircle(c2);
 		CircleHitbox c3 = new CircleHitbox();
 		c3.setColor(RenderSystem.PLAYER_COLOR);
 		c3.setPosition(70f, 0);
 		c3.setRadius(20f);
 		c3.setAttackPattern(ap);
+		c3.setMaxHealth(500f);
+		c3.setHealth(500f);
 		hc.addCircle(c3);
 		player.add(hc);
 		engine.addEntity(player);

@@ -41,6 +41,10 @@ public class HitboxComponent implements Component, Pool.Poolable {
     private float lastFacedAngle;
     // If the hitbox is firing bullets
     private boolean isShooting;
+    /**
+     * Circles to be removed from {@link HitboxComponent#circles} by {@link systems.MovementSystem#update(float)} every frame
+     */
+    private ArrayList<CircleHitbox> circleRemovalQueue;
 
     private float maxSpeed;
 
@@ -50,6 +54,7 @@ public class HitboxComponent implements Component, Pool.Poolable {
         acceleration = new Vector2();
         circles = new ArrayList<CircleHitbox>();
         originalCirclePositions = new ArrayList<Point>();
+        circleRemovalQueue = new ArrayList<CircleHitbox>();
     }
 
     @Override
@@ -168,5 +173,17 @@ public class HitboxComponent implements Component, Pool.Poolable {
     public void addCircle(CircleHitbox circle) {
         circles.add(circle);
         originalCirclePositions.add(new Point(circle.x, circle.y));
+    }
+
+    public void queueCircleRemoval(CircleHitbox circle) {
+        circleRemovalQueue.add(circle);
+    }
+
+    public ArrayList<CircleHitbox> getCircleRemovalQueue() {
+        return circleRemovalQueue;
+    }
+
+    public void clearCircleRemovalQueue() {
+        circleRemovalQueue.clear();
     }
 }
