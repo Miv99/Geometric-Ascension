@@ -163,11 +163,13 @@ public class MovementSystem extends EntitySystem {
                             checkIfOutsideCurrentMapArea(e, origin, velocity, c, mapArea, mapAreaRadiusSquared);
 
                             // Check against enemies
+                            /**
                             checkForCollision(hitboxOrigin, c, enemies);
                             for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
                                 isValidMovement = false;
                                 handleNonBulletCollision(e, collisionEntitiesToHandle.get(i));
                             }
+                             */
 
                             // Check against enemy bullets
                             checkForCollision(hitboxOrigin, c, enemyBullets);
@@ -185,12 +187,14 @@ public class MovementSystem extends EntitySystem {
                                 isValidMovement = false;
                             }
 
+                            /**
                             // Against players
                             checkForCollision(hitboxOrigin, c, players);
                             for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
                                 isValidMovement = false;
                                 handleNonBulletCollision(e, collisionEntitiesToHandle.get(i));
                             }
+                             */
 
                             // Against player bullets
                             checkForCollision(hitboxOrigin, c, playerBullets);
@@ -242,6 +246,11 @@ public class MovementSystem extends EntitySystem {
                 }
                 hitbox.clearCircleRemovalQueue();
             }
+        }
+
+        // Remove entities in entity removal queue from engine
+        for(Entity e : entityRemovalQueue) {
+            engine.removeEntity(e);
         }
     }
 }

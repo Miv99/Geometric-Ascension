@@ -164,6 +164,7 @@ public class Main extends Game {
 		a.setRadius(20f);
 		a.setDelay(0);
 		a.setAngleInRadians(0);
+		a.setDamage(1f);
 		a.setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.AIM_RELATIVE_TO_PARENT_ROTATION);
 		a.setBulletSpriteName("red_circle");
 		a.setOriginX(0);

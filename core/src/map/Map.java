@@ -73,6 +73,7 @@ public class Map {
         areas = new HashMap<Point, MapArea>();
         focus = new Point(0, 0);
         chanceOfNextAreaHavingStairs = 0f;
+        maxPixelPoints = INITIAL_MAP_AREA_PIXEL_POINTS;
     }
 
     public void enterNewFloor(int floor) {
@@ -82,7 +83,7 @@ public class Map {
         areas.clear();
 
         chanceOfNextAreaHavingStairs = 0f;
-        maxPixelPoints = INITIAL_MAP_AREA_PIXEL_POINTS + MAP_AREA_PIXEL_POINTS_INCREMENT*floor;
+        maxPixelPoints = INITIAL_MAP_AREA_PIXEL_POINTS + MAP_AREA_PIXEL_POINTS_INCREMENT*(float)floor;
 
         // First MapArea always has stairs leading to the previous floor
         MapArea mapArea = new MapArea(MapArea.MAP_AREA_MIN_SIZE);
@@ -262,6 +263,9 @@ public class Map {
             c1.setPosition(0, 0);
             c1.setRadius(c1Radius);
             c1.setAttackPattern(attackPattern);
+            float health = ecd.getMaxHealth()/(float)circlesCount;
+            c1.setMaxHealth(health);
+            c1.setHealth(health);
             circles.add(c1);
 
             mapArea.entityCreationDataArrayList.add(ecd);
