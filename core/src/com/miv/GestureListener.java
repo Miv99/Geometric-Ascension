@@ -44,7 +44,7 @@ public class GestureListener implements GestureDetector.GestureListener {
     public boolean touchDown(float x, float y, int pointer, int button) {
         if(main.getState() == Main.GameState.MAIN_GAME) {
             // Prevent movement touches in a rectangle around the attack buttons
-            if(!(x > main.getHud().getDisableGesturesLowerXBound() && y < main.getHud().getDisableGesturesUpperYBound())) {
+            if(!(x > main.getHud().getDisableGesturesLowerXBound() && y > main.getHud().getDisableGesturesLowerYBound())) {
                 movementDragTouchDownPoint.x = x;
                 movementDragTouchDownPoint.y = y;
                 movementDragCurrentPoint.x = x;
@@ -59,10 +59,8 @@ public class GestureListener implements GestureDetector.GestureListener {
     public boolean touchUp(float x, float y, int pointer, int button) {
         if(main.getState() == Main.GameState.MAIN_GAME) {
             // Prevent movement touches in a rectangle around the attack buttons
-            if(!(x > main.getHud().getDisableGesturesLowerXBound() && y < main.getHud().getDisableGesturesUpperYBound())) {
-                movementDragTouchDownPoint.x = -1;
-                playerHitbox.setVelocity(0, 0);
-            }
+            movementDragTouchDownPoint.x = -1;
+            playerHitbox.setVelocity(0, 0);
         }
         return false;
     }
@@ -70,7 +68,7 @@ public class GestureListener implements GestureDetector.GestureListener {
     public boolean touchDragged(float x, float y, int pointer, int button) {
         if(main.getState() == Main.GameState.MAIN_GAME && movementDragTouchDownPoint.x != -1) {
             // Prevent movement touches in a rectangle around the attack buttons
-            if(!(x > main.getHud().getDisableGesturesLowerXBound() && y < main.getHud().getDisableGesturesUpperYBound())) {
+            if(!(x > main.getHud().getDisableGesturesLowerXBound() && y > main.getHud().getDisableGesturesLowerYBound())) {
                 movementDragCurrentPoint.x = x;
                 movementDragCurrentPoint.y = y;
 
@@ -167,7 +165,7 @@ public class GestureListener implements GestureDetector.GestureListener {
 
         @Override
         public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-            return GestureListener.this.touchDown(screenX, screenY, pointer, button);
+            return false;
         }
 
         @Override

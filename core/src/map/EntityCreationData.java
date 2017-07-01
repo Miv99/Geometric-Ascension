@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Circle;
 
 import java.util.ArrayList;
 
+import ai.AI;
 import components.EnemyComponent;
 import components.PlayerComponent;
 import utils.CircleHitbox;
@@ -23,6 +24,18 @@ public class EntityCreationData {
     private ArrayList<CircleHitbox> circleHitboxes;
     private float spawnX;
     private float spawnY;
+    private float maxSpeed;
+
+    private AI.AIType aiType;
+    // For SimpleStalkTarget
+    private float simpleStalkMinSpeedDistance;
+    private float simpleStalkMaxSpeedDistance;
+    // For SimpleWander
+    private float simpleWanderRadius;
+    private float simpleWanderMinInterval;
+    private float simpleWanderMaxInterval;
+    private float simpleWanderMinAcceleration;
+    private float simpleWanderMaxAcceleration;
 
     public EntityCreationData() {
         circleHitboxes = new ArrayList<CircleHitbox>();
@@ -71,5 +84,77 @@ public class EntityCreationData {
     public void setSpawnPosition(float x, float y) {
         spawnX = x;
         spawnY = y;
+    }
+
+    public AI.AIType getAiType() {
+        return aiType;
+    }
+
+    public void setAiType(AI.AIType aiType) {
+        this.aiType = aiType;
+    }
+
+    public float getMaxSpeed() {
+        return maxSpeed;
+    }
+
+    public void setMaxSpeed(float maxSpeed) {
+        this.maxSpeed = maxSpeed;
+    }
+
+    public float getSimpleStalkMinSpeedDistance() {
+        return simpleStalkMinSpeedDistance;
+    }
+
+    public void setSimpleStalkMinSpeedDistance(float simpleStalkMinSpeedDistance) {
+        this.simpleStalkMinSpeedDistance = simpleStalkMinSpeedDistance;
+    }
+
+    public float getSimpleStalkMaxSpeedDistance() {
+        return simpleStalkMaxSpeedDistance;
+    }
+
+    public void setSimpleStalkMaxSpeedDistance(float simpleStalkMaxSpeedDistance) {
+        this.simpleStalkMaxSpeedDistance = simpleStalkMaxSpeedDistance;
+    }
+
+    public float getSimpleWanderMinInterval() {
+        return simpleWanderMinInterval;
+    }
+
+    public void setSimpleWanderMinInterval(float simpleWanderMinInterval) {
+        this.simpleWanderMinInterval = simpleWanderMinInterval;
+    }
+
+    public float getSimpleWanderMaxInterval() {
+        return simpleWanderMaxInterval;
+    }
+
+    public void setSimpleWanderMaxInterval(float simpleWanderMaxInterval) {
+        this.simpleWanderMaxInterval = simpleWanderMaxInterval;
+    }
+
+    public float getSimpleWanderMinAcceleration() {
+        return simpleWanderMinAcceleration;
+    }
+
+    public void setSimpleWanderMinAcceleration(float simpleWanderMinAcceleration) {
+        this.simpleWanderMinAcceleration = simpleWanderMinAcceleration;
+    }
+
+    public float getSimpleWanderMaxAcceleration() {
+        return simpleWanderMaxAcceleration;
+    }
+
+    public void setSimpleWanderMaxAcceleration(float simpleWanderMaxAcceleration) {
+        this.simpleWanderMaxAcceleration = simpleWanderMaxAcceleration;
+    }
+
+    public float getSimpleWanderRadius() {
+        return simpleWanderRadius;
+    }
+
+    public void setSimpleWanderRadius(float simpleWanderRadius) {
+        this.simpleWanderRadius = simpleWanderRadius;
     }
 }

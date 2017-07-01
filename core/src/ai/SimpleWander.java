@@ -23,7 +23,6 @@ public class SimpleWander extends AI {
     private boolean waitingForReset;
     private float minAcceleration;
     private float maxAcceleration;
-    private Timer timer = new Timer();
 
     private float time;
 

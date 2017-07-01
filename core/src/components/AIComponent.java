@@ -23,7 +23,8 @@ public class AIComponent implements Component, Pool.Poolable {
     /**
      * AI must be set after adding HitboxComponent to the entity
      */
-    public void setAi(AI ai) {
+    public AIComponent setAi(AI ai) {
         this.ai = ai;
+        return this;
     }
 }

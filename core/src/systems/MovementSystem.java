@@ -119,22 +119,26 @@ public class MovementSystem extends EntitySystem {
     }
 
     private boolean checkIfOutsideCurrentMapArea(Entity e, Point origin, Vector2 velocity, CircleHitbox c, MapArea mapArea, float boundary) {
-        if (c.x + origin.x + velocity.x >= boundary) {
+        if (Math.abs(c.x + origin.x + velocity.x) >= boundary) {
             if (Mappers.playerBullet.has(e) || Mappers.enemyBullet.has(e)) {
                 engine.removeEntity(e);
-            } else if (velocity.x < 0) {
-                EntityActions.playerEnterNewMapArea(engine, e, map, EntityActions.Direction.LEFT);
-            } else if (velocity.x > 0) {
-                EntityActions.playerEnterNewMapArea(engine, e, map, EntityActions.Direction.RIGHT);
+            } else if(Mappers.player.has(e)) {
+                if (velocity.x < 0) {
+                    EntityActions.playerEnterNewMapArea(engine, e, map, EntityActions.Direction.LEFT);
+                } else if (velocity.x > 0) {
+                    EntityActions.playerEnterNewMapArea(engine, e, map, EntityActions.Direction.RIGHT);
+                }
             }
             return true;
-        } else if (c.y + origin.y + velocity.y >= boundary) {
+        } else if (Math.abs(c.y + origin.y + velocity.y) >= boundary) {
             if (Mappers.playerBullet.has(e) || Mappers.enemyBullet.has(e)) {
                 engine.removeEntity(e);
-            } else if (velocity.y < 0) {
-                EntityActions.playerEnterNewMapArea(engine, e, map, EntityActions.Direction.DOWN);
-            } else if (velocity.y > 0) {
-                EntityActions.playerEnterNewMapArea(engine, e, map, EntityActions.Direction.UP);
+            } else if(Mappers.player.has(e)) {
+                if (velocity.y < 0) {
+                    EntityActions.playerEnterNewMapArea(engine, e, map, EntityActions.Direction.DOWN);
+                } else if (velocity.y > 0) {
+                    EntityActions.playerEnterNewMapArea(engine, e, map, EntityActions.Direction.UP);
+                }
             }
             return true;
         }
@@ -160,7 +164,7 @@ public class MovementSystem extends EntitySystem {
                     if (Mappers.player.has(e)) {
                         for (CircleHitbox c : hitbox.getCircles()) {
                             // Check if circle is outside map area radius
-                            checkIfOutsideCurrentMapArea(e, origin, velocity, c, mapArea, mapAreaRadiusSquared);
+                            checkIfOutsideCurrentMapArea(e, origin, velocity, c, mapArea, mapArea.getRadius());
 
                             // Check against enemies
                             /**
@@ -183,7 +187,7 @@ public class MovementSystem extends EntitySystem {
                     else if (Mappers.enemy.has(e)) {
                         for (CircleHitbox c : hitbox.getCircles()) {
                             // Check if circle is outside map area radius
-                            if (checkIfOutsideCurrentMapArea(e, origin, velocity, c, mapArea, mapAreaRadiusSquared)) {
+                            if (checkIfOutsideCurrentMapArea(e, origin, velocity, c, mapArea, mapArea.getRadius())) {
                                 isValidMovement = false;
                             }
 
@@ -252,5 +256,6 @@ public class MovementSystem extends EntitySystem {
         for(Entity e : entityRemovalQueue) {
             engine.removeEntity(e);
         }
+        entityRemovalQueue.clear();
     }
 }

@@ -47,7 +47,7 @@ public class HUD implements Screen {
      * Lower x bound and upper y bound of rectangle in which {@link com.miv.GestureListener} will not work for movement
      */
     private float disableGesturesLowerXBound;
-    private float disableGesturesUpperYBound;
+    private float disableGesturesLowerYBound;
 
     public HUD(AssetManager assetManager, InputMultiplexer inputMultiplexer, GestureListener gestureListener, final Entity player, Map map) {
         this.inputMultiplexer = inputMultiplexer;
@@ -91,7 +91,7 @@ public class HUD implements Screen {
 
         //TODO: change calculation for this as more attack buttons are added
         disableGesturesLowerXBound = Gdx.graphics.getWidth() - primaryFireButton.getWidth() - padding;
-        disableGesturesUpperYBound = primaryFireButton.getHeight() + padding;
+        disableGesturesLowerYBound = Gdx.graphics.getHeight() - primaryFireButton.getHeight() - padding;
 
         movementDragTouchDownPoint = gestureListener.getMovementDragTouchDownPoint();
         movementDragCurrentPoint = gestureListener.getMovementDragCurrentPoint();
@@ -106,7 +106,8 @@ public class HUD implements Screen {
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(1, 1, 1, 1);
+        // Background color
+        Gdx.gl.glClearColor(214/255f, 238/255f, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         stage.getBatch().begin();
@@ -160,7 +161,7 @@ public class HUD implements Screen {
         return disableGesturesLowerXBound;
     }
 
-    public float getDisableGesturesUpperYBound() {
-        return disableGesturesUpperYBound;
+    public float getDisableGesturesLowerYBound() {
+        return disableGesturesLowerYBound;
     }
 }

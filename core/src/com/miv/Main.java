@@ -196,7 +196,7 @@ public class Main extends Game {
 		hc.addCircle(c3);
 		player.add(hc);
 		engine.addEntity(player);
-		map.enterNewArea(engine, 0, 0);
+		map.enterNewArea(engine, player, 0, 0);
 
 		gestureListener.setPlayer(player);
 		hud = new HUD(assetManager, inputMultiplexer, gestureListener, player, map);

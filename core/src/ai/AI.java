@@ -10,6 +10,12 @@ import utils.Point;
  * Created by Miv on 6/20/2017.
  */
 public abstract class AI {
+    public static enum AIType {
+        SIMPLE_FOLLOW_TARGET,
+        SIMPLE_STALK_TARGET,
+        SIMPLE_WANDER;
+    }
+
     protected HitboxComponent selfHitbox;
     protected Point targetPos;
 

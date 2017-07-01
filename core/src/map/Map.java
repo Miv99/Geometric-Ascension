@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 
+import ai.AI;
 import components.EnemyComponent;
 import components.HitboxComponent;
 import components.IgnoreRespawnOnAreaResetComponent;
@@ -91,7 +92,7 @@ public class Map {
         areas.put(new Point(0, 0), mapArea);
     }
 
-    public void enterNewArea(PooledEngine engine, int x, int y) {
+    public void enterNewArea(PooledEngine engine, Entity player, int x, int y) {
         MapArea oldMapArea = areas.get(focus);
 
         MapArea newMapArea;
@@ -124,7 +125,7 @@ public class Map {
             }
         }
 
-        newMapArea.spawnEntities(engine, this);
+        newMapArea.spawnEntities(engine, this, player);
 
         focus.x = x;
         focus.y = y;
@@ -160,6 +161,33 @@ public class Map {
         for(int i = 0; i < enemies; i++) {
             EntityCreationData ecd = new EntityCreationData();
             ecd.setIsEnemy(true);
+
+            //TODO: add on to this as more AI types are added
+            // Randomize AI type
+            float rand = MathUtils.random();
+            // 50% for SimpleStalk
+            if(rand < 0.5f) {
+                ecd.setAiType(AI.AIType.SIMPLE_STALK_TARGET);
+                ecd.setSimpleStalkMinSpeedDistance(MathUtils.random(100f, 250f));
+                ecd.setSimpleStalkMaxSpeedDistance(MathUtils.random(330f, 450f));
+            }
+            // 25% for SimpleFollow
+            else if(rand < 0.75f) {
+                ecd.setAiType(AI.AIType.SIMPLE_FOLLOW_TARGET);
+
+            }
+            // 25% for SimpleWander
+            else {
+                ecd.setAiType(AI.AIType.SIMPLE_WANDER);
+                ecd.setSimpleWanderRadius(MathUtils.random(100f, 300f));
+                ecd.setSimpleWanderMinInterval(0.5f);
+                ecd.setSimpleWanderMaxInterval(3f);
+                ecd.setSimpleWanderMinAcceleration(1 / 60f);
+                ecd.setSimpleWanderMaxAcceleration(2.5f / 60f);
+            }
+
+            // Max speed is a random number between 1f and 5f
+            ecd.setMaxSpeed(MathUtils.random(1f, 5f));
 
             // Max health is 5000% to 7500% of total pp
             ecd.setMaxHealth(ppPerEnemy * MathUtils.random(50f, 75f));

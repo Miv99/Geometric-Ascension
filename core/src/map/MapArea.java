@@ -7,6 +7,11 @@ import com.miv.Mappers;
 
 import java.util.ArrayList;
 
+import ai.AI;
+import ai.SimpleFollowTarget;
+import ai.SimpleStalkTarget;
+import ai.SimpleWander;
+import components.AIComponent;
 import components.BossComponent;
 import components.CustomOnCollisionComponent;
 import components.EnemyComponent;
@@ -45,22 +50,34 @@ public class MapArea {
      * Spawns all entities in {@link map.MapArea#entityCreationDataArrayList}
      * and stairs.
      */
-    public void spawnEntities(final PooledEngine engine, final Map map) {
+    public void spawnEntities(final PooledEngine engine, final Map map, Entity player) {
         // Entities from entityCreationDataArrayList
         for(EntityCreationData ecd : entityCreationDataArrayList) {
             Entity e = engine.createEntity();
+
             if(ecd.isEnemy()) {
                 e.add(engine.createComponent(EnemyComponent.class));
             }
+
             if(ecd.isBoss()) {
                 e.add(engine.createComponent(BossComponent.class));
             }
+
             HitboxComponent hitbox = engine.createComponent(HitboxComponent.class);
             for(CircleHitbox c : ecd.getCircleHitboxes()) {
                 hitbox.addCircle(c);
             }
             hitbox.setOrigin(ecd.getSpawnX(), ecd.getSpawnY());
             e.add(hitbox);
+
+            //TODO: add to this as more AI types are added
+            if(ecd.getAiType() == AI.AIType.SIMPLE_FOLLOW_TARGET) {
+                e.add(engine.createComponent(AIComponent.class).setAi(new SimpleFollowTarget(e, player)));
+            } else if(ecd.getAiType() == AI.AIType.SIMPLE_STALK_TARGET) {
+                e.add(engine.createComponent(AIComponent.class).setAi(new SimpleStalkTarget(e, player, ecd.getSimpleStalkMinSpeedDistance(), ecd.getSimpleStalkMaxSpeedDistance(), ecd.getMaxSpeed()/5f)));
+            } else if(ecd.getAiType() == AI.AIType.SIMPLE_WANDER) {
+                e.add(engine.createComponent(AIComponent.class).setAi(new SimpleWander(e, ecd.getSimpleWanderRadius(), ecd.getSimpleWanderMinInterval(), ecd.getSimpleWanderMaxInterval(), ecd.getSimpleWanderMinAcceleration(), ecd.getSimpleWanderMaxAcceleration())));
+            }
 
             engine.addEntity(e);
         }

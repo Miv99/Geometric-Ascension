@@ -28,7 +28,7 @@ public class EntityActions {
         // TODO: make the player accelerate instead of constant speed
         Mappers.hitbox.get(player).setVelocity(directionOfTravel.deltaX * 50f, directionOfTravel.deltaY * 50f);
         // TODO: wait a few seconds (until old map area is gone from camera)
-        map.enterNewArea(engine, (int)map.getFocus().x + directionOfTravel.deltaX, (int)map.getFocus().y + directionOfTravel.deltaY);
+        map.enterNewArea(engine, player, (int)map.getFocus().x + directionOfTravel.deltaX, (int)map.getFocus().y + directionOfTravel.deltaY);
         // Make player no longer invincible
     }
 
