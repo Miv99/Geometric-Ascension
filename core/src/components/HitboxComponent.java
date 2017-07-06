@@ -10,6 +10,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Pool;
 import com.miv.AttackPart;
 import com.miv.AttackPattern;
+import com.miv.Options;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,6 +46,8 @@ public class HitboxComponent implements Component, Pool.Poolable {
      * Circles to be removed from {@link HitboxComponent#circles} by {@link systems.MovementSystem#update(float)} every frame
      */
     private ArrayList<CircleHitbox> circleRemovalQueue;
+    // Distance from origin where enemies and players' gravity effects are maximized
+    private float gravitationalRadius;
 
     private float maxSpeed;
 
@@ -94,6 +97,42 @@ public class HitboxComponent implements Component, Pool.Poolable {
                 }
             }
         }
+    }
+
+    public void recenterCircles() {
+        // TODO: set origin
+        // Find left/top/right/bottom bounds of the group of circles
+        CircleHitbox c1 = circles.get(0);
+        float left = c1.x - c1.radius, right = c1.x + c1.radius, top = c1.y + c1.radius, bottom = c1.y - c1.radius;
+        for(int i = 1; i < circles.size(); i++) {
+            CircleHitbox c = circles.get(i);
+            if(c.x - c1.radius < left) {
+                left = c1.x - c1.radius;
+            }
+            if(c.x + c1.radius > right) {
+                right = c1.x + c1.radius;
+            }
+            if(c.y - c1.radius < bottom) {
+                bottom = c1.y - c1.radius;
+            }
+            if(c.y + c1.radius > top) {
+                top = c1.y + c1.radius;
+            }
+        }
+
+        // Shift all circles by center of bounds
+        float deltaX = (left + right)/2f;
+        float deltaY = (bottom + top)/2f;
+        for(CircleHitbox c : circles) {
+            c.x -= deltaX;
+            c.y -= deltaY;
+        }
+
+        // Shift origin in opposite direction to retain world position of circles
+        origin.x += deltaX;
+        origin.y += deltaY;
+
+        gravitationalRadius = Math.max(Math.abs(left + right)/2f, Math.abs(top + bottom)/2f) + Options.GRAVITATIONAL_RADIUS_PADDING;
     }
 
     public Vector2 getVelocity() {
@@ -173,6 +212,7 @@ public class HitboxComponent implements Component, Pool.Poolable {
     public void addCircle(CircleHitbox circle) {
         circles.add(circle);
         originalCirclePositions.add(new Point(circle.x, circle.y));
+        recenterCircles();
     }
 
     public void queueCircleRemoval(CircleHitbox circle) {
@@ -185,5 +225,14 @@ public class HitboxComponent implements Component, Pool.Poolable {
 
     public void clearCircleRemovalQueue() {
         circleRemovalQueue.clear();
+    }
+
+    public void removeCircle(CircleHitbox c) {
+        circles.remove(c);
+        recenterCircles();
+    }
+
+    public float getGravitationalRadius() {
+        return gravitationalRadius;
     }
 }

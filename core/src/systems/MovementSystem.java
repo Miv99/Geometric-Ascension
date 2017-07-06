@@ -6,10 +6,12 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.utils.ImmutableArray;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.miv.EntityActions;
 import com.badlogic.gdx.math.Vector2;
 import com.miv.Mappers;
+import com.miv.Options;
 
 import java.util.ArrayList;
 
@@ -23,6 +25,7 @@ import map.MapArea;
 import utils.CircleHitbox;
 import utils.OnCollisionEvent;
 import utils.Point;
+import utils.Utils;
 
 /**
  * Created by Miv on 5/25/2017.
@@ -36,6 +39,7 @@ public class MovementSystem extends EntitySystem {
     private ImmutableArray<Entity> playerBullets;
     private ImmutableArray<Entity> enemies;
     private ImmutableArray<Entity> enemyBullets;
+    private ImmutableArray<Entity> enemiesAndPlayers;
     private PooledEngine engine;
     private Map map;
 
@@ -54,6 +58,7 @@ public class MovementSystem extends EntitySystem {
         playerBullets = engine.getEntitiesFor(Family.all(PlayerBulletComponent.class).get());
         enemies = engine.getEntitiesFor(Family.all(EnemyComponent.class).get());
         enemyBullets = engine.getEntitiesFor(Family.all(EnemyBulletComponent.class).get());
+        enemiesAndPlayers = engine.getEntitiesFor(Family.one(EnemyComponent.class, PlayerComponent.class).get());
     }
 
     /**
@@ -145,17 +150,54 @@ public class MovementSystem extends EntitySystem {
         return false;
     }
 
+    /**
+     * Returns the change in velocity due to an entity's proximity to other nearby entities
+     * @param entities - all entities affected by gravity
+     * @param entity - the entity whose velocity's change is being calculated for
+     * @param entityOrigin - origin of e
+     */
+    private Point calculateVelocityAdditionDueToGravity(ImmutableArray<Entity> entities, Entity entity, Point entityOrigin) {
+        Point vel = new Point(0, 0);
+        for(Entity e : entities) {
+            if(!e.equals(entity)) {
+                HitboxComponent hitbox = Mappers.hitbox.get(e);
+                Point origin = hitbox.getOrigin();
+                float distance = Utils.getDistance(origin, entityOrigin);
+                if (distance < Options.GRAVITY_DROP_OFF_DISTANCE + hitbox.getGravitationalRadius()) {
+                    float angle = MathUtils.atan2(entityOrigin.y - origin.y, entityOrigin.x - origin.x);
+                    float magnitude = Options.GRAVITATIONAL_CONSTANT / (float)Math.pow(distance, 1.2);
+
+                    vel.x += magnitude * MathUtils.cos(angle);
+                    vel.y += magnitude * MathUtils.sin(angle);
+                }
+            }
+        }
+
+        if(vel.x > 0) {
+            vel.x = Math.min(Options.GRAVITY_SPEED_CAP, vel.x);
+        } else {
+            vel.x = Math.max(-Options.GRAVITY_SPEED_CAP, vel.x);
+        }
+        if(vel.y > 0) {
+            vel.y = Math.min(Options.GRAVITY_SPEED_CAP, vel.y);
+        } else {
+            vel.y = Math.max(-Options.GRAVITY_SPEED_CAP, vel.y);
+        }
+
+        return vel;
+    }
+
     @Override
     public void update(float deltaTime) {
         MapArea mapArea = map.areas.get(map.getFocus());
 
         if(mapArea != null) {
-            float mapAreaRadiusSquared = mapArea.getRadius() * mapArea.getRadius();
             for (Entity e : entities) {
                 HitboxComponent hitbox = Mappers.hitbox.get(e);
                 Point hitboxOrigin = hitbox.getOrigin();
                 Point origin = hitbox.getOrigin();
                 Vector2 velocity = hitbox.getVelocity();
+                Point velocityAdditionDueToGravity = null;
 
                 boolean isValidMovement = true;
 
@@ -207,6 +249,9 @@ public class MovementSystem extends EntitySystem {
                                 handleBulletCollision(e, c, collisionEntitiesToHandle.get(i));
                             }
                         }
+
+                        // Calculate effect of gravity
+                        velocityAdditionDueToGravity = calculateVelocityAdditionDueToGravity(enemiesAndPlayers, e, origin);
                     }
                     // If entity is a player bullet, check for collisions against the square boundaries of the MapArea, enemies
                     else if (Mappers.playerBullet.has(e)) {
@@ -240,13 +285,17 @@ public class MovementSystem extends EntitySystem {
                 }
 
                 if (isValidMovement) {
-                    hitbox.setOrigin(origin.x + velocity.x, origin.y + velocity.y);
+                    if(velocityAdditionDueToGravity == null) {
+                        hitbox.setOrigin(origin.x + velocity.x, origin.y + velocity.y);
+                    } else {
+                        hitbox.setOrigin(origin.x + velocity.x + velocityAdditionDueToGravity.x, origin.y + velocity.y + velocityAdditionDueToGravity.y);
+                    }
                     hitbox.setVelocity(velocity.x + hitbox.getAcceleration().x, velocity.y + hitbox.getAcceleration().y);
                 }
 
                 // Remove circles in hitbox circle removal queue from array list of circles in the hitbox component
                 for(CircleHitbox c : hitbox.getCircleRemovalQueue()) {
-                    hitbox.getCircles().remove(c);
+                    hitbox.removeCircle(c);
                 }
                 hitbox.clearCircleRemovalQueue();
             }

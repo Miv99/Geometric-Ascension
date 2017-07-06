@@ -21,7 +21,7 @@ public class SimpleFollowTarget extends AI {
         Point selfPos = selfHitbox.getOrigin();
         float angle = MathUtils.atan2(targetPos.y - selfPos.y, targetPos.x - selfPos.x);
         float velocityX = selfHitbox.getMaxSpeed() * MathUtils.cos(angle);
-        float velocityY = -selfHitbox.getMaxSpeed() * MathUtils.sin(angle);
+        float velocityY = selfHitbox.getMaxSpeed() * MathUtils.sin(angle);
 
         selfHitbox.setVelocity(velocityX, velocityY);
         selfHitbox.setLastFacedAngle(angle);

@@ -166,13 +166,13 @@ public class Map {
             // Randomize AI type
             float rand = MathUtils.random();
             // 50% for SimpleStalk
-            if(rand < 0.5f) {
+            if(rand < 1f) {
                 ecd.setAiType(AI.AIType.SIMPLE_STALK_TARGET);
                 ecd.setSimpleStalkMinSpeedDistance(MathUtils.random(100f, 250f));
                 ecd.setSimpleStalkMaxSpeedDistance(MathUtils.random(330f, 450f));
             }
             // 25% for SimpleFollow
-            else if(rand < 0.75f) {
+            else if(rand < 1f) {
                 ecd.setAiType(AI.AIType.SIMPLE_FOLLOW_TARGET);
 
             }

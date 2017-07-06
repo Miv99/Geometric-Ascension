@@ -15,4 +15,15 @@ public class Options {
     public static float MASTER_VOLUME = 0.5f;
     // Maximum distance dragged on the screen before the player reaches maximum speed
     public static float MOVEMENT_DRAG_ARROW_MAX_DISTANCE = 200f;
+
+    /**
+     * The minimum distance from an entity's origin to another's hitbox's {@link components.HitboxComponent#gravitationalRadius} that the repelling force begins to take effect.
+     * The repelling force works in {@link systems.MovementSystem} by adding to each hitbox's velocity, with the amount added increasing
+     * exponentially as distance between the two hitbox origins decreases. The magnitude of the velocity added is capped at GRAVITY_SPEED_CAP meters/frame.
+     */
+    public static final float GRAVITY_DROP_OFF_DISTANCE = 500f;
+    // Distance from the edge of the farthest CircleHitbox in a hitbox from the origin that the repelling forces of gravity take maximum effect
+    public static final float GRAVITATIONAL_RADIUS_PADDING = 10f;
+    public static final float GRAVITY_SPEED_CAP = 100f;
+    public static final float GRAVITATIONAL_CONSTANT = 2000f;
 }

@@ -42,7 +42,7 @@ public class SimpleStalkTarget extends AI {
             speed = ((distance - minSpeedDistance)/(maxSpeedDistance - minSpeedDistance)) * (selfHitbox.getMaxSpeed() - minSpeed) + minSpeed;
         }
         float velocityX = speed * MathUtils.cos(angle);
-        float velocityY = -speed * MathUtils.sin(angle);
+        float velocityY = speed * MathUtils.sin(angle);
 
         selfHitbox.setVelocity(velocityX, velocityY);
         selfHitbox.setLastFacedAngle(angle);

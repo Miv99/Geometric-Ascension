@@ -1,5 +1,7 @@
 package utils;
 
+import com.badlogic.gdx.math.MathUtils;
+
 import java.util.ArrayList;
 
 import javafx.scene.shape.Circle;
@@ -18,5 +20,9 @@ public class Utils {
             }
         }
         return false;
+    }
+
+    public static float getDistance(Point p1, Point p2) {
+        return (float)Math.sqrt((p1.x - p2.x)*(p1.x - p2.x) + (p1.y - p2.y)*(p1.y - p2.y));
     }
 }
