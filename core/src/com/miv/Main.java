@@ -62,6 +62,15 @@ public class Main extends Game {
 	public static final String MOVEMENT_ARROW_HEAD_PATH = "movement_arrow_head.png";
 	public static final String ATTACK_BUTTON_UP_PATH = "attack_button_up.png";
 	public static final String ATTACK_BUTTON_DOWN_PATH = "attack_button_down.png";
+	public static final String BUBBLE_BLACK_PATH = "bubble_black.png";
+	public static final String BUBBLE_BLUE_PATH = "bubble_blue.png";
+	public static final String BUBBLE_GREEN_PATH = "bubble_green.png";
+	public static final String BUBBLE_ORANGE_PATH = "bubble_orange.png";
+	public static final String BUBBLE_PURPLE_PATH = "bubble_purple.png";
+	public static final String BUBBLE_RED_PATH = "bubble_red.png";
+	public static final String BUBBLE_WHITE_PATH = "bubble_white.png";
+	public static final String BUBBLE_YELLOW_PATH = "bubble_yellow.png";
+	public static final String BUBBLE_DEFAULT_PATH = "bubble_default.png";
 
 	private PooledEngine engine;
 	private ShootingSystem shootingSystem;
@@ -111,6 +120,7 @@ public class Main extends Game {
 		camera.update();
 
 		assetManager.finishLoading();
+		renderSystem.loadTextures(assetManager);
 		loadMainMenu();
 	}
 
@@ -140,6 +150,16 @@ public class Main extends Game {
 		assetManager.load(MOVEMENT_ARROW_HEAD_PATH, Texture.class);
 		assetManager.load(ATTACK_BUTTON_UP_PATH, Texture.class);
 		assetManager.load(ATTACK_BUTTON_DOWN_PATH, Texture.class);
+
+		assetManager.load(BUBBLE_BLACK_PATH, Texture.class);
+		assetManager.load(BUBBLE_BLUE_PATH, Texture.class);
+		assetManager.load(BUBBLE_GREEN_PATH, Texture.class);
+		assetManager.load(BUBBLE_ORANGE_PATH, Texture.class);
+		assetManager.load(BUBBLE_PURPLE_PATH, Texture.class);
+		assetManager.load(BUBBLE_RED_PATH, Texture.class);
+		assetManager.load(BUBBLE_WHITE_PATH, Texture.class);
+		assetManager.load(BUBBLE_YELLOW_PATH, Texture.class);
+		assetManager.load(BUBBLE_DEFAULT_PATH, Texture.class);
 	}
 
 	public void loadPreferences() {
@@ -173,13 +193,13 @@ public class Main extends Game {
 		HitboxComponent hc = engine.createComponent(HitboxComponent.class);
 		hc.setMaxSpeed(5f);
 		CircleHitbox c = new CircleHitbox();
-		c.setColor(RenderSystem.PLAYER_COLOR);
+		c.setHitboxTextureType(RenderSystem.HitboxTextureType.PLAYER);
 		c.setRadius(50f);
 		c.setMaxHealth(500f);
 		c.setHealth(500f);
 		hc.addCircle(c);
 		CircleHitbox c2 = new CircleHitbox();
-		c2.setColor(RenderSystem.PLAYER_COLOR);
+		c2.setHitboxTextureType(RenderSystem.HitboxTextureType.PLAYER);
 		c2.setPosition(-70f, 0);
 		c2.setRadius(20f);
 		c2.setAttackPattern(ap);
@@ -187,7 +207,7 @@ public class Main extends Game {
 		c2.setHealth(500f);
 		hc.addCircle(c2);
 		CircleHitbox c3 = new CircleHitbox();
-		c3.setColor(RenderSystem.PLAYER_COLOR);
+		c3.setHitboxTextureType(RenderSystem.HitboxTextureType.PLAYER);
 		c3.setPosition(70f, 0);
 		c3.setRadius(20f);
 		c3.setAttackPattern(ap);
@@ -220,12 +240,12 @@ public class Main extends Game {
 	public void render() {
 		float deltaTime = Gdx.graphics.getDeltaTime();
 
-		super.render();
 		assetManager.update();
 		if(state == GameState.MAIN_GAME) {
 			engine.update(deltaTime);
 			camera.update();
 		}
+		super.render();
 	}
 	
 	@Override

@@ -233,7 +233,7 @@ public class Map {
                 CircleHitbox c = new CircleHitbox();
 
                 // Set color
-                c.setColor(RenderSystem.ENEMY_COLOR);
+                c.setHitboxTextureType(RenderSystem.HitboxTextureType.ENEMY);
 
                 // Set attack pattern
                 c.setAttackPattern(attackPattern);
@@ -249,10 +249,10 @@ public class Map {
 
                 // Randomize angle from first circle until this circle does not overlap with any other
                 float angle = MathUtils.random(0, MathUtils.PI2);
-                c.setPosition((c1Radius + radius)*MathUtils.cos(angle), (c1Radius + radius)*MathUtils.cos(angle));
+                c.setPosition((c1Radius + radius) * MathUtils.cos(angle), (c1Radius + radius) * MathUtils.sin(angle));
                 while(Utils.overlaps(c, circles)) {
                     angle = MathUtils.random(0, MathUtils.PI2);
-                    c.setPosition((c1Radius + radius)*MathUtils.cos(angle), (c1Radius + radius)*MathUtils.cos(angle));
+                    c.setPosition((c1Radius + radius)*MathUtils.cos(angle), (c1Radius + radius)*MathUtils.sin(angle));
                 }
                 circles.add(c);
             }
@@ -287,7 +287,7 @@ public class Map {
 
             // Create first circle
             CircleHitbox c1 = new CircleHitbox();
-            c1.setColor(RenderSystem.ENEMY_COLOR);
+            c1.setHitboxTextureType(RenderSystem.HitboxTextureType.ENEMY);
             c1.setPosition(0, 0);
             c1.setRadius(c1Radius);
             c1.setAttackPattern(attackPattern);

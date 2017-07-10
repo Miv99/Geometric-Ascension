@@ -7,11 +7,13 @@ import com.badlogic.gdx.math.Circle;
 import com.miv.AttackPart;
 import com.miv.AttackPattern;
 
+import systems.RenderSystem;
+
 /**
  * Created by Miv on 6/5/2017.
  */
 public class CircleHitbox extends Circle {
-    private Color color;
+    private RenderSystem.HitboxTextureType hitboxTextureType;
     private float maxHealth;
     private float health;
     private AttackPattern attackPattern;
@@ -24,12 +26,12 @@ public class CircleHitbox extends Circle {
      */
     private boolean[] fired;
 
-    public Color getColor() {
-        return color;
+    public RenderSystem.HitboxTextureType getHitboxTextureType() {
+        return hitboxTextureType;
     }
 
-    public CircleHitbox setColor(Color color) {
-        this.color = color;
+    public CircleHitbox setHitboxTextureType(RenderSystem.HitboxTextureType hitboxTextureType) {
+        this.hitboxTextureType = hitboxTextureType;
         return this;
     }
 

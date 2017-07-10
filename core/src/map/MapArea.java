@@ -87,7 +87,7 @@ public class MapArea {
         if(stairsDestination != -1) {
             Entity e = engine.createEntity();
             HitboxComponent hitbox = engine.createComponent(HitboxComponent.class);
-            hitbox.addCircle(new CircleHitbox().setColor(RenderSystem.STAIRS_COLOR));
+            hitbox.addCircle(new CircleHitbox().setHitboxTextureType(RenderSystem.HitboxTextureType.STAIRS));
             e.add(hitbox);
 
             // Add enemy component so it can collide with the player

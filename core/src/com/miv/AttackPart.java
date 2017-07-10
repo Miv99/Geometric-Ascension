@@ -55,15 +55,15 @@ public class AttackPart {
      * @param originAngle - The lastFacedAngle of the parent's hitbox, in radians
      */
     public void fire(PooledEngine engine, Entity parent, Entity player, float originX, float originY, float originAngle) {
-        Color color = null;
+        RenderSystem.HitboxTextureType hitboxTextureType = null;
 
         Entity e = engine.createEntity();
         if(Mappers.player.has(parent)) {
             e.add(engine.createComponent(PlayerBulletComponent.class).setDamage(damage));
-            color = RenderSystem.PLAYER_BULLET_COLOR;
+            hitboxTextureType = RenderSystem.HitboxTextureType.PLAYER_BULLET;
         } else if(Mappers.enemy.has(parent)) {
             e.add(engine.createComponent(EnemyBulletComponent.class).setDamage(damage));
-            color = RenderSystem.ENEMY_BULLET_COLOR;
+            hitboxTextureType = RenderSystem.HitboxTextureType.ENEMY_BULLET;
         }
 
         float angle = 0;
@@ -81,7 +81,7 @@ public class AttackPart {
         hitbox.setMaxSpeed(speed);
         hitbox.setVelocity(speed * MathUtils.cos(angle), -speed * MathUtils.sin(angle));
         CircleHitbox circleHitbox = new CircleHitbox();
-        circleHitbox.setColor(color);
+        circleHitbox.setHitboxTextureType(hitboxTextureType);
         circleHitbox.setRadius(radius);
         hitbox.addCircle(circleHitbox);
         e.add(hitbox);

@@ -68,19 +68,17 @@ public class GestureListener implements GestureDetector.GestureListener {
     public boolean touchDragged(float x, float y, int pointer, int button) {
         if(main.getState() == Main.GameState.MAIN_GAME && movementDragTouchDownPoint.x != -1) {
             // Prevent movement touches in a rectangle around the attack buttons
-            if(!(x > main.getHud().getDisableGesturesLowerXBound() && y > main.getHud().getDisableGesturesLowerYBound())) {
-                movementDragCurrentPoint.x = x;
-                movementDragCurrentPoint.y = y;
+            movementDragCurrentPoint.x = x;
+            movementDragCurrentPoint.y = y;
 
-                // Get angle from touch down to current finger pointer position
-                movementArrowAngle = MathUtils.atan2(y - movementDragTouchDownPoint.y, x - movementDragTouchDownPoint.x);
-                movementArrowLength = Math.min((float) Math.sqrt((x - movementDragTouchDownPoint.x) * (x - movementDragTouchDownPoint.x) + (y - movementDragTouchDownPoint.y) * (y - movementDragTouchDownPoint.y)), Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE);
-                float velocityX = (movementArrowLength / Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE) * playerHitbox.getMaxSpeed() * MathUtils.cos(movementArrowAngle);
-                float velocityY = -(movementArrowLength / Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE) * playerHitbox.getMaxSpeed() * MathUtils.sin(movementArrowAngle);
+            // Get angle from touch down to current finger pointer position
+            movementArrowAngle = MathUtils.atan2(y - movementDragTouchDownPoint.y, x - movementDragTouchDownPoint.x);
+            movementArrowLength = Math.min((float) Math.sqrt((x - movementDragTouchDownPoint.x) * (x - movementDragTouchDownPoint.x) + (y - movementDragTouchDownPoint.y) * (y - movementDragTouchDownPoint.y)), Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE);
+            float velocityX = (movementArrowLength / Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE) * playerHitbox.getMaxSpeed() * MathUtils.cos(movementArrowAngle);
+            float velocityY = -(movementArrowLength / Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE) * playerHitbox.getMaxSpeed() * MathUtils.sin(movementArrowAngle);
 
-                playerHitbox.setVelocity(velocityX, velocityY);
-                playerHitbox.setLastFacedAngle(movementArrowAngle);
-            }
+            playerHitbox.setVelocity(velocityX, velocityY);
+            playerHitbox.setLastFacedAngle(movementArrowAngle);
         }
         return false;
     }

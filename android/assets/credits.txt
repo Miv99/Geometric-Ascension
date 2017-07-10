@@ -4,3 +4,6 @@ world3 - https://opengameart.org/content/in-the-forest
 main_menu1 - https://opengameart.org/content/upbeat-visual-novel-music
 
 main_menu_background - https://opengameart.org/content/ocean-background
+
+bubblex textures - https://opengameart.org/content/bubbles8-colors
+https://opengameart.org/content/ball-animation-include-vector-file

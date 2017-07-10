@@ -29,6 +29,7 @@ public class Camera extends OrthographicCamera {
         }
         super.update();
         renderSystem.getShapeRenderer().setProjectionMatrix(combined);
+        renderSystem.getBatch().setProjectionMatrix(combined);
     }
 
     public void setFocus(Entity focus) {
