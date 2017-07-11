@@ -77,6 +77,7 @@ public class GestureListener implements GestureDetector.GestureListener {
             float velocityX = (movementArrowLength / Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE) * playerHitbox.getMaxSpeed() * MathUtils.cos(movementArrowAngle);
             float velocityY = -(movementArrowLength / Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE) * playerHitbox.getMaxSpeed() * MathUtils.sin(movementArrowAngle);
 
+            System.out.println(playerHitbox.getMaxSpeed());
             playerHitbox.setVelocity(velocityX, velocityY);
             playerHitbox.setLastFacedAngle(movementArrowAngle);
         }

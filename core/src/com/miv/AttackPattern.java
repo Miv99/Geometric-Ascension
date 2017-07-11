@@ -24,6 +24,11 @@ public class AttackPattern {
     private float totalDamage;
     private float totalRadius;
 
+    /**
+     * For Json files
+     */
+    public AttackPattern() {}
+
     public AttackPattern(int attackPartsCount) {
         attackParts = new AttackPart[attackPartsCount];
     }

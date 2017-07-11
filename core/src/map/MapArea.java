@@ -33,9 +33,14 @@ public class MapArea {
 
     /**
      * Set to -1 if no stairs exist in this MapArea. Otherwise, an entity with an OnCollision event will be spawned in the middle of the MapArea
-     * when {@link MapArea#spawnEntities(PooledEngine, Map)} is called.
+     * when {@link MapArea#spawnEntities(PooledEngine, Map, Entity)}} is called.
      */
     private int stairsDestination = -1;
+
+    /**
+     * For Json files
+     */
+    public MapArea() {}
 
     public MapArea(float radius) {
         this.radius = radius;

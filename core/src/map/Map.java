@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.miv.AttackPart;
 import com.miv.AttackPattern;
+import com.miv.Main;
 import com.miv.Mappers;
 
 import java.util.ArrayList;
@@ -60,6 +61,8 @@ public class Map {
     private static final int MIN_ENEMIES_PER_MAP_AREA = 3;
     private  static final int MAX_ENEMIES_PER_MAP_AREA = 8;
 
+    private transient Main main;
+
     // Starts at 0
     private int floor;
     private Point focus;
@@ -70,7 +73,14 @@ public class Map {
     // Maximum pixel points, distributed evenly to all enemies, when generating MapAreas
     private float maxPixelPoints;
 
-    public Map() {
+    /**
+     * For Json files
+     */
+    public Map() {}
+
+    public Map(Main main) {
+        this.main = main;
+
         areas = new HashMap<Point, MapArea>();
         focus = new Point(0, 0);
         chanceOfNextAreaHavingStairs = 0f;
@@ -90,14 +100,19 @@ public class Map {
         MapArea mapArea = new MapArea(MapArea.MAP_AREA_MIN_SIZE);
         mapArea.addStairs(lastFloor);
         areas.put(new Point(0, 0), mapArea);
+
+        main.save();
     }
 
     public void enterNewArea(PooledEngine engine, Entity player, int x, int y) {
         MapArea oldMapArea = areas.get(focus);
 
+        boolean increaseChanceOfNextAreaHavingStairs = false;
+
         MapArea newMapArea;
         Point newPos = new Point(x, y);
         if(!areas.containsKey(newPos)) {
+            increaseChanceOfNextAreaHavingStairs = true;
             newMapArea = generateRandomMapArea();
             areas.put(newPos, newMapArea);
         } else {
@@ -129,6 +144,14 @@ public class Map {
 
         focus.x = x;
         focus.y = y;
+
+        main.save();
+
+        // Increase chance of next area having stairs after autosaving to avoid the user entering new areas and
+        // reloading the game to avoid all enemies and quickly enter new floors
+        if(increaseChanceOfNextAreaHavingStairs) {
+            chanceOfNextAreaHavingStairs = Math.min(MAX_CHANCE_OF_STAIRS_AREA, chanceOfNextAreaHavingStairs + CHANCE_OF_STAIRS_AREA_INCREMENT);
+        }
     }
 
     private MapArea generateRandomMapArea() {
@@ -139,7 +162,6 @@ public class Map {
         } else {
             mapArea = new MapArea(MathUtils.random(MapArea.MAP_AREA_MIN_SIZE, MapArea.MAP_AREA_MAX_SIZE));
         }
-        chanceOfNextAreaHavingStairs = Math.min(0.3f, chanceOfNextAreaHavingStairs + CHANCE_OF_STAIRS_AREA_INCREMENT);
 
         // Populate map area with entities
         randomlyPopulate(mapArea);
@@ -166,13 +188,13 @@ public class Map {
             // Randomize AI type
             float rand = MathUtils.random();
             // 50% for SimpleStalk
-            if(rand < 1f) {
+            if(rand < 0.5f) {
                 ecd.setAiType(AI.AIType.SIMPLE_STALK_TARGET);
                 ecd.setSimpleStalkMinSpeedDistance(MathUtils.random(100f, 250f));
                 ecd.setSimpleStalkMaxSpeedDistance(MathUtils.random(330f, 450f));
             }
             // 25% for SimpleFollow
-            else if(rand < 1f) {
+            else if(rand < 0.25f) {
                 ecd.setAiType(AI.AIType.SIMPLE_FOLLOW_TARGET);
 
             }
@@ -343,5 +365,9 @@ public class Map {
 
     public void setFloor(int floor) {
         this.floor = floor;
+    }
+
+    public void setMain(Main main) {
+        this.main = main;
     }
 }

@@ -35,8 +35,6 @@ public class AttackPart {
 
     // Time in seconds relative to the start of the attack pattern until this attack part is fired
     private float delay;
-    // Name of bullet's sprite
-    private String bulletSpriteName;
     // Origin of the bullet with respect to the origin of the parent entity
     private float originX;
     private float originY;
@@ -106,15 +104,6 @@ public class AttackPart {
         return this;
     }
 
-    public String getBulletSpriteName() {
-        return bulletSpriteName;
-    }
-
-    public AttackPart setBulletSpriteName(String bulletSpriteName) {
-        this.bulletSpriteName = bulletSpriteName;
-        return this;
-    }
-
     public float getOriginX() {
         return originX;
     }
@@ -164,8 +153,9 @@ public class AttackPart {
         return radius;
     }
 
-    public void setRadius(float radius) {
+    public AttackPart setRadius(float radius) {
         this.radius = radius;
+        return this;
     }
 
     public float getDamage() {

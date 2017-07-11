@@ -4,8 +4,6 @@ import com.badlogic.gdx.math.MathUtils;
 
 import java.util.ArrayList;
 
-import javafx.scene.shape.Circle;
-
 /**
  * Created by Miv on 6/26/2017.
  */
