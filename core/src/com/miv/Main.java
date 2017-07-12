@@ -49,7 +49,6 @@ public class Main extends Game {
 	public static final int SCREEN_WIDTH = 1600;
 	public static final int SCREEN_HEIGHT = 900;
 
-	public static final String SPRITES_PATH = "";
 	public static final String SKIN_PATH = "glassy\\skin\\glassy-ui.json";
 	public static final String DEFAULT_FONT_PATH = "Roboto-Regular.ttf";
 	public static final String WORLD_MUSIC_1_PATH = "music\\world1.mp3";
@@ -79,6 +78,7 @@ public class Main extends Game {
 	private InputMultiplexer inputMultiplexer;
 	private GestureListener gestureListener;
 	private Map map;
+    private Entity player;
 
 	private AssetManager assetManager;
 	private Preferences preferences;
@@ -101,10 +101,7 @@ public class Main extends Game {
 		loadPreferences();
 		loadAssets();
 
-		//TODO: load map from preferences into Main.map via json file
-		if(map == null) {
-			map = new Map();
-		}
+		Save.load(this);
 
 		// Add entity systems
 		engine.addSystem(new AISystem());
@@ -171,50 +168,6 @@ public class Main extends Game {
 	}
 
 	public void startGame() {
-		// Get player entity from save data
-		// Get and set map data from save data
-
-		//TODO: delet this
-		Entity player = engine.createEntity();
-		player.add(engine.createComponent(PlayerComponent.class));
-		AttackPattern ap = new AttackPattern(1);
-		ap.setDuration(0.2f);
-		AttackPart a = new AttackPart();
-		a.setSpeed(50f);
-		a.setRadius(20f);
-		a.setDelay(0);
-		a.setAngleInRadians(0);
-		a.setDamage(1f);
-		a.setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.AIM_RELATIVE_TO_PARENT_ROTATION);
-		a.setBulletSpriteName("red_circle");
-		a.setOriginX(0);
-		a.setOriginY(0);
-		ap.setAttackPart(0, a);
-		HitboxComponent hc = engine.createComponent(HitboxComponent.class);
-		hc.setMaxSpeed(5f);
-		CircleHitbox c = new CircleHitbox();
-		c.setHitboxTextureType(RenderSystem.HitboxTextureType.PLAYER);
-		c.setRadius(50f);
-		c.setMaxHealth(500f);
-		c.setHealth(500f);
-		hc.addCircle(c);
-		CircleHitbox c2 = new CircleHitbox();
-		c2.setHitboxTextureType(RenderSystem.HitboxTextureType.PLAYER);
-		c2.setPosition(-70f, 0);
-		c2.setRadius(20f);
-		c2.setAttackPattern(ap);
-		c2.setMaxHealth(500f);
-		c2.setHealth(500f);
-		hc.addCircle(c2);
-		CircleHitbox c3 = new CircleHitbox();
-		c3.setHitboxTextureType(RenderSystem.HitboxTextureType.PLAYER);
-		c3.setPosition(70f, 0);
-		c3.setRadius(20f);
-		c3.setAttackPattern(ap);
-		c3.setMaxHealth(500f);
-		c3.setHealth(500f);
-		hc.addCircle(c3);
-		player.add(hc);
 		engine.addEntity(player);
 		map.enterNewArea(engine, player, 0, 0);
 
@@ -253,6 +206,10 @@ public class Main extends Game {
 
 	}
 
+	public void save() {
+        Save.save(this);
+    }
+
 	public AssetManager getAssetManager() {
 		return assetManager;
 	}
@@ -271,5 +228,26 @@ public class Main extends Game {
 
 	public void setHud(HUD hud) {
 		this.hud = hud;
+	}
+
+    public PooledEngine getEngine() {
+        return engine;
+    }
+
+    public Map getMap() {
+        return map;
+    }
+
+    public Entity getPlayer() {
+        return player;
+    }
+
+	public void setPlayer(Entity player) {
+		this.player = player;
+	}
+
+	public void setMap(Map map) {
+		map.setMain(this);
+		this.map = map;
 	}
 }

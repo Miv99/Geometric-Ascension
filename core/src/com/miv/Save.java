@@ -57,6 +57,7 @@ public class Save {
             for(CircleHitbox c : data.playerCircles) {
                 hitbox.addCircle(c);
             }
+            hitbox.recenterOriginalCirclePositions();
             hitbox.setMaxSpeed(data.playerMaxSpeed);
             player.add(hitbox);
             player.add(data.playerPlayerComponent);

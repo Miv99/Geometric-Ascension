@@ -98,8 +98,8 @@ public class MovementSystem extends EntitySystem {
             // All hit circles considered dead when number of circles is 1 because size() is not updated until
             // the circle removal queue is fired.
             if(victimHitbox.getCircles().size() == 1) {
-                //TODO: kill entity
                 // Queue entity removal from engine
+                entityRemovalQueue.add(victim);
             }
         }
 
@@ -127,7 +127,7 @@ public class MovementSystem extends EntitySystem {
         if (Math.abs(c.x + origin.x + velocity.x) >= boundary) {
             if (Mappers.playerBullet.has(e) || Mappers.enemyBullet.has(e)) {
                 engine.removeEntity(e);
-            } else if(Mappers.player.has(e)) {
+            } else if(Mappers.player.has(e) && !Mappers.player.get(e).isTravelling()) {
                 if (velocity.x < 0) {
                     EntityActions.playerEnterNewMapArea(engine, e, map, EntityActions.Direction.LEFT);
                 } else if (velocity.x > 0) {
@@ -138,7 +138,7 @@ public class MovementSystem extends EntitySystem {
         } else if (Math.abs(c.y + origin.y + velocity.y) >= boundary) {
             if (Mappers.playerBullet.has(e) || Mappers.enemyBullet.has(e)) {
                 engine.removeEntity(e);
-            } else if(Mappers.player.has(e)) {
+            } else if(Mappers.player.has(e) && !Mappers.player.get(e).isTravelling()) {
                 if (velocity.y < 0) {
                     EntityActions.playerEnterNewMapArea(engine, e, map, EntityActions.Direction.DOWN);
                 } else if (velocity.y > 0) {

@@ -16,9 +16,11 @@ import java.util.Collections;
 import java.util.HashMap;
 
 import ai.AI;
+import components.EnemyBulletComponent;
 import components.EnemyComponent;
 import components.HitboxComponent;
 import components.IgnoreRespawnOnAreaResetComponent;
+import components.PlayerBulletComponent;
 import factories.AttackPatternFactory;
 import systems.RenderSystem;
 import utils.CircleHitbox;
@@ -137,7 +139,15 @@ public class Map {
 
                 ecd.setCircleHitboxes(Mappers.hitbox.get(e).getCircles());
                 oldMapArea.entityCreationDataArrayList.add(ecd);
+
+                engine.removeEntity(e);
             }
+
+            // Remove all bullets
+            for(Entity e : engine.getEntitiesFor(Family.one(EnemyBulletComponent.class, PlayerBulletComponent.class).get())) {
+                engine.removeEntity(e);
+            }
+
         }
 
         newMapArea.spawnEntities(engine, this, player);
@@ -180,7 +190,7 @@ public class Map {
         // Used to avoid spawning enemies too close to each other
         ArrayList<CircleHitbox> enemyBoundingCircles = new ArrayList<CircleHitbox>();
 
-        for(int i = 0; i < enemies; i++) {
+        for(int i = 0; i < 4; i++) {
             EntityCreationData ecd = new EntityCreationData();
             ecd.setIsEnemy(true);
 
@@ -188,7 +198,7 @@ public class Map {
             // Randomize AI type
             float rand = MathUtils.random();
             // 50% for SimpleStalk
-            if(rand < 0.5f) {
+            if(rand < 1f) {
                 ecd.setAiType(AI.AIType.SIMPLE_STALK_TARGET);
                 ecd.setSimpleStalkMinSpeedDistance(MathUtils.random(100f, 250f));
                 ecd.setSimpleStalkMaxSpeedDistance(MathUtils.random(330f, 450f));
@@ -249,7 +259,7 @@ public class Map {
 
             // If circle hitbox contains more than 1 circle, each circle except the first is placed
             // so that it is tangential to the first circle
-            int circlesCount = getEnemyRandomCirclesCount();
+            int circlesCount = 3;
             float c1Radius = getRandomCircleRadius(circlesCount);
             for(int a = 1; a < circlesCount; a++) {
                 CircleHitbox c = new CircleHitbox();

@@ -72,6 +72,7 @@ public class MapArea {
             for(CircleHitbox c : ecd.getCircleHitboxes()) {
                 hitbox.addCircle(c);
             }
+            hitbox.recenterOriginalCirclePositions();
             hitbox.setOrigin(ecd.getSpawnX(), ecd.getSpawnY());
             hitbox.setMaxSpeed(ecd.getMaxSpeed());
             e.add(hitbox);

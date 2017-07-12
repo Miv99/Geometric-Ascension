@@ -32,10 +32,6 @@ public class HitboxComponent implements Component, Pool.Poolable {
     private Vector2 acceleration;
     // Circle positions are relative to components.HitboxComponent#origin
     private ArrayList<CircleHitbox> circles;
-    // Original circle positions with the hitbox facing angle 0
-    // Used to prevent inaccuracies when rotating hitbox multiple times
-    // Must be in the same order as circles
-    private ArrayList<Point> originalCirclePositions;
     // If true, the hitbox will not make contact with anything
     private boolean intangible;
     // In radians
@@ -56,7 +52,6 @@ public class HitboxComponent implements Component, Pool.Poolable {
         velocity = new Vector2();
         acceleration = new Vector2();
         circles = new ArrayList<CircleHitbox>();
-        originalCirclePositions = new ArrayList<Point>();
         circleRemovalQueue = new ArrayList<CircleHitbox>();
     }
 
@@ -67,7 +62,6 @@ public class HitboxComponent implements Component, Pool.Poolable {
         velocity.set(0, 0);
         acceleration.set(0, 0);
         circles.clear();
-        originalCirclePositions.clear();
     }
 
     public void update(PooledEngine engine, Entity parent, Entity player, float deltaTime) {
@@ -100,23 +94,23 @@ public class HitboxComponent implements Component, Pool.Poolable {
     }
 
     public void recenterCircles() {
-        // TODO: set origin
         // Find left/top/right/bottom bounds of the group of circles
         CircleHitbox c1 = circles.get(0);
+
         float left = c1.x - c1.radius, right = c1.x + c1.radius, top = c1.y + c1.radius, bottom = c1.y - c1.radius;
         for(int i = 1; i < circles.size(); i++) {
             CircleHitbox c = circles.get(i);
-            if(c.x - c1.radius < left) {
-                left = c1.x - c1.radius;
+            if(c.x - c.radius < left) {
+                left = c.x - c.radius;
             }
-            if(c.x + c1.radius > right) {
-                right = c1.x + c1.radius;
+            if(c.x + c.radius > right) {
+                right = c.x + c.radius;
             }
-            if(c.y - c1.radius < bottom) {
-                bottom = c1.y - c1.radius;
+            if(c.y - c.radius < bottom) {
+                bottom = c.y - c.radius;
             }
-            if(c.y + c1.radius > top) {
-                top = c1.y + c1.radius;
+            if(c.y + c.radius > top) {
+                top = c.y + c.radius;
             }
         }
 
@@ -132,7 +126,40 @@ public class HitboxComponent implements Component, Pool.Poolable {
         origin.x += deltaX;
         origin.y += deltaY;
 
-        gravitationalRadius = Math.max(Math.abs(left + right)/2f, Math.abs(top + bottom)/2f) + Options.GRAVITATIONAL_RADIUS_PADDING;
+        recenterOriginalCirclePositions();
+    }
+
+    public void recenterOriginalCirclePositions() {
+        // Find left/top/right/bottom bounds of the group of circles
+        CircleHitbox c1 = circles.get(0);
+
+        float left = c1.getOriginalPosX() - c1.radius, right = c1.getOriginalPosX() + c1.radius,
+                top = c1.getOriginalPosY() + c1.radius, bottom = c1.getOriginalPosY() - c1.radius;
+        for(int i = 1; i < circles.size(); i++) {
+            CircleHitbox c = circles.get(i);
+            if(c.getOriginalPosX() - c.radius < left) {
+                left = c.getOriginalPosX() - c.radius;
+            }
+            if(c.getOriginalPosX() + c.radius > right) {
+                right = c.getOriginalPosX() + c.radius;
+            }
+            if(c.getOriginalPosY() - c.radius < bottom) {
+                bottom = c.getOriginalPosY() - c.radius;
+            }
+            if(c.getOriginalPosY() + c.radius > top) {
+                top = c.getOriginalPosY() + c.radius;
+            }
+        }
+
+        // Shift all circles by center of bounds
+        float deltaX = (left + right)/2f;
+        float deltaY = (bottom + top)/2f;
+        for(CircleHitbox c : circles) {
+            c.setOriginalPosX(c.getOriginalPosX() - deltaX);
+            c.setOriginalPosY(c.getOriginalPosY() - deltaY);
+        }
+
+        gravitationalRadius = Math.max((Math.abs(left) + Math.abs(right))/2f, (Math.abs(top) + Math.abs(bottom))/2f) + Options.GRAVITATIONAL_RADIUS_PADDING;
     }
 
     public Vector2 getVelocity() {
@@ -183,11 +210,11 @@ public class HitboxComponent implements Component, Pool.Poolable {
     public void setLastFacedAngle(float lastFacedAngle) {
         this.lastFacedAngle = lastFacedAngle;
 
-        // Rotate all circles around (0, 0)
+        // Revolve all circles around (0, 0)
         for(int i = 0; i < circles.size(); i++) {
             CircleHitbox c = circles.get(i);
-            Point circleOrigin = originalCirclePositions.get(i);
-            c.setPosition(circleOrigin.x * MathUtils.cos(-lastFacedAngle) - circleOrigin.y * MathUtils.sin(-lastFacedAngle), circleOrigin.x * MathUtils.sin(-lastFacedAngle) + circleOrigin.y * MathUtils.cos(-lastFacedAngle));
+            c.setPosition(c.getOriginalPosX() * MathUtils.cos(-lastFacedAngle) - c.getOriginalPosY() * MathUtils.sin(-lastFacedAngle),
+                    c.getOriginalPosX() * MathUtils.sin(-lastFacedAngle) + c.getOriginalPosY() * MathUtils.cos(-lastFacedAngle));
         }
     }
 
@@ -211,8 +238,8 @@ public class HitboxComponent implements Component, Pool.Poolable {
 
     public void addCircle(CircleHitbox circle) {
         circles.add(circle);
-        originalCirclePositions.add(new Point(circle.x, circle.y));
-        recenterCircles();
+        circle.setOriginalPosX(circle.x);
+        circle.setOriginalPosY(circle.y);
     }
 
     public void queueCircleRemoval(CircleHitbox circle) {
@@ -229,7 +256,10 @@ public class HitboxComponent implements Component, Pool.Poolable {
 
     public void removeCircle(CircleHitbox c) {
         circles.remove(c);
-        recenterCircles();
+
+        if(circles.size() > 0) {
+            recenterCircles();
+        }
     }
 
     public float getGravitationalRadius() {

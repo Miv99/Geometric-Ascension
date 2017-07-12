@@ -7,6 +7,8 @@ import com.badlogic.gdx.math.Circle;
 import com.miv.AttackPart;
 import com.miv.AttackPattern;
 
+import java.util.ArrayList;
+
 import systems.RenderSystem;
 
 /**
@@ -19,6 +21,12 @@ public class CircleHitbox extends Circle {
     private AttackPattern attackPattern;
     // Time in seconds since the last iteration of the attack pattern started
     private transient float time;
+    // Original circle position with the hitbox facing angle 0
+    // Used to prevent inaccuracies when rotating hitbox multiple times
+    // Must be in the same order as circles
+    private float originalPosX;
+    private float originalPosY;
+
     /**
      * True if the attack part has been fired off.
      * Is reset (all fields set to false) by {@link components.HitboxComponent#update(PooledEngine, Entity, Entity, float)}
@@ -74,5 +82,21 @@ public class CircleHitbox extends Circle {
 
     public void setHealth(float health) {
         this.health = health;
+    }
+
+    public float getOriginalPosX() {
+        return originalPosX;
+    }
+
+    public void setOriginalPosX(float originalPosX) {
+        this.originalPosX = originalPosX;
+    }
+
+    public float getOriginalPosY() {
+        return originalPosY;
+    }
+
+    public void setOriginalPosY(float originalPosY) {
+        this.originalPosY = originalPosY;
     }
 }
