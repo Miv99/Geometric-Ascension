@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.miv.Options;
 
 import utils.Point;
+import utils.Utils;
 
 /**
  * Acceleration is randomly changed on a randomized interval.
@@ -16,23 +17,26 @@ import utils.Point;
  * Created by redherring303 on 6/22/2017
  */
 public class SimpleWander extends AI {
-    private float radius;
+    private float wanderRadius;
     private float interval;
     private float minInterval;
     private float maxInterval;
     private boolean waitingForReset;
     private float minAcceleration;
     private float maxAcceleration;
+    private Point initialPos;
 
     private float time;
 
-    public SimpleWander(Entity self, float radius, float minInterval, float maxInterval, float minAcceleration, float maxAcceleration) {
+    public SimpleWander(Entity self, float wanderRadius, float minInterval, float maxInterval, float minAcceleration, float maxAcceleration) {
         super(self, self);
-        this.radius = radius;
+        this.wanderRadius = wanderRadius;
         this.minInterval = minInterval;
         this.maxInterval = maxInterval;
         this.minAcceleration = minAcceleration;
         this.maxAcceleration = maxAcceleration;
+        this.wanderRadius = wanderRadius;
+        initialPos = new Point(selfHitbox.getOrigin());
         waitingForReset = true;
     }
 
@@ -41,20 +45,24 @@ public class SimpleWander extends AI {
         if(waitingForReset) {
             Point selfPos = selfHitbox.getOrigin();
 
-            float randomHorizontalAccelerationToBeSet = minAcceleration + ((float) Math.random() * maxAcceleration);
-            float randomVerticalAccelerationToBeSet = minAcceleration + ((float) Math.random() * maxAcceleration);
-
-            float distance = (float) Math.sqrt((selfPos.x - (selfPos.x + selfHitbox.getVelocity().x + randomHorizontalAccelerationToBeSet) * (selfPos.x - (selfPos.x + selfHitbox.getVelocity().x + randomHorizontalAccelerationToBeSet)) + ((selfPos.y - (selfPos.y + selfHitbox.getVelocity().y + randomVerticalAccelerationToBeSet)) * (selfPos.y - (selfPos.y + selfHitbox.getVelocity().y + randomVerticalAccelerationToBeSet)))));
-
-            if (distance > radius) {
-                // TODO: ensure acceleration applied keeps entity within radius
-                randomHorizontalAccelerationToBeSet = randomVerticalAccelerationToBeSet = minAcceleration;
+            // Calculate angle of travel
+            float angle;
+            // If hitbox origin is outside the wander radius from initial position, min/max angles are bounded by the tangent lines
+            // from current position to the circle created by the initial position and wander radius
+            float distanceFromOriginToInitial = Utils.getDistance(selfPos, initialPos);
+            if(distanceFromOriginToInitial > wanderRadius) {
+                float a1 = MathUtils.atan2(initialPos.y - selfPos.y, initialPos.x - selfPos.x);
+                float a2 = (float)Math.asin((double)wanderRadius/distanceFromOriginToInitial);
+                angle = MathUtils.random(a1 - a2, a1 + a2);
+            }
+            // Else, random angle with min of 0 and max of 2pi
+            else {
+                angle = MathUtils.random(MathUtils.PI2);
             }
 
-            final float randomHorizontalAccelerationToBeSetFinal = randomHorizontalAccelerationToBeSet;
-            final float randomVerticalAccelerationToBeSetFinal = randomVerticalAccelerationToBeSet;
+            float accelerationMagnitude = MathUtils.random(minAcceleration, maxAcceleration);
 
-            selfHitbox.setAcceleration(randomHorizontalAccelerationToBeSetFinal, randomVerticalAccelerationToBeSetFinal);
+            selfHitbox.setAcceleration(accelerationMagnitude * MathUtils.cos(angle), accelerationMagnitude * MathUtils.sin(angle));
 
             interval = MathUtils.random(minInterval, maxInterval);
             waitingForReset = false;
@@ -62,7 +70,8 @@ public class SimpleWander extends AI {
 
         if(time > interval) {
             waitingForReset = true;
+            time = 0;
         }
-        time++;
+        time += deltaTime;
     }
 }

@@ -124,6 +124,7 @@ public class Map {
         /**
          * Store all enemies currently in the engine as {@link map.EntityCreationData} objects inside {@link MapArea#entityCreationDataArrayList}
          */
+        System.out.println(oldMapArea);
         if(oldMapArea != null) {
             for (Entity e : engine.getEntitiesFor(Family.all(EnemyComponent.class, HitboxComponent.class).exclude(IgnoreRespawnOnAreaResetComponent.class).get())) {
                 EntityCreationData ecd = new EntityCreationData();
@@ -140,6 +141,7 @@ public class Map {
                 ecd.setCircleHitboxes(Mappers.hitbox.get(e).getCircles());
                 oldMapArea.entityCreationDataArrayList.add(ecd);
 
+                System.out.println("Removed " + e);
                 engine.removeEntity(e);
             }
 
@@ -147,7 +149,6 @@ public class Map {
             for(Entity e : engine.getEntitiesFor(Family.one(EnemyBulletComponent.class, PlayerBulletComponent.class).get())) {
                 engine.removeEntity(e);
             }
-
         }
 
         newMapArea.spawnEntities(engine, this, player);
@@ -190,36 +191,40 @@ public class Map {
         // Used to avoid spawning enemies too close to each other
         ArrayList<CircleHitbox> enemyBoundingCircles = new ArrayList<CircleHitbox>();
 
-        for(int i = 0; i < 4; i++) {
+        for(int i = 0; i < enemies; i++) {
             EntityCreationData ecd = new EntityCreationData();
             ecd.setIsEnemy(true);
 
             //TODO: add on to this as more AI types are added
             // Randomize AI type
             float rand = MathUtils.random();
-            // 50% for SimpleStalk
-            if(rand < 1f) {
+            // 75% for SimpleStalk
+            if(rand < 0.75f) {
                 ecd.setAiType(AI.AIType.SIMPLE_STALK_TARGET);
                 ecd.setSimpleStalkMinSpeedDistance(MathUtils.random(100f, 250f));
                 ecd.setSimpleStalkMaxSpeedDistance(MathUtils.random(330f, 450f));
             }
+            /**
             // 25% for SimpleFollow
-            else if(rand < 0.25f) {
+            else if(rand < 0.75f) {
                 ecd.setAiType(AI.AIType.SIMPLE_FOLLOW_TARGET);
 
             }
+             */
             // 25% for SimpleWander
             else {
+                float mapRadius = mapArea.getRadius();
+
                 ecd.setAiType(AI.AIType.SIMPLE_WANDER);
-                ecd.setSimpleWanderRadius(MathUtils.random(100f, 300f));
+                ecd.setSimpleWanderRadius(MathUtils.random(0.1f * mapRadius, 0.2f * mapRadius));
                 ecd.setSimpleWanderMinInterval(0.5f);
-                ecd.setSimpleWanderMaxInterval(3f);
+                ecd.setSimpleWanderMaxInterval(1.5f);
                 ecd.setSimpleWanderMinAcceleration(1 / 60f);
-                ecd.setSimpleWanderMaxAcceleration(2.5f / 60f);
+                ecd.setSimpleWanderMaxAcceleration(1.5f / 60f);
             }
 
             // Max speed is a random number between 1f and 5f
-            ecd.setMaxSpeed(MathUtils.random(1f, 5f));
+            ecd.setMaxSpeed(MathUtils.random(1f, 3f));
 
             // Max health is 5000% to 7500% of total pp
             ecd.setMaxHealth(ppPerEnemy * MathUtils.random(50f, 75f));
@@ -259,7 +264,7 @@ public class Map {
 
             // If circle hitbox contains more than 1 circle, each circle except the first is placed
             // so that it is tangential to the first circle
-            int circlesCount = 3;
+            int circlesCount = getEnemyRandomCirclesCount();
             float c1Radius = getRandomCircleRadius(circlesCount);
             for(int a = 1; a < circlesCount; a++) {
                 CircleHitbox c = new CircleHitbox();
@@ -379,5 +384,9 @@ public class Map {
 
     public void setMain(Main main) {
         this.main = main;
+    }
+
+    public Main getMain() {
+        return main;
     }
 }
