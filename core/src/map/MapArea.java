@@ -89,6 +89,8 @@ public class MapArea {
             engine.addEntity(e);
         }
 
+        entityCreationDataArrayList.clear();
+
         // Stairs, if any
         if(stairsDestination != -1) {
             Entity e = engine.createEntity();

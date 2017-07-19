@@ -124,8 +124,9 @@ public class Map {
         /**
          * Store all enemies currently in the engine as {@link map.EntityCreationData} objects inside {@link MapArea#entityCreationDataArrayList}
          */
-        System.out.println(oldMapArea);
         if(oldMapArea != null) {
+            oldMapArea.entityCreationDataArrayList.clear();
+
             for (Entity e : engine.getEntitiesFor(Family.all(EnemyComponent.class, HitboxComponent.class).exclude(IgnoreRespawnOnAreaResetComponent.class).get())) {
                 EntityCreationData ecd = new EntityCreationData();
                 ecd.setIsEnemy(true);
@@ -138,10 +139,11 @@ public class Map {
                     c.setHealth(c.getMaxHealth());
                 }
 
-                ecd.setCircleHitboxes(Mappers.hitbox.get(e).getCircles());
+                ArrayList<CircleHitbox> circles = new ArrayList<CircleHitbox>();
+                circles.addAll(Mappers.hitbox.get(e).getCircles());
+                ecd.setCircleHitboxes(circles);
                 oldMapArea.entityCreationDataArrayList.add(ecd);
 
-                System.out.println("Removed " + e);
                 engine.removeEntity(e);
             }
 
@@ -191,7 +193,7 @@ public class Map {
         // Used to avoid spawning enemies too close to each other
         ArrayList<CircleHitbox> enemyBoundingCircles = new ArrayList<CircleHitbox>();
 
-        for(int i = 0; i < enemies; i++) {
+        for(int i = 0; i < 1; i++) {
             EntityCreationData ecd = new EntityCreationData();
             ecd.setIsEnemy(true);
 
