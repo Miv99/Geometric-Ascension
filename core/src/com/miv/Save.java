@@ -93,6 +93,6 @@ public class Save {
 
         Json save = new Json();
         Gdx.files.local(SAVE_DATA_PATH).writeString(save.toJson(saveData), false);
-        System.out.print("SAVED");
+        System.out.println("SAVED");
     }
 }

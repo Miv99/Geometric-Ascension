@@ -23,4 +23,14 @@ public class Utils {
     public static float getDistance(Point p1, Point p2) {
         return (float)Math.sqrt((p1.x - p2.x)*(p1.x - p2.x) + (p1.y - p2.y)*(p1.y - p2.y));
     }
+
+    public static float normalizeAngle(float angleInRadians) {
+        if(angleInRadians < 0) {
+            return normalizeAngle(angleInRadians + MathUtils.PI2);
+        } else if(angleInRadians > MathUtils.PI2) {
+            return normalizeAngle(angleInRadians - MathUtils.PI2);
+        } else {
+            return angleInRadians;
+        }
+    }
 }

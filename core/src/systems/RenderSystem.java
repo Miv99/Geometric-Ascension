@@ -89,7 +89,7 @@ public class RenderSystem extends EntitySystem {
 
     @Override
     public void removedFromEngine(Engine engine) {
-
+        entities = engine.getEntitiesFor(Family.all(HitboxComponent.class).get());
     }
 
     @Override
@@ -120,6 +120,11 @@ public class RenderSystem extends EntitySystem {
                 shapeRenderer.setColor(c.getHitboxTextureType().outlineColor);
                 shapeRenderer.circle(c.x + origin.x, c.y + origin.y, c.radius);
             }
+
+            //TODO: remove this
+            shapeRenderer.setColor(Color.BLACK);
+            shapeRenderer.circle(origin.x, origin.y, 3f);
+            shapeRenderer.circle(origin.x, origin.y, hitbox.getGravitationalRadius());
         }
         // Draw map area boundaries
         if(map != null) {

@@ -250,4 +250,8 @@ public class Main extends Game {
 		map.setMain(this);
 		this.map = map;
 	}
+
+	public Camera getCamera() {
+		return camera;
+	}
 }

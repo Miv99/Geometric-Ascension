@@ -62,6 +62,9 @@ public class SimpleWander extends AI {
 
             float accelerationMagnitude = MathUtils.random(minAcceleration, maxAcceleration);
 
+            // Face player
+            selfHitbox.setLastFacedAngle(MathUtils.atan2(targetPos.y - selfPos.y, targetPos.x - selfPos.x));
+
             selfHitbox.setAcceleration(accelerationMagnitude * MathUtils.cos(angle), accelerationMagnitude * MathUtils.sin(angle));
 
             interval = MathUtils.random(minInterval, maxInterval);

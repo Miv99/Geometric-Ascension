@@ -193,7 +193,7 @@ public class Map {
         // Used to avoid spawning enemies too close to each other
         ArrayList<CircleHitbox> enemyBoundingCircles = new ArrayList<CircleHitbox>();
 
-        for(int i = 0; i < 1; i++) {
+        for(int i = 0; i < enemies; i++) {
             EntityCreationData ecd = new EntityCreationData();
             ecd.setIsEnemy(true);
 

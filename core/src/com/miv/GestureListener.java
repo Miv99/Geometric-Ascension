@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 import components.HitboxComponent;
+import components.PlayerComponent;
 import utils.Point;
 
 /**
@@ -16,6 +17,7 @@ import utils.Point;
  */
 public class GestureListener implements GestureDetector.GestureListener {
     private Main main;
+    private PlayerComponent playerPlayerComponent;
     private HitboxComponent playerHitbox;
 
     // The point where the finger was touched down to move the player
@@ -37,6 +39,7 @@ public class GestureListener implements GestureDetector.GestureListener {
     }
 
     public void setPlayer(Entity player) {
+        playerPlayerComponent = Mappers.player.get(player);
         playerHitbox = Mappers.hitbox.get(player);
     }
 
@@ -44,7 +47,7 @@ public class GestureListener implements GestureDetector.GestureListener {
     public boolean touchDown(float x, float y, int pointer, int button) {
         if(main.getState() == Main.GameState.MAIN_GAME) {
             // Prevent movement touches in a rectangle around the attack buttons
-            if(!(x > main.getHud().getDisableGesturesLowerXBound() && y > main.getHud().getDisableGesturesLowerYBound())) {
+            if(!(x > main.getHud().getDisableGesturesLowerXBound() && y > main.getHud().getDisableGesturesLowerYBound()) && !playerHitbox.isTravelling()) {
                 movementDragTouchDownPoint.x = x;
                 movementDragTouchDownPoint.y = y;
                 movementDragCurrentPoint.x = x;
@@ -60,13 +63,15 @@ public class GestureListener implements GestureDetector.GestureListener {
         if(main.getState() == Main.GameState.MAIN_GAME) {
             // Prevent movement touches in a rectangle around the attack buttons
             movementDragTouchDownPoint.x = -1;
-            playerHitbox.setVelocity(0, 0);
+            if(!playerHitbox.isTravelling()) {
+                playerHitbox.setVelocity(0, 0);
+            }
         }
         return false;
     }
 
     public boolean touchDragged(float x, float y, int pointer, int button) {
-        if(main.getState() == Main.GameState.MAIN_GAME && movementDragTouchDownPoint.x != -1) {
+        if(main.getState() == Main.GameState.MAIN_GAME && movementDragTouchDownPoint.x != -1 && !playerHitbox.isTravelling()) {
             // Prevent movement touches in a rectangle around the attack buttons
             movementDragCurrentPoint.x = x;
             movementDragCurrentPoint.y = y;
@@ -77,7 +82,6 @@ public class GestureListener implements GestureDetector.GestureListener {
             float velocityX = (movementArrowLength / Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE) * playerHitbox.getMaxSpeed() * MathUtils.cos(movementArrowAngle);
             float velocityY = -(movementArrowLength / Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE) * playerHitbox.getMaxSpeed() * MathUtils.sin(movementArrowAngle);
 
-            System.out.println(playerHitbox.getMaxSpeed());
             playerHitbox.setVelocity(velocityX, velocityY);
             playerHitbox.setLastFacedAngle(movementArrowAngle);
         }

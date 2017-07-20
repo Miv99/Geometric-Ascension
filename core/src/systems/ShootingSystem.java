@@ -32,7 +32,7 @@ public class ShootingSystem extends EntitySystem {
 
     @Override
     public void removedFromEngine(Engine engine) {
-
+        entities = engine.getEntitiesFor(Family.all(HitboxComponent.class).get());
     }
 
     @Override

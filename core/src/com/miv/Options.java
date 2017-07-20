@@ -4,6 +4,9 @@ package com.miv;
  * Created by Miv on 6/9/2017.
  */
 public class Options {
+    // Doesn't actually do anything right now
+    public static final float FPS = 30f;
+
     // Strings used for storing corresponding values inside Preference files
     public static final String MUSIC_VOLUME_STRING = "musicVolume";
     public static final String SOUND_VOLUME_STRING = "soundVolume";

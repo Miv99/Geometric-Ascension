@@ -10,6 +10,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Pool;
 import com.miv.AttackPart;
 import com.miv.AttackPattern;
+import com.miv.EntityActions;
 import com.miv.Options;
 
 import java.util.ArrayList;
@@ -45,6 +46,17 @@ public class HitboxComponent implements Component, Pool.Poolable {
     // Distance from origin where enemies and players' gravity effects are maximized
     private float gravitationalRadius;
 
+    // Indicates whether or not the entity is travelling to a new location, ignoring all obstacles
+    private boolean travelling;
+    // Time spent travelling so far
+    private float travellingTime;
+    // Random crap for player travelling to new map areas
+    private boolean travellingFlag;
+    private EntityActions.Direction travellingDirection;
+    private float travellingSpeed;
+    private Point travellingDestination;
+
+    private boolean ignoreSpeedLimit;
     private float maxSpeed;
 
     public HitboxComponent() {
@@ -62,6 +74,17 @@ public class HitboxComponent implements Component, Pool.Poolable {
         velocity.set(0, 0);
         acceleration.set(0, 0);
         circles.clear();
+        gravitationalRadius = 0;
+        circleRemovalQueue.clear();
+        isShooting = false;
+        intangible = false;
+        ignoreSpeedLimit = false;
+        maxSpeed = 0;
+        travelling = false;
+        travellingTime = 0;
+        travellingFlag = false;
+        travellingSpeed = 0;
+        travellingDestination = null;
     }
 
     public void update(PooledEngine engine, Entity parent, Entity player, float deltaTime) {
@@ -162,12 +185,29 @@ public class HitboxComponent implements Component, Pool.Poolable {
         gravitationalRadius = Math.max((Math.abs(left) + Math.abs(right))/2f, (Math.abs(top) + Math.abs(bottom))/2f) + Options.GRAVITATIONAL_RADIUS_PADDING;
     }
 
+    public boolean isPastTravellingDestination() {
+        if(travellingDirection.getDeltaX() == 1) {
+            return origin.x > travellingDestination.x;
+        } else if(travellingDirection.getDeltaX() == -1) {
+            return origin.x < travellingDestination.x;
+        } else if(travellingDirection.getDeltaY() == 1) {
+            return origin.y > travellingDestination.y;
+        } else if(travellingDirection.getDeltaY() == -1) {
+            return origin.y < travellingDestination.y;
+        }
+        return false;
+    }
+
     public Vector2 getVelocity() {
         return velocity;
     }
 
     public void setVelocity(float x, float y) {
         velocity.set(x, y);
+
+        if(!ignoreSpeedLimit) {
+            velocity.limit(maxSpeed);
+        }
     }
 
     public Vector2 getAcceleration() {
@@ -264,5 +304,57 @@ public class HitboxComponent implements Component, Pool.Poolable {
 
     public float getGravitationalRadius() {
         return gravitationalRadius;
+    }
+
+    public boolean isIgnoreSpeedLimit() {
+        return ignoreSpeedLimit;
+    }
+
+    public void setIgnoreSpeedLimit(boolean ignoreSpeedLimit) {
+        this.ignoreSpeedLimit = ignoreSpeedLimit;
+    }
+
+    public boolean isTravelling() {
+        return travelling;
+    }
+
+    public void setTravelling(boolean travelling) {
+        this.travelling = travelling;
+    }
+
+    public float getTravellingTime() {
+        return travellingTime;
+    }
+
+    public void setTravellingTime(float travellingTime) {
+        this.travellingTime = travellingTime;
+    }
+
+    public boolean isTravellingFlag() {
+        return travellingFlag;
+    }
+
+    public void setTravellingFlag(boolean travellingFlag) {
+        this.travellingFlag = travellingFlag;
+    }
+
+    public EntityActions.Direction getTravellingDirection() {
+        return travellingDirection;
+    }
+
+    public void setTravellingDirection(EntityActions.Direction travellingDirection) {
+        this.travellingDirection = travellingDirection;
+    }
+
+    public float getTravellingSpeed() {
+        return travellingSpeed;
+    }
+
+    public void setTravellingSpeed(float travellingSpeed) {
+        this.travellingSpeed = travellingSpeed;
+    }
+
+    public void setTravellingDestination(Point travellingDestination) {
+        this.travellingDestination = travellingDestination;
     }
 }

@@ -7,7 +7,7 @@ import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.utils.Array;
+import com.miv.Camera;
 import com.miv.EntityActions;
 import com.badlogic.gdx.math.Vector2;
 import com.miv.Mappers;
@@ -31,6 +31,11 @@ import utils.Utils;
  * Created by Miv on 5/25/2017.
  */
 public class MovementSystem extends EntitySystem {
+    // Time after leaving map area that new map area begins loading
+    private static final float NEW_MAP_AREA_LEAVE_TRAVEL_TIME = 1.25f;
+    // Time after new map area loads until player enters bounds of new area
+    private static final float NEW_MAP_AREA_ENTER_TRAVEL_TIME = 0.75f;
+
     private ImmutableArray<Entity> entities;
     private ArrayList<Entity> entityRemovalQueue;
     private ArrayList<Entity> collisionEntitiesToHandle;
@@ -53,6 +58,16 @@ public class MovementSystem extends EntitySystem {
 
     @Override
     public void addedToEngine(Engine engine) {
+        entities = engine.getEntitiesFor(Family.all(HitboxComponent.class).get());
+        players = engine.getEntitiesFor(Family.all(PlayerComponent.class).get());
+        playerBullets = engine.getEntitiesFor(Family.all(PlayerBulletComponent.class).get());
+        enemies = engine.getEntitiesFor(Family.all(EnemyComponent.class).get());
+        enemyBullets = engine.getEntitiesFor(Family.all(EnemyBulletComponent.class).get());
+        enemiesAndPlayers = engine.getEntitiesFor(Family.one(EnemyComponent.class, PlayerComponent.class).get());
+    }
+
+    @Override
+    public void removedFromEngine(Engine engine) {
         entities = engine.getEntitiesFor(Family.all(HitboxComponent.class).get());
         players = engine.getEntitiesFor(Family.all(PlayerComponent.class).get());
         playerBullets = engine.getEntitiesFor(Family.all(PlayerBulletComponent.class).get());
@@ -123,29 +138,24 @@ public class MovementSystem extends EntitySystem {
         }
     }
 
-    private boolean checkIfOutsideCurrentMapArea(Entity e, Point origin, Vector2 velocity, CircleHitbox c, MapArea mapArea, float boundary) {
-        if (Math.abs(c.x + origin.x + velocity.x) >= boundary) {
-            if (Mappers.playerBullet.has(e) || Mappers.enemyBullet.has(e)) {
-                engine.removeEntity(e);
-            } else if(Mappers.player.has(e) && !Mappers.player.get(e).isTravelling()) {
-                if (velocity.x < 0) {
-                    EntityActions.playerEnterNewMapArea(engine, e, map, EntityActions.Direction.LEFT);
-                } else if (velocity.x > 0) {
-                    EntityActions.playerEnterNewMapArea(engine, e, map, EntityActions.Direction.RIGHT);
-                }
+    private boolean bulletIsOutsideBoundary(Entity e, Point origin, float boundary) {
+        return Math.abs(origin.x) > Math.abs(boundary) || Math.abs(origin.y) > Math.abs(boundary);
+    }
+
+    private boolean checkIfOutsideCurrentMapArea(Entity e, Point origin, CircleHitbox c, float boundary) {
+        if(origin.x*origin.x + origin.y*origin.y > boundary*boundary) {
+            float angle = MathUtils.atan2(origin.y, origin.x);
+            angle = Utils.normalizeAngle(angle);
+            System.out.println(angle * MathUtils.radiansToDegrees);
+            if(angle >= Math.PI/4f && angle <= 3f * Math.PI/4f) {
+                EntityActions.playerEnterNewMapArea(e, EntityActions.Direction.UP);
+            } else if(angle >= 3f * Math.PI/4f && angle <= 5f * Math.PI/4f) {
+                EntityActions.playerEnterNewMapArea(e, EntityActions.Direction.LEFT);
+            } else if(angle >= 5f * Math.PI/4f && angle <= 7f * Math.PI/4f) {
+                EntityActions.playerEnterNewMapArea(e, EntityActions.Direction.DOWN);
+            } else {
+                EntityActions.playerEnterNewMapArea(e, EntityActions.Direction.RIGHT);
             }
-            return true;
-        } else if (Math.abs(c.y + origin.y + velocity.y) >= boundary) {
-            if (Mappers.playerBullet.has(e) || Mappers.enemyBullet.has(e)) {
-                engine.removeEntity(e);
-            } else if(Mappers.player.has(e) && !Mappers.player.get(e).isTravelling()) {
-                if (velocity.y < 0) {
-                    EntityActions.playerEnterNewMapArea(engine, e, map, EntityActions.Direction.DOWN);
-                } else if (velocity.y > 0) {
-                    EntityActions.playerEnterNewMapArea(engine, e, map, EntityActions.Direction.UP);
-                }
-            }
-            return true;
         }
         return false;
     }
@@ -158,6 +168,7 @@ public class MovementSystem extends EntitySystem {
      */
     private Point calculateVelocityAdditionDueToGravity(ImmutableArray<Entity> entities, Entity entity, Point entityOrigin) {
         Point vel = new Point(0, 0);
+
         for(Entity e : entities) {
             if(!e.equals(entity)) {
                 HitboxComponent hitbox = Mappers.hitbox.get(e);
@@ -191,114 +202,169 @@ public class MovementSystem extends EntitySystem {
     public void update(float deltaTime) {
         MapArea mapArea = map.areas.get(map.getFocus());
 
-        if(mapArea != null) {
-            for (Entity e : entities) {
-                HitboxComponent hitbox = Mappers.hitbox.get(e);
-                Point hitboxOrigin = hitbox.getOrigin();
-                Point origin = hitbox.getOrigin();
-                Vector2 velocity = hitbox.getVelocity();
-                Point velocityAdditionDueToGravity = null;
+        for (Entity e : entities) {
+            HitboxComponent hitbox = Mappers.hitbox.get(e);
+            Point hitboxOrigin = hitbox.getOrigin();
+            Point origin = hitbox.getOrigin();
+            Vector2 velocity = hitbox.getVelocity();
+            Point velocityAdditionDueToGravity = null;
 
-                boolean isValidMovement = true;
+            boolean isValidMovement = true;
 
-                if (!hitbox.isIntangible()) {
-                    // If entity is a player, check for collisions against the edges of the MapArea, enemies, enemy bullets
-                    if (Mappers.player.has(e)) {
-                        for (CircleHitbox c : hitbox.getCircles()) {
-                            // Check if circle is outside map area radius
-                            checkIfOutsideCurrentMapArea(e, origin, velocity, c, mapArea, mapArea.getRadius());
-
-                            // Check against enemies
-                            /**
-                            checkForCollision(hitboxOrigin, c, enemies);
-                            for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
-                                isValidMovement = false;
-                                handleNonBulletCollision(e, collisionEntitiesToHandle.get(i));
-                            }
-                             */
-
-                            // Check against enemy bullets
-                            checkForCollision(hitboxOrigin, c, enemyBullets);
-                            for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
-                                isValidMovement = false;
-                                handleBulletCollision(e, c, collisionEntitiesToHandle.get(i));
-                            }
-                        }
-                    }
-                    // If entity is an enemy, check for collisions against the edges of the MapArea, players, player bullets
-                    else if (Mappers.enemy.has(e)) {
-                        for (CircleHitbox c : hitbox.getCircles()) {
-                            // Check if circle is outside map area radius
-                            if (checkIfOutsideCurrentMapArea(e, origin, velocity, c, mapArea, mapArea.getRadius())) {
-                                isValidMovement = false;
-                            }
-
-                            /**
-                            // Against players
-                            checkForCollision(hitboxOrigin, c, players);
-                            for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
-                                isValidMovement = false;
-                                handleNonBulletCollision(e, collisionEntitiesToHandle.get(i));
-                            }
-                             */
-
-                            // Against player bullets
-                            checkForCollision(hitboxOrigin, c, playerBullets);
-                            for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
-                                isValidMovement = false;
-                                handleBulletCollision(e, c, collisionEntitiesToHandle.get(i));
-                            }
+            if (!hitbox.isIntangible() && !hitbox.isTravelling()) {
+                // If entity is a player, check for collisions against the edges of the MapArea, enemies, enemy bullets
+                if (Mappers.player.has(e)) {
+                    for (CircleHitbox c : hitbox.getCircles()) {
+                        // Check if circle is outside map area radius
+                        if(mapArea != null) {
+                            checkIfOutsideCurrentMapArea(e, origin, c, mapArea.getRadius());
                         }
 
-                        // Calculate effect of gravity
-                        velocityAdditionDueToGravity = calculateVelocityAdditionDueToGravity(enemiesAndPlayers, e, origin);
-                    }
-                    // If entity is a player bullet, check for collisions against the square boundaries of the MapArea, enemies
-                    else if (Mappers.playerBullet.has(e)) {
-                        // Square boundaries have side length of 4x the radius
-                        for (CircleHitbox c : hitbox.getCircles()) {
-                            // Check if circle is outside map area radius
-                            checkIfOutsideCurrentMapArea(e, origin, velocity, c, mapArea, mapArea.getRadius() * 2f);
-
-                            // Against enemies
-                            checkForCollision(hitboxOrigin, c, enemies);
-                            for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
-                                isValidMovement = false;
-                                handleBulletCollision(collisionEntitiesToHandle.get(i), collisionCirclesToHandle.get(i), e);
-                            }
+                        // Check against enemies
+                        /**
+                        checkForCollision(hitboxOrigin, c, enemies);
+                        for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
+                            isValidMovement = false;
+                            handleNonBulletCollision(e, collisionEntitiesToHandle.get(i));
                         }
-                    }
-                    // If entity is an enemy bullet, check for collisions against the square boundaries of the MapArea, players
-                    else if (Mappers.enemyBullet.has(e)) {
-                        for (CircleHitbox c : hitbox.getCircles()) {
-                            // Against MapArea
-                            checkIfOutsideCurrentMapArea(e, origin, velocity, c, mapArea, mapArea.getRadius() * 2f);
+                         */
 
-                            // Check for collision against the players
-                            checkForCollision(hitboxOrigin, c, players);
-                            for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
-                                isValidMovement = false;
-                                handleBulletCollision(collisionEntitiesToHandle.get(i), collisionCirclesToHandle.get(i), e);
-                            }
+                        // Check against enemy bullets
+                        checkForCollision(hitboxOrigin, c, enemyBullets);
+                        for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
+                            isValidMovement = false;
+                            handleBulletCollision(e, c, collisionEntitiesToHandle.get(i));
                         }
                     }
                 }
+                // If entity is an enemy, check for collisions against the edges of the MapArea, players, player bullets
+                else if (Mappers.enemy.has(e)) {
+                    for (CircleHitbox c : hitbox.getCircles()) {
+                        /**
+                        // Against players
+                        checkForCollision(hitboxOrigin, c, players);
+                        for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
+                            isValidMovement = false;
+                            handleNonBulletCollision(e, collisionEntitiesToHandle.get(i));
+                        }
+                         */
 
-                if (isValidMovement) {
-                    if(velocityAdditionDueToGravity == null) {
-                        hitbox.setOrigin(origin.x + velocity.x, origin.y + velocity.y);
-                    } else {
-                        hitbox.setOrigin(origin.x + velocity.x + velocityAdditionDueToGravity.x, origin.y + velocity.y + velocityAdditionDueToGravity.y);
+                        // Against player bullets
+                        checkForCollision(hitboxOrigin, c, playerBullets);
+                        for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
+                            isValidMovement = false;
+                            handleBulletCollision(e, c, collisionEntitiesToHandle.get(i));
+                        }
                     }
-                    hitbox.setVelocity(velocity.x + hitbox.getAcceleration().x, velocity.y + hitbox.getAcceleration().y);
-                }
 
-                // Remove circles in hitbox circle removal queue from array list of circles in the hitbox component
-                for(CircleHitbox c : hitbox.getCircleRemovalQueue()) {
-                    hitbox.removeCircle(c);
+                    // Calculate effect of gravity
+                    velocityAdditionDueToGravity = calculateVelocityAdditionDueToGravity(enemiesAndPlayers, e, origin);
                 }
-                hitbox.clearCircleRemovalQueue();
+                // If entity is a player bullet, check for collisions against the square boundaries of the MapArea, enemies
+                else if (Mappers.playerBullet.has(e)) {
+                    // Square boundaries have side length of 4x the radius
+                    for (CircleHitbox c : hitbox.getCircles()) {
+                        // Check if circle is outside map area radius
+                        if(mapArea != null) {
+                            if(bulletIsOutsideBoundary(e, origin, mapArea.getRadius() * 1.5f)) {
+                                entityRemovalQueue.add(e);
+                            }
+                        }
+
+                        // Against enemies
+                        checkForCollision(hitboxOrigin, c, enemies);
+                        for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
+                            isValidMovement = false;
+                            handleBulletCollision(collisionEntitiesToHandle.get(i), collisionCirclesToHandle.get(i), e);
+                        }
+                    }
+                }
+                // If entity is an enemy bullet, check for collisions against the square boundaries of the MapArea, players
+                else if (Mappers.enemyBullet.has(e)) {
+                    for (CircleHitbox c : hitbox.getCircles()) {
+                        // Against MapArea
+                        if(mapArea != null) {
+                            if(bulletIsOutsideBoundary(e, origin, mapArea.getRadius() * 1.5f)) {
+                                entityRemovalQueue.add(e);
+                            }
+                        }
+
+                        // Check for collision against the players
+                        checkForCollision(hitboxOrigin, c, players);
+                        for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
+                            isValidMovement = false;
+                            handleBulletCollision(collisionEntitiesToHandle.get(i), collisionCirclesToHandle.get(i), e);
+                        }
+                    }
+                }
+            } else if(hitbox.isTravelling()) {
+                // I already know this is bad code; it's used only for player travelling
+                if(!hitbox.isTravellingFlag() && hitbox.getTravellingTime() > NEW_MAP_AREA_LEAVE_TRAVEL_TIME) {
+                    EntityActions.Direction directionOfTravel = hitbox.getTravellingDirection();
+
+                    map.enterNewArea(engine, e, (int)map.getFocus().x + directionOfTravel.getDeltaX(), (int)map.getFocus().y + directionOfTravel.getDeltaY());
+
+                    // Set position of player so that the player will enter the new map area in a certain amount of time
+                    final float newMapAreaRadius = map.areas.get(map.getFocus()).getRadius();
+
+                    Camera camera = map.getMain().getCamera();
+                    float cameraDistanceXFromPlayer = hitbox.getOrigin().x - camera.position.x;
+                    float cameraDistanceYFromPlayer = hitbox.getOrigin().y - camera.position.y;
+
+                    hitbox.setOrigin(-directionOfTravel.getDeltaX() * newMapAreaRadius - (directionOfTravel.getDeltaX() * NEW_MAP_AREA_ENTER_TRAVEL_TIME * hitbox.getTravellingSpeed() * Options.FPS),
+                            -directionOfTravel.getDeltaY() * newMapAreaRadius - (directionOfTravel.getDeltaY() * NEW_MAP_AREA_ENTER_TRAVEL_TIME * hitbox.getTravellingSpeed() * Options.FPS));
+                    // Instantly teleport camera to the same distance behind player from before to have illusion of smooth travel
+                    camera.position.x = hitboxOrigin.x - cameraDistanceXFromPlayer;
+                    camera.position.y = hitboxOrigin.y - cameraDistanceYFromPlayer;
+
+                    hitbox.setVelocity(directionOfTravel.getDeltaX() * hitbox.getTravellingSpeed(), directionOfTravel.getDeltaY() * hitbox.getTravellingSpeed());
+                    hitbox.setTravellingDestination(new Point(-directionOfTravel.getDeltaX() * newMapAreaRadius + (directionOfTravel.getDeltaX() * hitbox.getGravitationalRadius() * 2.5f),
+                            -directionOfTravel.getDeltaY() * newMapAreaRadius + (directionOfTravel.getDeltaY() * hitbox.getGravitationalRadius() * 2.5f)));
+
+                    hitbox.setTravellingFlag(true);
+                    hitbox.setTravellingTime(0);
+                } else if(hitbox.isTravellingFlag()
+                        && (hitbox.getTravellingTime() > NEW_MAP_AREA_ENTER_TRAVEL_TIME || hitbox.isPastTravellingDestination())) {
+                    EntityActions.Direction directionOfTravel = hitbox.getTravellingDirection();
+
+                    // Set position of player in new map area
+                    float newMapAreaRadius = map.areas.get(map.getFocus()).getRadius();
+                    if(!hitbox.isPastTravellingDestination()) {
+                        hitbox.setOrigin(-directionOfTravel.getDeltaX() * newMapAreaRadius + (directionOfTravel.getDeltaX() * hitbox.getGravitationalRadius() * 2.5f),
+                                -directionOfTravel.getDeltaY() * newMapAreaRadius + (directionOfTravel.getDeltaY() * hitbox.getGravitationalRadius() * 2.5f));
+                    }
+                    hitbox.setVelocity(0, 0);
+
+                    // Make player no longer invincible
+                    hitbox.setIntangible(false);
+
+                    hitbox.setTravelling(false);
+                    hitbox.setIgnoreSpeedLimit(false);
+
+                    hitbox.setTravellingFlag(false);
+                    hitbox.setTravellingTime(0);
+                } else {
+                    hitbox.setTravellingTime(hitbox.getTravellingTime() + deltaTime);
+                }
             }
+
+            if (isValidMovement) {
+                float deltaX = velocity.x;
+                float deltaY = velocity.y;
+
+                if(velocityAdditionDueToGravity == null) {
+                    hitbox.setOrigin(origin.x + deltaX, origin.y + deltaY);
+                } else {
+                    hitbox.setOrigin(origin.x + velocity.x + velocityAdditionDueToGravity.x, origin.y + velocity.y + velocityAdditionDueToGravity.y);
+                }
+                hitbox.setVelocity(velocity.x + hitbox.getAcceleration().x, velocity.y + hitbox.getAcceleration().y);
+            }
+
+            // Remove circles in hitbox circle removal queue from array list of circles in the hitbox component
+            for(CircleHitbox c : hitbox.getCircleRemovalQueue()) {
+                hitbox.removeCircle(c);
+            }
+            hitbox.clearCircleRemovalQueue();
         }
 
         // Remove entities in entity removal queue from engine
