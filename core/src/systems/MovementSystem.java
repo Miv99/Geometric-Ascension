@@ -6,6 +6,7 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.utils.ImmutableArray;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.MathUtils;
 import com.miv.Camera;
 import com.miv.EntityActions;
@@ -48,12 +49,19 @@ public class MovementSystem extends EntitySystem {
     private PooledEngine engine;
     private Map map;
 
+    private int screenWidth, screenHeight;
+
     public MovementSystem(PooledEngine engine, Map map) {
         this.engine = engine;
         this.map = map;
         collisionCirclesToHandle = new ArrayList<CircleHitbox>();
         collisionEntitiesToHandle = new ArrayList<Entity>();
         entityRemovalQueue = new ArrayList<Entity>();
+
+        int a = Gdx.graphics.getWidth();
+        int b = Gdx.graphics.getHeight();
+        screenWidth = Math.max(a, b);
+        screenHeight = Math.min(a, b);
     }
 
     @Override
@@ -200,7 +208,7 @@ public class MovementSystem extends EntitySystem {
 
     @Override
     public void update(float deltaTime) {
-        MapArea mapArea = map.areas.get(map.getFocus());
+        MapArea mapArea = map.getCurrentArea();
 
         for (Entity e : entities) {
             HitboxComponent hitbox = Mappers.hitbox.get(e);
@@ -299,13 +307,13 @@ public class MovementSystem extends EntitySystem {
                 }
             } else if(hitbox.isTravelling()) {
                 // I already know this is bad code; it's used only for player travelling
-                if(!hitbox.isTravellingFlag() && hitbox.getTravellingTime() > NEW_MAP_AREA_LEAVE_TRAVEL_TIME) {
+                if(!hitbox.isTravellingFlag() && (hitbox.getTravellingTime() > NEW_MAP_AREA_LEAVE_TRAVEL_TIME || getCameraDistanceFromMapAreaCenterWhenTravelling(hitbox.getTravellingDirection()) > map.getCurrentArea().getRadius())) {
                     EntityActions.Direction directionOfTravel = hitbox.getTravellingDirection();
 
                     map.enterNewArea(engine, e, (int)map.getFocus().x + directionOfTravel.getDeltaX(), (int)map.getFocus().y + directionOfTravel.getDeltaY());
 
                     // Set position of player so that the player will enter the new map area in a certain amount of time
-                    final float newMapAreaRadius = map.areas.get(map.getFocus()).getRadius();
+                    final float newMapAreaRadius = map.getCurrentArea().getRadius();
 
                     Camera camera = map.getMain().getCamera();
                     float cameraDistanceXFromPlayer = hitbox.getOrigin().x - camera.position.x;
@@ -328,7 +336,7 @@ public class MovementSystem extends EntitySystem {
                     EntityActions.Direction directionOfTravel = hitbox.getTravellingDirection();
 
                     // Set position of player in new map area
-                    float newMapAreaRadius = map.areas.get(map.getFocus()).getRadius();
+                    float newMapAreaRadius = map.getCurrentArea().getRadius();
                     if(!hitbox.isPastTravellingDestination()) {
                         hitbox.setOrigin(-directionOfTravel.getDeltaX() * newMapAreaRadius + (directionOfTravel.getDeltaX() * hitbox.getGravitationalRadius() * 2.5f),
                                 -directionOfTravel.getDeltaY() * newMapAreaRadius + (directionOfTravel.getDeltaY() * hitbox.getGravitationalRadius() * 2.5f));
@@ -372,5 +380,13 @@ public class MovementSystem extends EntitySystem {
             engine.removeEntity(e);
         }
         entityRemovalQueue.clear();
+    }
+
+    private float getCameraDistanceFromMapAreaCenterWhenTravelling(EntityActions.Direction travellingDirection) {
+        if(travellingDirection.getDeltaX() != 0) {
+            return map.getMain().getCamera().position.x - screenWidth/2f;
+        } else {
+            return map.getMain().getCamera().position.y - screenHeight/2f;
+        }
     }
 }

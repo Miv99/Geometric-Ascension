@@ -69,11 +69,13 @@ public class Map {
     private int floor;
     private Point focus;
     // Maps location on the world map to a specific MapArea
-    public HashMap<Point, MapArea> areas;
+    private HashMap<Point, MapArea> areas;
     // Percent chance of the next undiscovered MapArea being having a stairway (0 to MAX_CHANCE_OF_STAIRS_AREA)*100 %
     private float chanceOfNextAreaHavingStairs;
     // Maximum pixel points, distributed evenly to all enemies, when generating MapAreas
     private float maxPixelPoints;
+
+    private MapArea currentArea;
 
     /**
      * For Json files
@@ -100,6 +102,7 @@ public class Map {
 
         // First MapArea always has stairs leading to the previous floor
         MapArea mapArea = new MapArea(MapArea.MAP_AREA_MIN_SIZE);
+        currentArea = mapArea;
         mapArea.addStairs(lastFloor);
         areas.put(new Point(0, 0), mapArea);
 
@@ -120,6 +123,7 @@ public class Map {
         } else {
             newMapArea = areas.get(new Point(x, y));
         }
+        currentArea = newMapArea;
 
         /**
          * Store all enemies currently in the engine as {@link map.EntityCreationData} objects inside {@link MapArea#entityCreationDataArrayList}
@@ -390,5 +394,9 @@ public class Map {
 
     public Main getMain() {
         return main;
+    }
+
+    public MapArea getCurrentArea() {
+        return currentArea;
     }
 }

@@ -130,7 +130,7 @@ public class RenderSystem extends EntitySystem {
         if(map != null) {
             //TODO: change this color
             shapeRenderer.setColor(Color.BLACK);
-            shapeRenderer.circle(0, 0, map.areas.get(map.getFocus()).getRadius());
+            shapeRenderer.circle(0, 0, map.getCurrentArea().getRadius());
         }
         shapeRenderer.end();
     }

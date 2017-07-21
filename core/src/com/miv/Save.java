@@ -47,7 +47,7 @@ public class Save {
     public static void load(Main main) {
         PooledEngine engine = main.getEngine();
 
-        if(Gdx.files.local(SAVE_DATA_PATH).exists()) {
+        if(!Gdx.files.local(SAVE_DATA_PATH).exists()) {
             Json save = new Json();
             SaveData data = save.fromJson(SaveData.class, Gdx.files.local(SAVE_DATA_PATH));
 
@@ -77,6 +77,7 @@ public class Save {
             c.setHealth(500f);
             c.setAttackPattern(AttackPatternFactory.getAttackPattern("PLAYER_STARTING"));
             hitboxComponent.addCircle(c);
+            hitboxComponent.recenterOriginalCirclePositions();
             player.add(hitboxComponent);
             player.add(engine.createComponent(PlayerComponent.class));
             main.setPlayer(player);
