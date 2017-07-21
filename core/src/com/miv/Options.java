@@ -20,7 +20,7 @@ public class Options {
     public static float MOVEMENT_DRAG_ARROW_MAX_DISTANCE = 200f;
 
     /**
-     * The minimum distance from an entity's origin to another's hitbox's {@link components.HitboxComponent#gravitationalRadius} that the repelling force begins to take effect.
+     * The minimum distance from an entity's origin to another's hitbox's {@link components.HitboxComponent#gravitationalRadius} and/or map area border that the repelling force begins to take effect.
      * The repelling force works in {@link systems.MovementSystem} by adding to each hitbox's velocity, with the amount added increasing
      * exponentially as distance between the two hitbox origins decreases. The magnitude of the velocity added is capped at GRAVITY_SPEED_CAP meters/frame.
      */

@@ -169,7 +169,7 @@ public class MovementSystem extends EntitySystem {
     }
 
     /**
-     * Returns the change in velocity due to an entity's proximity to other nearby entities
+     * Returns the change in velocity due to an entity's proximity to other nearby entities and/or the map area border
      * @param entities - all entities affected by gravity
      * @param entity - the entity whose velocity's change is being calculated for
      * @param entityOrigin - origin of e
@@ -184,12 +184,36 @@ public class MovementSystem extends EntitySystem {
                 float distance = Utils.getDistance(origin, entityOrigin);
                 if (distance < Options.GRAVITY_DROP_OFF_DISTANCE + hitbox.getGravitationalRadius()) {
                     float angle = MathUtils.atan2(entityOrigin.y - origin.y, entityOrigin.x - origin.x);
+
+                    // Prevent division by 0
+                    if(distance == 0) {
+                        distance = 1f;
+                    }
+
                     float magnitude = Options.GRAVITATIONAL_CONSTANT / (float)Math.pow(distance, 1.2);
 
                     vel.x += magnitude * MathUtils.cos(angle);
                     vel.y += magnitude * MathUtils.sin(angle);
                 }
             }
+        }
+
+        float distanceFromMapAreaCenter = Utils.getDistance(entityOrigin, 0, 0);
+        System.out.println(distanceFromMapAreaCenter + " >? " + (map.getCurrentArea().getRadius() - Options.GRAVITY_DROP_OFF_DISTANCE));
+        if(distanceFromMapAreaCenter > map.getCurrentArea().getRadius() - Options.GRAVITY_DROP_OFF_DISTANCE) {
+            float angle = MathUtils.atan2(entityOrigin.y, entityOrigin.x);
+            float magnitude;
+
+            if(distanceFromMapAreaCenter < map.getCurrentArea().getRadius() && distanceFromMapAreaCenter != map.getCurrentArea().getRadius()) {
+                magnitude = Options.GRAVITATIONAL_CONSTANT / (float)Math.pow(map.getCurrentArea().getRadius() - distanceFromMapAreaCenter, 1.2);
+            } else {
+                // Treat being outside the map area border as being repelled with the same force as being 1m away from the border
+                magnitude = Options.GRAVITATIONAL_CONSTANT / (float)Math.pow(1f, 1.2);
+            }
+            System.out.println(magnitude);
+
+            vel.x -= magnitude * MathUtils.cos(angle);
+            vel.y -= magnitude * MathUtils.sin(angle);
         }
 
         if(vel.x > 0) {
