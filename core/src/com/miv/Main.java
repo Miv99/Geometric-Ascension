@@ -61,15 +61,8 @@ public class Main extends Game {
 	public static final String MOVEMENT_ARROW_HEAD_PATH = "movement_arrow_head.png";
 	public static final String ATTACK_BUTTON_UP_PATH = "attack_button_up.png";
 	public static final String ATTACK_BUTTON_DOWN_PATH = "attack_button_down.png";
-	public static final String BUBBLE_BLACK_PATH = "bubble_black.png";
-	public static final String BUBBLE_BLUE_PATH = "bubble_blue.png";
-	public static final String BUBBLE_GREEN_PATH = "bubble_green.png";
-	public static final String BUBBLE_ORANGE_PATH = "bubble_orange.png";
-	public static final String BUBBLE_PURPLE_PATH = "bubble_purple.png";
-	public static final String BUBBLE_RED_PATH = "bubble_red.png";
-	public static final String BUBBLE_WHITE_PATH = "bubble_white.png";
-	public static final String BUBBLE_YELLOW_PATH = "bubble_yellow.png";
 	public static final String BUBBLE_DEFAULT_PATH = "bubble_default.png";
+    public static final String BUBBLE_SHIELD_PATH = "bubble_shield.png";
 
 	private PooledEngine engine;
 	private ShootingSystem shootingSystem;
@@ -148,14 +141,7 @@ public class Main extends Game {
 		assetManager.load(ATTACK_BUTTON_UP_PATH, Texture.class);
 		assetManager.load(ATTACK_BUTTON_DOWN_PATH, Texture.class);
 
-		assetManager.load(BUBBLE_BLACK_PATH, Texture.class);
-		assetManager.load(BUBBLE_BLUE_PATH, Texture.class);
-		assetManager.load(BUBBLE_GREEN_PATH, Texture.class);
-		assetManager.load(BUBBLE_ORANGE_PATH, Texture.class);
-		assetManager.load(BUBBLE_PURPLE_PATH, Texture.class);
-		assetManager.load(BUBBLE_RED_PATH, Texture.class);
-		assetManager.load(BUBBLE_WHITE_PATH, Texture.class);
-		assetManager.load(BUBBLE_YELLOW_PATH, Texture.class);
+		assetManager.load(BUBBLE_SHIELD_PATH, Texture.class);
 		assetManager.load(BUBBLE_DEFAULT_PATH, Texture.class);
 	}
 

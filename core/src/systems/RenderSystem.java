@@ -56,7 +56,9 @@ public class RenderSystem extends EntitySystem {
     private ShapeRenderer shapeRenderer;
     private SpriteBatch batch;
 
-    private Drawable[] bubbleTextures;
+    // Array of bubble textures for each color in HitboxTextureType
+    private Drawable[] bubbleDrawables;
+    private Drawable bubbleShieldDrawable;
 
     public RenderSystem(Map map) {
         this.map = map;
@@ -76,10 +78,13 @@ public class RenderSystem extends EntitySystem {
         TextureRegionDrawable bubbleTextureDrawable = new TextureRegionDrawable(new TextureRegion(bubbleTexture));
 
         // Load bubble textures
-        bubbleTextures = new SpriteDrawable[HitboxTextureType.values().length];
+        bubbleDrawables = new SpriteDrawable[HitboxTextureType.values().length];
         for(HitboxTextureType h : HitboxTextureType.values()) {
-            bubbleTextures[h.id] = bubbleTextureDrawable.tint(h.color);
+            bubbleDrawables[h.id] = bubbleTextureDrawable.tint(h.color);
         }
+
+        Texture bubbleShieldTexture = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.BUBBLE_SHIELD_PATH).path());
+        bubbleShieldDrawable = new TextureRegionDrawable(new TextureRegion(bubbleShieldTexture));
     }
 
     @Override
@@ -105,7 +110,12 @@ public class RenderSystem extends EntitySystem {
 
             // Draw hitboxes
             for(CircleHitbox c : hitbox.getCircles()) {
-                bubbleTextures[c.getHitboxTextureType().id].draw(batch, c.x + origin.x - c.radius, c.y + origin.y - c.radius, c.radius * 2, c.radius * 2);
+                bubbleDrawables[c.getHitboxTextureType().id].draw(batch, c.x + origin.x - c.radius, c.y + origin.y - c.radius, c.radius * 2, c.radius * 2);
+            }
+
+            // Draw shield around entity if travelling
+            if(hitbox.isTravelling()) {
+                bubbleShieldDrawable.draw(batch, origin.x - (hitbox.getGravitationalRadius() + 15f), origin.y - (hitbox.getGravitationalRadius() + 15f), (hitbox.getGravitationalRadius() + 15f)*2, (hitbox.getGravitationalRadius() + 15f)*2);
             }
         }
         batch.end();
@@ -122,9 +132,9 @@ public class RenderSystem extends EntitySystem {
             }
 
             //TODO: remove this
-            shapeRenderer.setColor(Color.BLACK);
-            shapeRenderer.circle(origin.x, origin.y, 3f);
-            shapeRenderer.circle(origin.x, origin.y, hitbox.getGravitationalRadius());
+            //shapeRenderer.setColor(Color.BLACK);
+            //shapeRenderer.circle(origin.x, origin.y, 3f);
+            //shapeRenderer.circle(origin.x, origin.y, hitbox.getGravitationalRadius());
         }
         // Draw map area boundaries
         if(map != null) {
