@@ -77,7 +77,7 @@ public class AttackPart {
         HitboxComponent hitbox = engine.createComponent(HitboxComponent.class);
         hitbox.setOrigin(originX, originY);
         hitbox.setMaxSpeed(speed);
-        hitbox.setVelocity(speed * MathUtils.cos(angle), -speed * MathUtils.sin(angle));
+        hitbox.setVelocity(speed * MathUtils.cos(angle), speed * MathUtils.sin(angle));
         CircleHitbox circleHitbox = new CircleHitbox();
         circleHitbox.setHitboxTextureType(hitboxTextureType);
         circleHitbox.setRadius(radius);

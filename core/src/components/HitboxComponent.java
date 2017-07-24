@@ -107,10 +107,8 @@ public class HitboxComponent implements Component, Pool.Poolable {
 
                 if (c.getTime() >= attackPattern.getDuration()) {
                     // Compensates for lag but will only fire one bullet max no matter how big the lag
+                    c.resetAttackPattern();
                     c.setTime(c.getTime() % attackPattern.getDuration());
-                    for (int i = 0; i < fired.length; i++) {
-                        fired[i] = false;
-                    }
                 }
             }
         }

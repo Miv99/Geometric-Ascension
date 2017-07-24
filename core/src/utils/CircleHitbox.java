@@ -8,6 +8,7 @@ import com.miv.AttackPart;
 import com.miv.AttackPattern;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import systems.RenderSystem;
 
@@ -34,6 +35,14 @@ public class CircleHitbox extends Circle {
      */
     private boolean[] fired;
 
+    public void resetAttackPattern() {
+        for(int i = 0; i < fired.length; i++) {
+            fired[i] = false;
+        }
+
+        time = 0;
+    }
+
     public RenderSystem.HitboxTextureType getHitboxTextureType() {
         return hitboxTextureType;
     }
@@ -50,6 +59,7 @@ public class CircleHitbox extends Circle {
     public void setAttackPattern(AttackPattern attackPattern) {
         this.attackPattern = attackPattern;
         fired = new boolean[attackPattern.getAttackParts().length];
+        time = 0;
     }
 
     public float getTime() {
@@ -62,10 +72,6 @@ public class CircleHitbox extends Circle {
 
     public boolean[] getFired() {
         return fired;
-    }
-
-    public void setFired(boolean[] fired) {
-        this.fired = fired;
     }
 
     public float getMaxHealth() {

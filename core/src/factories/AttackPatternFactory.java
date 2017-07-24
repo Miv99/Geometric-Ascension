@@ -29,7 +29,7 @@ public class AttackPatternFactory {
             return ap;
         } else if(name.equalsIgnoreCase("SINGLE_SHOT")) {
             AttackPattern ap = new AttackPattern(1);
-            ap.setDuration(0.8f);
+            ap.setDuration(7f);
             ap.setAttackPart(0,
                     new AttackPart()
                     .setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.AIM_AT_PLAYER)

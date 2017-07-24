@@ -182,9 +182,6 @@ public class Map {
 
         // Populate map area with entities
         randomlyPopulate(mapArea);
-        // Generates [a] points worth of enemies
-        //TODO: make an enemy factory class; enemies are worth base 1 point have a random number of circle hitboxes w/ minimum 1
-        // each extra circle hitbox adds 0.75 points to current point value and each has its own attack part (all the same in the same entity)
 
         return mapArea;
     }

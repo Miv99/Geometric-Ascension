@@ -70,11 +70,14 @@ public class MapArea {
 
             HitboxComponent hitbox = engine.createComponent(HitboxComponent.class);
             for(CircleHitbox c : ecd.getCircleHitboxes()) {
+                c.resetAttackPattern();
                 hitbox.addCircle(c);
             }
             hitbox.recenterOriginalCirclePositions();
             hitbox.setOrigin(ecd.getSpawnX(), ecd.getSpawnY());
             hitbox.setMaxSpeed(ecd.getMaxSpeed());
+            // Have enemy always be shooting
+            hitbox.setIsShooting(true);
             e.add(hitbox);
 
             //TODO: add to this as more AI types are added
