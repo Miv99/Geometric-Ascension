@@ -177,54 +177,56 @@ public class MovementSystem extends EntitySystem {
     private Point calculateVelocityAdditionDueToGravity(ImmutableArray<Entity> entities, Entity entity, Point entityOrigin) {
         Point vel = new Point(0, 0);
 
-        for(Entity e : entities) {
-            if(!e.equals(entity)) {
-                HitboxComponent hitbox = Mappers.hitbox.get(e);
-                Point origin = hitbox.getOrigin();
-                float distance = Utils.getDistance(origin, entityOrigin);
-                if (distance < Options.GRAVITY_DROP_OFF_DISTANCE + hitbox.getGravitationalRadius()) {
-                    float angle = MathUtils.atan2(entityOrigin.y - origin.y, entityOrigin.x - origin.x);
+        if(!Mappers.hitbox.get(entity).isIgnoreGravity()) {
+            for (Entity e : entities) {
+                if (!e.equals(entity)) {
+                    HitboxComponent hitbox = Mappers.hitbox.get(e);
+                    if (!hitbox.isIgnoreGravity()) {
+                        Point origin = hitbox.getOrigin();
+                        float distance = Utils.getDistance(origin, entityOrigin);
+                        if (distance < Options.GRAVITY_DROP_OFF_DISTANCE + hitbox.getGravitationalRadius()) {
+                            float angle = MathUtils.atan2(entityOrigin.y - origin.y, entityOrigin.x - origin.x);
 
-                    // Prevent division by 0
-                    if(distance == 0) {
-                        distance = 1f;
+                            // Prevent division by 0
+                            if (distance == 0) {
+                                distance = 1f;
+                            }
+
+                            float magnitude = Options.GRAVITATIONAL_CONSTANT / (float) Math.pow(distance, 1.2);
+
+                            vel.x += magnitude * MathUtils.cos(angle);
+                            vel.y += magnitude * MathUtils.sin(angle);
+                        }
                     }
-
-                    float magnitude = Options.GRAVITATIONAL_CONSTANT / (float)Math.pow(distance, 1.2);
-
-                    vel.x += magnitude * MathUtils.cos(angle);
-                    vel.y += magnitude * MathUtils.sin(angle);
                 }
             }
-        }
 
-        float distanceFromMapAreaCenter = Utils.getDistance(entityOrigin, 0, 0);
-        System.out.println(distanceFromMapAreaCenter + " >? " + (map.getCurrentArea().getRadius() - Options.GRAVITY_DROP_OFF_DISTANCE));
-        if(distanceFromMapAreaCenter > map.getCurrentArea().getRadius() - Options.GRAVITY_DROP_OFF_DISTANCE) {
-            float angle = MathUtils.atan2(entityOrigin.y, entityOrigin.x);
-            float magnitude;
+            float distanceFromMapAreaCenter = Utils.getDistance(entityOrigin, 0, 0);
+            if (distanceFromMapAreaCenter > map.getCurrentArea().getRadius() - Options.GRAVITY_DROP_OFF_DISTANCE) {
+                float angle = MathUtils.atan2(entityOrigin.y, entityOrigin.x);
+                float magnitude;
 
-            if(distanceFromMapAreaCenter < map.getCurrentArea().getRadius() && distanceFromMapAreaCenter != map.getCurrentArea().getRadius()) {
-                magnitude = Options.GRAVITATIONAL_CONSTANT / (float)Math.pow(map.getCurrentArea().getRadius() - distanceFromMapAreaCenter, 1.2);
-            } else {
-                // Treat being outside the map area border as being repelled with the same force as being 1m away from the border
-                magnitude = Options.GRAVITATIONAL_CONSTANT / (float)Math.pow(1f, 1.2);
+                if (distanceFromMapAreaCenter < map.getCurrentArea().getRadius() && distanceFromMapAreaCenter != map.getCurrentArea().getRadius()) {
+                    magnitude = Options.GRAVITATIONAL_CONSTANT / (float) Math.pow(map.getCurrentArea().getRadius() - distanceFromMapAreaCenter, 1.2);
+                } else {
+                    // Treat being outside the map area border as being repelled with the same force as being 1m away from the border
+                    magnitude = Options.GRAVITATIONAL_CONSTANT / (float) Math.pow(1f, 1.2);
+                }
+
+                vel.x -= magnitude * MathUtils.cos(angle);
+                vel.y -= magnitude * MathUtils.sin(angle);
             }
-            System.out.println(magnitude);
 
-            vel.x -= magnitude * MathUtils.cos(angle);
-            vel.y -= magnitude * MathUtils.sin(angle);
-        }
-
-        if(vel.x > 0) {
-            vel.x = Math.min(Options.GRAVITY_SPEED_CAP, vel.x);
-        } else {
-            vel.x = Math.max(-Options.GRAVITY_SPEED_CAP, vel.x);
-        }
-        if(vel.y > 0) {
-            vel.y = Math.min(Options.GRAVITY_SPEED_CAP, vel.y);
-        } else {
-            vel.y = Math.max(-Options.GRAVITY_SPEED_CAP, vel.y);
+            if (vel.x > 0) {
+                vel.x = Math.min(Options.GRAVITY_SPEED_CAP, vel.x);
+            } else {
+                vel.x = Math.max(-Options.GRAVITY_SPEED_CAP, vel.x);
+            }
+            if (vel.y > 0) {
+                vel.y = Math.min(Options.GRAVITY_SPEED_CAP, vel.y);
+            } else {
+                vel.y = Math.max(-Options.GRAVITY_SPEED_CAP, vel.y);
+            }
         }
 
         return vel;

@@ -46,6 +46,9 @@ public class HitboxComponent implements Component, Pool.Poolable {
     // Distance from origin where enemies and players' gravity effects are maximized
     private float gravitationalRadius;
 
+    // If true, hitbox will not push away other hitboxes and will not be pushed away by other hitboxes
+    private boolean ignoreGravity;
+
     // Indicates whether or not the entity is travelling to a new location, ignoring all obstacles
     private boolean travelling;
     // Time spent travelling so far
@@ -354,5 +357,13 @@ public class HitboxComponent implements Component, Pool.Poolable {
 
     public void setTravellingDestination(Point travellingDestination) {
         this.travellingDestination = travellingDestination;
+    }
+
+    public boolean isIgnoreGravity() {
+        return ignoreGravity;
+    }
+
+    public void setIgnoreGravity(boolean ignoreGravity) {
+        this.ignoreGravity = ignoreGravity;
     }
 }
