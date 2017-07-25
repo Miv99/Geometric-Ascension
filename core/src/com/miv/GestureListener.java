@@ -80,10 +80,10 @@ public class GestureListener implements GestureDetector.GestureListener {
             movementArrowAngle = MathUtils.atan2(y - movementDragTouchDownPoint.y, x - movementDragTouchDownPoint.x);
             movementArrowLength = Math.min((float) Math.sqrt((x - movementDragTouchDownPoint.x) * (x - movementDragTouchDownPoint.x) + (y - movementDragTouchDownPoint.y) * (y - movementDragTouchDownPoint.y)), Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE);
             float velocityX = (movementArrowLength / Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE) * playerHitbox.getMaxSpeed() * MathUtils.cos(movementArrowAngle);
-            float velocityY = -(movementArrowLength / Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE) * playerHitbox.getMaxSpeed() * MathUtils.sin(movementArrowAngle);
+            float velocityY = (movementArrowLength / Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE) * playerHitbox.getMaxSpeed() * MathUtils.sin(movementArrowAngle);
 
-            playerHitbox.setVelocity(velocityX, velocityY);
-            playerHitbox.setLastFacedAngle(movementArrowAngle);
+            playerHitbox.setVelocity(velocityX, -velocityY);
+            playerHitbox.setLastFacedAngle(-movementArrowAngle);
         }
         return false;
     }

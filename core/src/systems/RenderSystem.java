@@ -20,6 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.miv.Main;
 import com.miv.Mappers;
+import com.miv.Options;
 
 import components.HitboxComponent;
 import map.Map;
@@ -33,22 +34,31 @@ import utils.Point;
 public class RenderSystem extends EntitySystem {
     public static enum HitboxTextureType {
         // ID must be in ascending order starting from 0
-        STAIRS(0, new Color(Color.YELLOW.r, Color.YELLOW.g, Color.YELLOW.b, 0.3f)),
-        PLAYER(1, new Color(Color.CYAN.r, Color.CYAN.g, Color.CYAN.b, 0.3f)),
-        ENEMY(2, new Color(Color.ORANGE.r, Color.ORANGE.g, Color.ORANGE.b, 0.3f)),
-        ENEMY_BULLET(3, new Color(Color.RED.r, Color.RED.g, Color.RED.b, 0.3f)),
-        PLAYER_BULLET(4, new Color(Color.GREEN.r, Color.GREEN.g, Color.GREEN.b, 0.3f));
+        PLAYER(0, new Color(Color.CYAN.r, Color.CYAN.g, Color.CYAN.b, 0.3f),new Color(0f, 163/255f, 33/255f, 1f)),
+        ENEMY(1, new Color(Color.ORANGE.r, Color.ORANGE.g, Color.ORANGE.b, 0.3f), new Color(196/255f, 0f, 0f, 1f)),
+        ENEMY_BULLET(2, new Color(Color.RED.r, Color.RED.g, Color.RED.b, 0.3f), new Color(Color.RED)),
+        PLAYER_BULLET(3, new Color(Color.GREEN.r, Color.GREEN.g, Color.GREEN.b, 0.3f), new Color(Color.RED));
 
         private int id;
         private Color color;
         private Color outlineColor;
+        private Color healthBarColor;
+        private Color healthBarOutlineColor;
 
-        HitboxTextureType(int id, Color color) {
+        HitboxTextureType(int id, Color color, Color healthBarColor) {
             this.id = id;
             this.color = color;
             outlineColor = new Color(color).set(color.r, color.g, color.b, 1f);
+
+            this.healthBarColor = healthBarColor;
+            float outlineColorMultiplier = 0.5f;
+            healthBarOutlineColor = new Color(healthBarColor).set(healthBarColor.r * outlineColorMultiplier, healthBarColor.g * outlineColorMultiplier, healthBarColor.b * outlineColorMultiplier, 1f);
         }
     }
+
+    private static final Color HEALTH_BAR_COLOR = new Color(219/255f, 0f, 0f, 1f);
+    private static final float HEALTH_BAR_Y = -20f;
+    private static final float HEALTH_BAR_MAX_WIDTH = 300f;
 
     private Map map;
 
@@ -62,9 +72,6 @@ public class RenderSystem extends EntitySystem {
 
     public RenderSystem(Map map) {
         this.map = map;
-
-        // Set shape renderer thickness
-        Gdx.gl.glLineWidth(4f);
 
         batch = new SpriteBatch();
 
@@ -103,6 +110,16 @@ public class RenderSystem extends EntitySystem {
         Gdx.gl.glClearColor(214 / 255f, 238 / 255f, 1, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        shapeRenderer.begin();
+        // Draw map area boundaries
+        if(map != null) {
+            //TODO: change this color
+            Gdx.gl.glLineWidth(10f);
+            shapeRenderer.setColor(Color.BLACK);
+            shapeRenderer.circle(0, 0, map.getCurrentArea().getRadius());
+        }
+        shapeRenderer.end();
+
         batch.begin();
         for(Entity e : entities) {
             HitboxComponent hitbox = Mappers.hitbox.get(e);
@@ -121,6 +138,7 @@ public class RenderSystem extends EntitySystem {
         batch.end();
 
         shapeRenderer.begin();
+        Gdx.gl.glLineWidth(4f);
         for(Entity e : entities) {
             HitboxComponent hitbox = Mappers.hitbox.get(e);
             Point origin = hitbox.getOrigin();
@@ -136,11 +154,29 @@ public class RenderSystem extends EntitySystem {
             //shapeRenderer.circle(origin.x, origin.y, 3f);
             //shapeRenderer.circle(origin.x, origin.y, hitbox.getGravitationalRadius());
         }
-        // Draw map area boundaries
-        if(map != null) {
-            //TODO: change this color
-            shapeRenderer.setColor(Color.BLACK);
-            shapeRenderer.circle(0, 0, map.getCurrentArea().getRadius());
+
+        // Draw health bars
+        shapeRenderer.set(ShapeRenderer.ShapeType.Filled);
+        for(Entity e : entities) {
+            if((Options.SHOW_ENEMY_HEALTH_BARS && Mappers.enemy.has(e)) || (Options.SHOW_PLAYER_HEALTH_BARS && Mappers.player.has(e))) {
+                HitboxComponent hitbox = Mappers.hitbox.get(e);
+                Point origin = hitbox.getOrigin();
+
+                for (CircleHitbox c : hitbox.getCircles()) {
+                    float healthBarWidth = c.getHealth() / c.getMaxHealth() * c.radius * 2.5f;
+                    float healthBarRadius = Math.max(2.5f, c.radius / 12f);
+                    float x = -healthBarWidth / 2f;
+
+                    // Color in health bar
+                    shapeRenderer.setColor(c.getHitboxTextureType().healthBarColor);
+                    // Draw start arc
+                    shapeRenderer.arc(origin.x + c.x + x, origin.y + c.y + HEALTH_BAR_Y + healthBarRadius, healthBarRadius, 90f, 180f);
+                    // Draw rectangle
+                    shapeRenderer.rect(origin.x + c.x + x, origin.y + c.y + HEALTH_BAR_Y, healthBarWidth, healthBarRadius * 2f);
+                    // Draw end arc
+                    shapeRenderer.arc(origin.x + c.x + x + healthBarWidth, origin.y + c.y + HEALTH_BAR_Y + healthBarRadius, healthBarRadius, 270f, 450f);
+                }
+            }
         }
         shapeRenderer.end();
     }

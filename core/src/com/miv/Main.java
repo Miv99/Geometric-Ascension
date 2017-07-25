@@ -151,6 +151,8 @@ public class Main extends Game {
 		preferences.putFloat(Options.SOUND_VOLUME_STRING, preferences.getFloat(Options.SOUND_VOLUME_STRING, Options.SOUND_VOLUME));
 		preferences.putFloat(Options.MASTER_VOLUME_STRING, preferences.getFloat(Options.MASTER_VOLUME_STRING, Options.MASTER_VOLUME));
 		preferences.putFloat(Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE_STRING, preferences.getFloat(Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE_STRING, Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE));
+		preferences.putBoolean(Options.SHOW_ENEMY_HEALTH_BARS_STRING, preferences.getBoolean(Options.SHOW_ENEMY_HEALTH_BARS_STRING, Options.SHOW_ENEMY_HEALTH_BARS));
+		preferences.putBoolean(Options.SHOW_PLAYER_HEALTH_BARS_STRING, preferences.getBoolean(Options.SHOW_PLAYER_HEALTH_BARS_STRING, Options.SHOW_PLAYER_HEALTH_BARS));
 	}
 
 	public void startGame() {

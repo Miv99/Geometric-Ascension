@@ -12,12 +12,17 @@ public class Options {
     public static final String SOUND_VOLUME_STRING = "soundVolume";
     public static final String MASTER_VOLUME_STRING = "masterVolume";
     public static final String MOVEMENT_DRAG_ARROW_MAX_DISTANCE_STRING = "movementDragArrowMaxDistance";
+    public static final String SHOW_PLAYER_HEALTH_BARS_STRING = "showPlayerHealthBars";
+    public static final String SHOW_ENEMY_HEALTH_BARS_STRING = "showEnemyHealthBars";
 
     public static float MUSIC_VOLUME = 0.5f;
     public static float SOUND_VOLUME = 0.5f;
     public static float MASTER_VOLUME = 0.5f;
     // Maximum distance dragged on the screen before the player reaches maximum speed
     public static float MOVEMENT_DRAG_ARROW_MAX_DISTANCE = 200f;
+    //TODO: set these to false in production
+    public static boolean SHOW_PLAYER_HEALTH_BARS = true;
+    public static boolean SHOW_ENEMY_HEALTH_BARS = true;
 
     /**
      * The minimum distance from an entity's origin to another's hitbox's {@link components.HitboxComponent#gravitationalRadius} and/or map area border that the repelling force begins to take effect.
