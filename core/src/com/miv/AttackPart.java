@@ -43,6 +43,10 @@ public class AttackPart {
     private float radius;
     private float damage;
 
+    private boolean randomizeAngle;
+    private float minAngleInRadians;
+    private float maxAngleInRadians;
+
     // Determines the direction of the bullet
     private AttackPartAngleDeterminant attackPartAngleDeterminant;
 
@@ -66,12 +70,24 @@ public class AttackPart {
 
         float angle = 0;
         if(attackPartAngleDeterminant == AttackPartAngleDeterminant.AIM_RELATIVE_TO_PARENT_ROTATION) {
-            angle = originAngle + angleInRadians;
+            if(randomizeAngle) {
+                angle = originAngle + MathUtils.random(minAngleInRadians, maxAngleInRadians);
+            } else {
+                angle = originAngle + angleInRadians;
+            }
         } else if(attackPartAngleDeterminant == AttackPartAngleDeterminant.AIM_AT_PLAYER) {
             Point playerPos = Mappers.hitbox.get(player).getOrigin();
-            angle = MathUtils.atan2(playerPos.y - originY, playerPos.x - originX) + angleInRadians;
+            if(randomizeAngle) {
+                angle = MathUtils.atan2(playerPos.y - originY, playerPos.x - originX) + MathUtils.random(minAngleInRadians, maxAngleInRadians);
+            } else {
+                angle = MathUtils.atan2(playerPos.y - originY, playerPos.x - originX) + angleInRadians;
+            }
         } else {
-            angle = angleInRadians;
+            if(randomizeAngle) {
+                angle = MathUtils.random(minAngleInRadians, maxAngleInRadians);
+            } else {
+                angle = angleInRadians;
+            }
         }
 
         HitboxComponent hitbox = engine.createComponent(HitboxComponent.class);
@@ -140,6 +156,25 @@ public class AttackPart {
         return this;
     }
 
+    public AttackPart setAngleInDegrees(float angleInDegrees) {
+        this.angleInRadians = angleInDegrees * MathUtils.degreesToRadians;
+        return this;
+    }
+
+    public AttackPart setRandomAngleInRadians(float minAngle, float maxAngle) {
+        randomizeAngle = true;
+        minAngleInRadians = minAngle;
+        maxAngleInRadians = maxAngle;
+        return this;
+    }
+
+    public AttackPart setRandomAngleInDegrees(float minAngle, float maxAngle) {
+        randomizeAngle = true;
+        minAngleInRadians = minAngle * MathUtils.degreesToRadians;
+        maxAngleInRadians = maxAngle * MathUtils.degreesToRadians;
+        return this;
+    }
+
     public float getSpeed() {
         return speed;
     }
@@ -165,5 +200,17 @@ public class AttackPart {
     public AttackPart setDamage(float damage) {
         this.damage = damage;
         return this;
+    }
+
+    public boolean isRandomizeAngle() {
+        return randomizeAngle;
+    }
+
+    public float getMinAngleInRadians() {
+        return minAngleInRadians;
+    }
+
+    public float getMaxAngleInRadians() {
+        return maxAngleInRadians;
     }
 }
