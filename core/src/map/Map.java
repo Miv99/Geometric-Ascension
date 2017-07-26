@@ -188,6 +188,7 @@ public class Map {
 
     private void randomlyPopulate(MapArea mapArea) {
         int enemies = MathUtils.random(MIN_ENEMIES_PER_MAP_AREA, MAX_ENEMIES_PER_MAP_AREA);
+        mapArea.setEnemyCount(enemies);
         float ppPerEnemy = maxPixelPoints/(float)enemies;
 
         // Array list of circles that surround each enemy's hitbox

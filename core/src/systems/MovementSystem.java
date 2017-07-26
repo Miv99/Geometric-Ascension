@@ -404,6 +404,12 @@ public class MovementSystem extends EntitySystem {
         // Remove entities in entity removal queue from engine
         for(Entity e : entityRemovalQueue) {
             engine.removeEntity(e);
+
+            if(Mappers.player.has(e)) {
+                map.getMain().onPlayerDeath();
+            } else if(Mappers.enemy.has(e)) {
+                map.getCurrentArea().setEnemyCount(engine, players.first(), map, map.getCurrentArea().getEnemyCount() - 1);
+            }
         }
         entityRemovalQueue.clear();
     }

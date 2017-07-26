@@ -31,6 +31,8 @@ public class MapArea {
     public ArrayList<EntityCreationData> entityCreationDataArrayList;
     private float radius;
 
+    private int enemyCount;
+
     /**
      * Set to -1 if no stairs exist in this MapArea. Otherwise, an entity with an OnCollision event will be spawned in the middle of the MapArea
      * when {@link MapArea#spawnEntities(PooledEngine, Map, Entity)}} is called.
@@ -56,6 +58,8 @@ public class MapArea {
      * and stairs.
      */
     public void spawnEntities(final PooledEngine engine, final Map map, Entity player) {
+        enemyCount = entityCreationDataArrayList.size();
+
         // Entities from entityCreationDataArrayList
         for(EntityCreationData ecd : entityCreationDataArrayList) {
             Entity e = engine.createEntity();
@@ -93,32 +97,34 @@ public class MapArea {
         }
 
         entityCreationDataArrayList.clear();
-
-        // Stairs, if any
-        if(stairsDestination != -1) {
-            Entity e = engine.createEntity();
-            HitboxComponent hitbox = engine.createComponent(HitboxComponent.class);
-            hitbox.addCircle(new CircleHitbox().setHitboxTextureType(RenderSystem.HitboxTextureType.STAIRS));
-            e.add(hitbox);
-
-            // Add enemy component so it can collide with the player
-            e.add(engine.createComponent(EnemyComponent.class));
-
-            // OnCollision event that moves player to new area
-            OnCollisionEvent onCollisionEvent = new OnCollisionEvent() {
-                @Override
-                public void onCollision(Entity self, Entity other) {
-                    if(Mappers.player.has(other)) {
-                        EntityActions.playerEnterNewFloor(engine, other, map, stairsDestination);
-                    }
-                }
-            };
-            e.add(engine.createComponent(CustomOnCollisionComponent.class).setOnCollisionEvent(onCollisionEvent));
-            engine.addEntity(e);
-        }
     }
 
     public float getRadius() {
         return radius;
+    }
+
+    public int getEnemyCount() {
+        return enemyCount;
+    }
+
+    public void setEnemyCount(PooledEngine engine, Entity player, Map map, int enemyCount) {
+        this.enemyCount = enemyCount;
+
+        if(enemyCount == 0) {
+            if(stairsDestination != -1) {
+                EntityActions.playerEnterNewFloor(engine, player, map, stairsDestination);
+            }
+        }
+    }
+
+    public void setEnemyCount(int enemyCount) {
+        this.enemyCount = enemyCount;
+        if(enemyCount == 0) {
+            System.out.println("asdjioafh24 DON'T USE THIS FUNCTION WHEN SETTING ENEMY COUNT TO 0 YOU FOOL");
+        }
+    }
+
+    public int getStairsDestination() {
+        return stairsDestination;
     }
 }
