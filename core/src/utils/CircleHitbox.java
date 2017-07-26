@@ -4,6 +4,7 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.PooledEngine;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Circle;
+import com.badlogic.gdx.math.MathUtils;
 import com.miv.AttackPart;
 import com.miv.AttackPattern;
 
@@ -34,6 +35,18 @@ public class CircleHitbox extends Circle {
      * after each iteration of the attack pattern
      */
     private boolean[] fired;
+
+    public void randomizeAttackPatternTime() {
+        resetAttackPattern();
+        time = MathUtils.random(0, attackPattern.getDuration());
+
+        AttackPart[] aps = attackPattern.getAttackParts();
+        for(int i = 0; i < attackPattern.getAttackParts().length; i++) {
+            if(aps[i].getDelay() <= time) {
+                fired[i] = true;
+            }
+        }
+    }
 
     public void resetAttackPattern() {
         for(int i = 0; i < fired.length; i++) {

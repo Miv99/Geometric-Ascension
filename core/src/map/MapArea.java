@@ -70,7 +70,7 @@ public class MapArea {
 
             HitboxComponent hitbox = engine.createComponent(HitboxComponent.class);
             for(CircleHitbox c : ecd.getCircleHitboxes()) {
-                c.resetAttackPattern();
+                c.randomizeAttackPatternTime();
                 hitbox.addCircle(c);
             }
             hitbox.recenterOriginalCirclePositions();
