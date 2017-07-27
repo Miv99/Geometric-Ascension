@@ -42,7 +42,7 @@ public class Map {
      */
     private static final float CHANCE_OF_STAIRS_AREA_INCREMENT = 0.01f;
 
-    private static final float INITIAL_MAP_AREA_PIXEL_POINTS = 50f;
+    private static final float INITIAL_MAP_AREA_PIXEL_POINTS = 20f;
     /**
      * How much {@link map.Map#maxPixelPoints} increases by each time a new MapArea is discovered
      */
@@ -92,7 +92,6 @@ public class Map {
     }
 
     public void enterNewFloor(int floor) {
-        int lastFloor = this.floor;
         this.floor = floor;
         setFocus(0, 0);
         areas.clear();
@@ -102,9 +101,8 @@ public class Map {
 
         // First MapArea always has stairs leading to the previous floor
         MapArea mapArea = new MapArea(MapArea.MAP_AREA_MIN_SIZE);
-        currentArea = mapArea;
-        mapArea.addStairs(lastFloor);
         areas.put(new Point(0, 0), mapArea);
+        enterNewArea(main.getEngine(), main.getPlayer(), 0, 0);
 
         main.save();
     }
@@ -166,7 +164,7 @@ public class Map {
 
         // Increase chance of next area having stairs after autosaving to avoid the user entering new areas and
         // reloading the game to avoid all enemies and quickly enter new floors
-        if(increaseChanceOfNextAreaHavingStairs) {
+        if(increaseChanceOfNextAreaHavingStairs && (x != 0 && y != 0)) {
             chanceOfNextAreaHavingStairs = Math.min(MAX_CHANCE_OF_STAIRS_AREA, chanceOfNextAreaHavingStairs + CHANCE_OF_STAIRS_AREA_INCREMENT);
         }
     }
