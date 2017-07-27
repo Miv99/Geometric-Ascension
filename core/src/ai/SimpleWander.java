@@ -1,11 +1,7 @@
 package ai;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.math.MathUtils;
-import com.miv.Options;
 
 import utils.Point;
 import utils.Utils;

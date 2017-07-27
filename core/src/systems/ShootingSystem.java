@@ -6,12 +6,9 @@ import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.core.PooledEngine;
 import com.badlogic.ashley.utils.ImmutableArray;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.miv.Mappers;
 
 import components.HitboxComponent;
-import map.Map;
-import utils.CircleHitbox;
 
 /**
  * Created by Miv on 6/17/2017.

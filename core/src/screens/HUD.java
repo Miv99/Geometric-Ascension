@@ -48,7 +48,7 @@ public class HUD implements Screen {
     private TextureRegion movementArrowHead;
 
     /**
-     * Lower x bound and upper y bound of rectangle in which {@link com.miv.GestureListener} will not work for movement
+     * Lower x bound and upper y bound of rectangle in which {@link GestureListener} will not work for movement
      */
     private float disableGesturesLowerXBound;
     private float disableGesturesLowerYBound;

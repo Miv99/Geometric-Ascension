@@ -2,14 +2,10 @@ package utils;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.PooledEngine;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.MathUtils;
 import com.miv.AttackPart;
 import com.miv.AttackPattern;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 
 import systems.RenderSystem;
 

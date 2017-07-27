@@ -3,7 +3,6 @@ package map;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.PooledEngine;
 import com.miv.EntityActions;
-import com.miv.Mappers;
 
 import java.util.ArrayList;
 
@@ -13,12 +12,9 @@ import ai.SimpleStalkTarget;
 import ai.SimpleWander;
 import components.AIComponent;
 import components.BossComponent;
-import components.CustomOnCollisionComponent;
 import components.EnemyComponent;
 import components.HitboxComponent;
-import systems.RenderSystem;
 import utils.CircleHitbox;
-import utils.OnCollisionEvent;
 
 /**
  * @see Map

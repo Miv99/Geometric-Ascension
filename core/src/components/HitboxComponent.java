@@ -3,7 +3,6 @@ package components;
 import com.badlogic.ashley.core.Component;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.PooledEngine;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -14,7 +13,6 @@ import com.miv.EntityActions;
 import com.miv.Options;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import utils.CircleHitbox;
 import utils.Point;

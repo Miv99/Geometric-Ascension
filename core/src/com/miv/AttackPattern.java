@@ -1,20 +1,14 @@
 package com.miv;
 
-import com.badlogic.ashley.core.Entity;
-
-import java.util.ArrayList;
-
-import utils.CircleHitbox;
-
 /**
- * An attack pattern consists of multiple {@link com.miv.AttackPart} that have a {@link com.miv.AttackPart#delay} time value. After that much time has passed, the attack part is fired,
- * spawning a bullet. After {@link com.miv.AttackPattern#duration} seconds pass, the fields in {@link utils.CircleHitbox} relevant to AttackPattern (time and which attack parts have been fired)
+ * An attack pattern consists of multiple {@link AttackPart} that have a {@link AttackPart#delay} time value. After that much time has passed, the attack part is fired,
+ * spawning a bullet. After {@link AttackPattern#duration} seconds pass, the fields in {@link utils.CircleHitbox} relevant to AttackPattern (time and which attack parts have been fired)
  * are reset.
  * Created by Miv on 5/24/2017.
  */
 public class AttackPattern {
     /**
-     * MUST BE IN ASCENDING ORDER BY {@link com.miv.AttackPart#delay}
+     * MUST BE IN ASCENDING ORDER BY {@link AttackPart#delay}
      */
     private AttackPart[] attackParts;
     // Duration of attack pattern in seconds before it repeats
