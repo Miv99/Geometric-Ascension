@@ -17,6 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Timer;
 import com.miv.GestureListener;
 import com.miv.Main;
 import com.miv.Mappers;
@@ -38,6 +39,7 @@ public class HUD implements Screen {
 
     private Entity player;
 
+    private float screenWidth;
     private float screenHeight;
 
     // Textures
@@ -51,6 +53,11 @@ public class HUD implements Screen {
     private float disableGesturesLowerXBound;
     private float disableGesturesLowerYBound;
 
+    private ShapeRenderer shapeRenderer;
+    private Color screenOverlayColor;
+    private float screenOverlayDeltaAlpha;
+    private Timer.Task taskToBeRunAfterScreenFade;
+
     public HUD(AssetManager assetManager, InputMultiplexer inputMultiplexer, GestureListener gestureListener, final Entity player, Map map) {
         this.inputMultiplexer = inputMultiplexer;
         this.gestureListener = gestureListener;
@@ -58,6 +65,9 @@ public class HUD implements Screen {
 
         stage = new Stage();
         stage.addListener(new ClickListener() {});
+
+        shapeRenderer = new ShapeRenderer();
+        shapeRenderer.setAutoShapeType(true);
 
         // Load textures
         Texture temp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.MOVEMENT_ARROW_TAIL_PATH).path());
@@ -97,6 +107,7 @@ public class HUD implements Screen {
 
         movementDragTouchDownPoint = gestureListener.getMovementDragTouchDownPoint();
         movementDragCurrentPoint = gestureListener.getMovementDragCurrentPoint();
+        screenWidth = Gdx.graphics.getWidth();
         screenHeight = Gdx.graphics.getHeight();
 
     }
@@ -125,8 +136,27 @@ public class HUD implements Screen {
                     screenHeight - (movementDragTouchDownPoint.y + (movementArrowHead.getRegionHeight()/2) + MathUtils.sin(gestureListener.getMovementArrowAngle()) * gestureListener.getMovementArrowLength()),
                     0, movementArrowHead.getRegionHeight()/2f, movementArrowHead.getRegionWidth(), movementArrowHead.getRegionHeight(), 1, 1, -MathUtils.radiansToDegrees * gestureListener.getMovementArrowAngle());
         }
-
         stage.getBatch().end();
+
+        if(screenOverlayDeltaAlpha != 0) {
+            Gdx.gl.glEnable(GL20.GL_BLEND);
+            Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            System.out.println(screenOverlayColor.r + ", " + screenOverlayColor.g + ", " + screenOverlayColor.b + ", " + screenOverlayColor.a);
+            shapeRenderer.setColor(screenOverlayColor);
+
+            screenOverlayColor.a += screenOverlayDeltaAlpha * delta;
+            if(screenOverlayColor.a > 1) {
+                screenOverlayColor.a = 1;
+                screenOverlayDeltaAlpha = 0;
+                taskToBeRunAfterScreenFade.run();
+            }
+
+            shapeRenderer.rect(0, 0, screenWidth, screenHeight);
+
+            shapeRenderer.end();
+            Gdx.gl.glDisable(GL20.GL_BLEND);
+        }
 
         stage.act(delta);
         stage.draw();
@@ -155,6 +185,18 @@ public class HUD implements Screen {
     @Override
     public void dispose() {
 
+    }
+
+    /**
+     * Fades screen to white and then runs the task
+     * @param time - time it takes to completely fade
+     * @param task - task to be run after screen is done fading to white
+     */
+    public void fadeToColor(Color color, float time, Timer.Task task) {
+        taskToBeRunAfterScreenFade = task;
+        color.a = 0;
+        screenOverlayColor = color;
+        screenOverlayDeltaAlpha = 1f/time;
     }
 
     public float getDisableGesturesLowerXBound() {

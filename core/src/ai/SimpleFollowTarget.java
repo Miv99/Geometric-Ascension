@@ -26,4 +26,9 @@ public class SimpleFollowTarget extends AI {
         selfHitbox.setVelocity(velocityX, velocityY);
         selfHitbox.setLastFacedAngle(angle);
     }
+
+    @Override
+    public AI clone(Entity newSelf) {
+        return new SimpleFollowTarget(newSelf, target);
+    }
 }

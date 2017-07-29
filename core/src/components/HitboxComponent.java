@@ -15,9 +15,12 @@ import com.miv.Options;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import utils.CircleHitbox;
 import utils.Point;
+import utils.Utils;
 
 /**
  * A hitbox consists of an array of circles.
@@ -149,8 +152,6 @@ public class HitboxComponent implements Component, Pool.Poolable {
         // Shift origin in opposite direction to retain world position of circles
         origin.x += deltaX;
         origin.y += deltaY;
-
-        recenterOriginalCirclePositions();
     }
 
     public void recenterOriginalCirclePositions() {
@@ -184,6 +185,47 @@ public class HitboxComponent implements Component, Pool.Poolable {
         }
 
         gravitationalRadius = Math.max((Math.abs(left) + Math.abs(right))/2f, (Math.abs(top) + Math.abs(bottom))/2f) + Options.GRAVITATIONAL_RADIUS_PADDING;
+    }
+
+    public Entity splitIntoSubEntities(PooledEngine engine, Entity self) {
+        // Get all circles connected to the first circle hitbox
+        HashSet<CircleHitbox> cSet = new HashSet<CircleHitbox>();
+        addConnectedCircles(0, cSet);
+
+        if(cSet.size() != circles.size()) {
+            ArrayList<CircleHitbox> subEntityCircles = new ArrayList<CircleHitbox>();
+            ArrayList<CircleHitbox> removalQueue = new ArrayList<CircleHitbox>();
+            for(CircleHitbox c : circles) {
+                if(!cSet.contains(c)) {
+                    System.out.println("Removing...");
+                    subEntityCircles.add(c);
+                    removalQueue.add(c);
+                }
+            }
+            for(CircleHitbox c : removalQueue) {
+                circles.remove(c);
+            }
+
+            Entity e = Utils.cloneEnemy(engine, self, subEntityCircles);
+            return e;
+        } else {
+            return null;
+        }
+    }
+
+    private void addConnectedCircles(int cIndex, HashSet<CircleHitbox> set) {
+        if(cIndex < circles.size()) {
+            CircleHitbox c = circles.get(cIndex);
+            set.add(c);
+            for (int a = cIndex + 1; a < circles.size(); a++) {
+                CircleHitbox c2 = circles.get(a);
+                // Add 0.1f to distance check to account for inaccuracies
+                if (Utils.getDistance(c.x, c.y, c2.x, c2.y) < c.radius + c2.radius + 0.01f) {
+                    set.add(c2);
+                    addConnectedCircles(a, set);
+                }
+            }
+        }
     }
 
     public boolean isPastTravellingDestination() {
@@ -295,12 +337,24 @@ public class HitboxComponent implements Component, Pool.Poolable {
         circleRemovalQueue.clear();
     }
 
-    public void removeCircle(CircleHitbox c) {
+    public ArrayList<Entity> removeCircle(PooledEngine engine, Entity self, CircleHitbox c) {
         circles.remove(c);
 
         if(circles.size() > 0) {
+            ArrayList<Entity> subEntities = new ArrayList<Entity>();
+
+            Entity subEntity = splitIntoSubEntities(engine, self);
+            while(subEntity != null) {
+                subEntities.add(subEntity);
+                subEntity = splitIntoSubEntities(engine, self);
+            }
             recenterCircles();
+            recenterOriginalCirclePositions();
+
+            return subEntities;
         }
+
+        return null;
     }
 
     public float getGravitationalRadius() {

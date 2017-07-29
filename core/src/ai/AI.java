@@ -19,10 +19,17 @@ public abstract class AI {
     protected HitboxComponent selfHitbox;
     protected Point targetPos;
 
+    protected Entity self;
+    protected Entity target;
+
     public AI(Entity self, Entity target) {
+        this.self = self;
+        this.target = target;
         selfHitbox = Mappers.hitbox.get(self);
         targetPos = Mappers.hitbox.get(target).getOrigin();
     }
 
     public abstract void update(float deltaTime);
+
+    public abstract AI clone(Entity newSelf);
 }

@@ -47,4 +47,9 @@ public class SimpleStalkTarget extends AI {
         selfHitbox.setVelocity(velocityX, velocityY);
         selfHitbox.setLastFacedAngle(angle);
     }
+
+    @Override
+    public AI clone(Entity newSelf) {
+        return new SimpleStalkTarget(newSelf, target, minSpeedDistance, maxSpeedDistance, minSpeed);
+    }
 }

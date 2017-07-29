@@ -43,7 +43,6 @@ public class RenderSystem extends EntitySystem {
         private Color color;
         private Color outlineColor;
         private Color healthBarColor;
-        private Color healthBarOutlineColor;
 
         HitboxTextureType(int id, Color color, Color healthBarColor) {
             this.id = id;
@@ -51,14 +50,15 @@ public class RenderSystem extends EntitySystem {
             outlineColor = new Color(color).set(color.r, color.g, color.b, 1f);
 
             this.healthBarColor = healthBarColor;
-            float outlineColorMultiplier = 0.5f;
-            healthBarOutlineColor = new Color(healthBarColor).set(healthBarColor.r * outlineColorMultiplier, healthBarColor.g * outlineColorMultiplier, healthBarColor.b * outlineColorMultiplier, 1f);
         }
     }
 
-    private static final Color HEALTH_BAR_COLOR = new Color(219/255f, 0f, 0f, 1f);
+    // Health bar y-axis offset from center of circle
     private static final float HEALTH_BAR_Y = -20f;
-    private static final float HEALTH_BAR_MAX_WIDTH = 300f;
+    private static final Color NORMAL_MAP_AREA_BACKGROUND_COLOR = new Color(224/255f, 1f, 1f, 1f);
+    private static final Color STAIRS_MAP_AREA_BACKGROUND_COLOR = new Color(1f, 237/255f, 147/255f, 1f);
+    private static final Color NORMAL_MAP_AREA_BORDER_COLOR = new Color(NORMAL_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.5f);
+    private static final Color STAIRS_MAP_AREA_BORDER_COLOR = new Color(STAIRS_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.5f);
 
     private Map map;
 
@@ -107,15 +107,29 @@ public class RenderSystem extends EntitySystem {
     @Override
     public void update(float deltaTime) {
         // Background color
-        Gdx.gl.glClearColor(214 / 255f, 238 / 255f, 1, 1f);
+        Gdx.gl.glClearColor(240/255f, 1, 1, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         shapeRenderer.begin();
         // Draw map area boundaries
         if(map != null) {
-            //TODO: change this color
-            Gdx.gl.glLineWidth(10f);
-            shapeRenderer.setColor(Color.BLACK);
+            // Color inside of map area
+            if(map.getCurrentArea().getStairsDestination() == -1) {
+                shapeRenderer.setColor(NORMAL_MAP_AREA_BACKGROUND_COLOR);
+            } else {
+                shapeRenderer.setColor(STAIRS_MAP_AREA_BACKGROUND_COLOR);
+            }
+            shapeRenderer.set(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.circle(0, 0, map.getCurrentArea().getRadius());
+
+            // Draw border
+            Gdx.gl.glLineWidth(20);
+            shapeRenderer.set(ShapeRenderer.ShapeType.Line);
+            if(map.getCurrentArea().getStairsDestination() == -1) {
+                shapeRenderer.setColor(NORMAL_MAP_AREA_BORDER_COLOR);
+            } else {
+                shapeRenderer.setColor(STAIRS_MAP_AREA_BORDER_COLOR);
+            }
             shapeRenderer.circle(0, 0, map.getCurrentArea().getRadius());
         }
         shapeRenderer.end();

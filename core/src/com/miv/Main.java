@@ -73,6 +73,8 @@ public class Main extends Game {
 	private Map map;
     private Entity player;
 
+	private boolean playerDead;
+
 	private AssetManager assetManager;
 	private Preferences preferences;
 
@@ -156,6 +158,7 @@ public class Main extends Game {
 	}
 
 	public void startGame() {
+		playerDead = false;
 		engine.addEntity(player);
 		map.enterNewArea(engine, player, 0, 0);
 
@@ -183,7 +186,14 @@ public class Main extends Game {
 
 		assetManager.update();
 		if(state == GameState.MAIN_GAME) {
-			engine.update(deltaTime);
+			if(!playerDead) {
+				engine.update(deltaTime);
+			} else {
+				// Update all systems except for ShootingSystem
+				engine.getSystem(AISystem.class).update(deltaTime);
+				engine.getSystem(MovementSystem.class).update(deltaTime);
+				engine.getSystem(RenderSystem.class).update(deltaTime);
+			}
 			camera.update();
 		}
 		super.render();
@@ -192,6 +202,10 @@ public class Main extends Game {
 	@Override
 	public void dispose() {
 
+	}
+
+	public void onPlayerDeath() {
+		playerDead = true;
 	}
 
 	public void save() {
@@ -241,5 +255,13 @@ public class Main extends Game {
 
 	public Camera getCamera() {
 		return camera;
+	}
+
+	public boolean isPlayerDead() {
+		return playerDead;
+	}
+
+	public void setPlayerDead(boolean playerDead) {
+		this.playerDead = playerDead;
 	}
 }
