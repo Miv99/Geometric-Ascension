@@ -51,9 +51,11 @@ public class Main extends Game {
 
 	public static final String SKIN_PATH = "glassy\\skin\\glassy-ui.json";
 	public static final String DEFAULT_FONT_PATH = "Roboto-Regular.ttf";
-	public static final String WORLD_MUSIC_1_PATH = "music\\world1.mp3";
-	public static final String WORLD_MUSIC_2_PATH = "music\\world2.ogg";
-	public static final String WORLD_MUSIC_3_PATH = "music\\world3.wav";
+	public static final String[] WORLD_MUSIC_PATHS = new String[] {
+			"music\\world1.mp3",
+			"music\\world2.ogg",
+			"music\\world3.wav"
+	};
 	public static final String MAIN_MENU_MUSIC_1_PATH = "music\\main_menu1.ogg";
 	public static final String MAIN_MENU_BACKGROUND_PATH = "main_menu_background.png";
 	public static final String MOVEMENT_ARROW_TAIL_PATH = "movement_arrow_tail.png";
@@ -132,9 +134,9 @@ public class Main extends Game {
 
 		assetManager.load(SKIN_PATH, Skin.class);
 		assetManager.load(DEFAULT_FONT_PATH, FreeTypeFontGenerator.class);
-		assetManager.load(WORLD_MUSIC_1_PATH, Music.class);
-		assetManager.load(WORLD_MUSIC_2_PATH, Music.class);
-		assetManager.load(WORLD_MUSIC_3_PATH, Music.class);
+		for(String s : WORLD_MUSIC_PATHS) {
+			assetManager.load(s, Music.class);
+		}
 		assetManager.load(MAIN_MENU_MUSIC_1_PATH, Music.class);
 		assetManager.load(MAIN_MENU_BACKGROUND_PATH, Texture.class);
 		assetManager.load(MOVEMENT_ARROW_TAIL_PATH, Texture.class);

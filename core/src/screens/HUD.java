@@ -18,6 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Timer;
+import com.miv.AudioPlayer;
 import com.miv.GestureListener;
 import com.miv.Main;
 import com.miv.Mappers;
@@ -58,6 +59,8 @@ public class HUD implements Screen {
     private float screenOverlayDeltaAlpha;
     private Timer.Task taskToBeRunAfterScreenFade;
 
+    private AudioPlayer audioPlayer;
+
     public HUD(AssetManager assetManager, InputMultiplexer inputMultiplexer, GestureListener gestureListener, final Entity player, Map map) {
         this.inputMultiplexer = inputMultiplexer;
         this.gestureListener = gestureListener;
@@ -65,6 +68,8 @@ public class HUD implements Screen {
 
         stage = new Stage();
         stage.addListener(new ClickListener() {});
+
+        audioPlayer = new AudioPlayer(assetManager, Main.WORLD_MUSIC_PATHS);
 
         shapeRenderer = new ShapeRenderer();
         shapeRenderer.setAutoShapeType(true);
@@ -115,6 +120,7 @@ public class HUD implements Screen {
     @Override
     public void show() {
         inputMultiplexer.addProcessor(stage);
+        audioPlayer.playRandomMusic();
     }
 
     @Override
@@ -169,17 +175,19 @@ public class HUD implements Screen {
 
     @Override
     public void pause() {
-
+        audioPlayer.pause();
     }
 
     @Override
     public void resume() {
-
+        audioPlayer.resume();
     }
 
     @Override
     public void hide() {
         inputMultiplexer.removeProcessor(stage);
+        audioPlayer.stop();
+        audioPlayer.reset();
     }
 
     @Override
