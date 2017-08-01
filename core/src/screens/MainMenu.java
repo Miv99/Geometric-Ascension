@@ -16,10 +16,12 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.miv.Main;
 
@@ -59,8 +61,14 @@ public class MainMenu implements Screen {
 		});
 		stage.addActor(newGameButton);
 
+		Texture attackButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.ATTACK_BUTTON_UP_PATH).path());
+		Texture attackButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.ATTACK_BUTTON_DOWN_PATH).path());
+		ImageButton.ImageButtonStyle imageButtonStyle = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(attackButtonUp)), new TextureRegionDrawable(new TextureRegion(attackButtonDown)), null, null, null, null);
+		// Primary fire button
+		float padding = 20f;
+		ImageButton primaryFireButton = new ImageButton(imageButtonStyle);
 		Button optionsButton = new Button(skin, "small");
-		optionsButton.setSize(50, 50);
+		optionsButton.setSize(70, 70);
 		optionsButton.setPosition(Gdx.graphics.getWidth() - 50 - optionsButton.getWidth(), 50);
 		optionsButton.addListener(new ClickListener() {
 			@Override

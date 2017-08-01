@@ -63,13 +63,30 @@ public class Main extends Game {
 	public static final String MOVEMENT_ARROW_HEAD_PATH = "movement_arrow_head.png";
 	public static final String ATTACK_BUTTON_UP_PATH = "attack_button_up.png";
 	public static final String ATTACK_BUTTON_DOWN_PATH = "attack_button_down.png";
+	public static final String BACK_BUTTON_UP_PATH = "back_button_up.png";
+	public static final String BACK_BUTTON_DOWN_PATH = "back_button_down.png";
+	public static final String CANCEL_BUTTON_UP_PATH = "cancel_button_up.png";
+	public static final String CANCEL_BUTTON_DOWN_PATH = "cancel_button_down.png";
+	public static final String CANCEL_BUTTON_DISABLED_PATH = "cancel_button_disabled.png";
+	public static final String CHECKMARK_BUTTON_UP_PATH = "checkmark_button_up.png";
+	public static final String CHECKMARK_BUTTON_DOWN_PATH = "checkmark_button_down.png";
+	public static final String CHECKMARK_BUTTON_DISABLED_PATH = "checkmark_button_disabled.png";
+	public static final String CUSTOMIZE_BUTTON_UP_PATH = "customize_button_up.png";
+	public static final String CUSTOMIZE_BUTTON_DOWN_PATH = "customize_button_down.png";
+	public static final String DELETE_BUTTON_UP_PATH = "delete_button_up.png";
+	public static final String DELETE_BUTTON_DOWN_PATH = "delete_button_down.png";
+	public static final String HOME_BUTTON_UP_PATH = "home_button_up.png";
+	public static final String HOME_BUTTON_DOWN_PATH = "home_button_down.png";
+	public static final String NEXT_BUTTON_UP_PATH = "next_button_up.png";
+	public static final String NEXT_BUTTON_DOWN_PATH = "next_button_down.png";
+	public static final String OPTIONS_BUTTON_UP_PATH = "options_button_up.png";
+	public static final String OPTIONS_BUTTON_DOWN_PATH = "options_button_down.png";
 	public static final String BUBBLE_DEFAULT_PATH = "bubble_default.png";
     public static final String BUBBLE_SHIELD_PATH = "bubble_shield.png";
 
 	private PooledEngine engine;
 	private ShootingSystem shootingSystem;
 	private Camera camera;
-	private Viewport viewport;
 	private InputMultiplexer inputMultiplexer;
 	private GestureListener gestureListener;
 	private Map map;
@@ -109,9 +126,7 @@ public class Main extends Game {
 		engine.addSystem(renderSystem);
 
 		camera = new Camera(renderSystem);
-		viewport = new FillViewport(SCREEN_WIDTH, SCREEN_HEIGHT, camera);
-		viewport.apply();
-		camera.update();
+		camera.resetViewport();
 
 		assetManager.finishLoading();
 		renderSystem.loadTextures(assetManager);
@@ -142,8 +157,27 @@ public class Main extends Game {
 		assetManager.load(MOVEMENT_ARROW_TAIL_PATH, Texture.class);
 		assetManager.load(MOVEMENT_ARROW_BODY_PATH, Texture.class);
 		assetManager.load(MOVEMENT_ARROW_HEAD_PATH, Texture.class);
+
 		assetManager.load(ATTACK_BUTTON_UP_PATH, Texture.class);
 		assetManager.load(ATTACK_BUTTON_DOWN_PATH, Texture.class);
+		assetManager.load(BACK_BUTTON_UP_PATH, Texture.class);
+		assetManager.load(BACK_BUTTON_DOWN_PATH, Texture.class);
+		assetManager.load(CANCEL_BUTTON_UP_PATH, Texture.class);
+		assetManager.load(CANCEL_BUTTON_DOWN_PATH, Texture.class);
+		assetManager.load(CANCEL_BUTTON_DISABLED_PATH, Texture.class);
+		assetManager.load(CHECKMARK_BUTTON_UP_PATH, Texture.class);
+		assetManager.load(CHECKMARK_BUTTON_DOWN_PATH, Texture.class);
+		assetManager.load(CHECKMARK_BUTTON_DISABLED_PATH, Texture.class);
+		assetManager.load(CUSTOMIZE_BUTTON_UP_PATH, Texture.class);
+		assetManager.load(CUSTOMIZE_BUTTON_DOWN_PATH, Texture.class);
+		assetManager.load(DELETE_BUTTON_UP_PATH, Texture.class);
+		assetManager.load(DELETE_BUTTON_DOWN_PATH, Texture.class);
+		assetManager.load(HOME_BUTTON_UP_PATH, Texture.class);
+		assetManager.load(HOME_BUTTON_DOWN_PATH, Texture.class);
+		assetManager.load(NEXT_BUTTON_UP_PATH, Texture.class);
+		assetManager.load(NEXT_BUTTON_DOWN_PATH, Texture.class);
+		assetManager.load(OPTIONS_BUTTON_UP_PATH, Texture.class);
+		assetManager.load(OPTIONS_BUTTON_DOWN_PATH, Texture.class);
 
 		assetManager.load(BUBBLE_SHIELD_PATH, Texture.class);
 		assetManager.load(BUBBLE_DEFAULT_PATH, Texture.class);
@@ -165,7 +199,7 @@ public class Main extends Game {
 		map.enterNewArea(engine, player, 0, 0);
 
 		gestureListener.setPlayer(player);
-		hud = new HUD(assetManager, inputMultiplexer, gestureListener, player, map);
+		hud = new HUD(this, assetManager, inputMultiplexer, gestureListener, player, map);
 		setScreen(hud);
 		state = GameState.MAIN_GAME;
 		camera.setFocus(player);

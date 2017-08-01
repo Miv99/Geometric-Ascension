@@ -40,6 +40,8 @@ public class HUD implements Screen {
 
     private Entity player;
 
+    private Main main;
+
     private float screenWidth;
     private float screenHeight;
 
@@ -61,7 +63,8 @@ public class HUD implements Screen {
 
     private AudioPlayer audioPlayer;
 
-    public HUD(AssetManager assetManager, InputMultiplexer inputMultiplexer, GestureListener gestureListener, final Entity player, Map map) {
+    public HUD(Main main, AssetManager assetManager, InputMultiplexer inputMultiplexer, GestureListener gestureListener, final Entity player, Map map) {
+        this.main = main;
         this.inputMultiplexer = inputMultiplexer;
         this.gestureListener = gestureListener;
         this.player = player;
@@ -105,6 +108,18 @@ public class HUD implements Screen {
             }
         });
         stage.addActor(primaryFireButton);
+
+        //TODO: map button top left
+
+        // TODO: Player customization button
+        /**
+        Texture attackButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.ATTACK_BUTTON_UP_PATH).path());
+        Texture attackButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.ATTACK_BUTTON_DOWN_PATH).path());
+        ImageButton.ImageButtonStyle imageButtonStyle = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(attackButtonUp)), new TextureRegionDrawable(new TextureRegion(attackButtonDown)), null, null, null, null);
+        // Primary fire button
+        float padding = 20f;
+        ImageButton primaryFireButton = new ImageButton(imageButtonStyle);
+         */
 
         //TODO: change calculation for this as more attack buttons are added
         disableGesturesLowerXBound = Gdx.graphics.getWidth() - primaryFireButton.getWidth() - padding;

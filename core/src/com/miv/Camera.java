@@ -2,6 +2,8 @@ package com.miv;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.utils.viewport.FillViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 import systems.RenderSystem;
 import utils.Point;
@@ -19,6 +21,12 @@ public class Camera extends OrthographicCamera {
 
     public Camera(RenderSystem renderSystem) {
         this.renderSystem = renderSystem;
+    }
+
+    public void resetViewport() {
+        Viewport viewport = new FillViewport(Main.SCREEN_WIDTH, Main.SCREEN_HEIGHT, this);
+        viewport.apply();
+        update();
     }
 
     @Override
