@@ -4,7 +4,6 @@ import com.badlogic.ashley.core.ComponentMapper;
 
 import components.AIComponent;
 import components.BossComponent;
-import components.CustomOnCollisionComponent;
 import components.EnemyBulletComponent;
 import components.EnemyComponent;
 import components.HitboxComponent;
@@ -17,7 +16,6 @@ import components.PlayerComponent;
  */
 public class Mappers {
     public static ComponentMapper<BossComponent> boss = ComponentMapper.getFor(BossComponent.class);
-    public static ComponentMapper<CustomOnCollisionComponent> customOnCollision = ComponentMapper.getFor(CustomOnCollisionComponent.class);
     public static ComponentMapper<EnemyBulletComponent> enemyBullet = ComponentMapper.getFor(EnemyBulletComponent.class);
     public static ComponentMapper<EnemyComponent> enemy = ComponentMapper.getFor(EnemyComponent.class);
     public static ComponentMapper<HitboxComponent> hitbox = ComponentMapper.getFor(HitboxComponent.class);

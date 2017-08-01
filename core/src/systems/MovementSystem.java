@@ -130,22 +130,6 @@ public class MovementSystem extends EntitySystem {
         entityRemovalQueue.add(bullet);
     }
 
-    /**
-     * For collisions that do not involve bullets
-     * @param e1 - an entity in a collision; should *not* be a projectile
-     * @param e2 - an entity hitbox in a collision
-     */
-    private void handleNonBulletCollision(Entity e1, Entity e2) {
-        if (Mappers.customOnCollision.has(e1)) {
-            OnCollisionEvent customOnCollisionEvent = Mappers.customOnCollision.get(e1).getOnCollisionEvent();
-            customOnCollisionEvent.onCollision(e1, e2);
-        }
-        if (Mappers.customOnCollision.has(e2)) {
-            OnCollisionEvent customOnCollisionEvent = Mappers.customOnCollision.get(e2).getOnCollisionEvent();
-            customOnCollisionEvent.onCollision(e2, e1);
-        }
-    }
-
     private boolean bulletIsOutsideBoundary(Entity e, Point origin, float boundary) {
         return Math.abs(origin.x) > Math.abs(boundary) || Math.abs(origin.y) > Math.abs(boundary);
     }
@@ -396,7 +380,12 @@ public class MovementSystem extends EntitySystem {
 
             // Remove circles in hitbox circle removal queue from array list of circles in the hitbox component
             for(CircleHitbox c : hitbox.getCircleRemovalQueue()) {
-                hitbox.removeCircle(c);
+                ArrayList<Entity> subEntitites = hitbox.removeCircle(engine, e, c);
+                if(subEntitites != null) {
+                    for (Entity sub : subEntitites) {
+                        engine.addEntity(sub);
+                    }
+                }
             }
             hitbox.clearCircleRemovalQueue();
         }

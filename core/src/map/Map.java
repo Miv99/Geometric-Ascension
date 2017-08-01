@@ -65,9 +65,9 @@ public class Map {
 
     private static final float INITIAL_MAP_AREA_PIXEL_POINTS = 20f;
     /**
-     * How much {@link map.Map#maxPixelPoints} increases by each time a new MapArea is discovered
+     * How much {@link map.Map#maxPixelPoints} increases by each time the player enters a new floor
      */
-    private static final float MAP_AREA_PIXEL_POINTS_INCREMENT = 1f;
+    private static final float MAP_AREA_PIXEL_POINTS_INCREMENT = 2.5f;
 
     private static final float MIN_BULLET_SPEED_MULTIPLIER = 0.8f;
     private static final float MAX_BULLET_SPEED_MULTIPLIER = 1.2f;
@@ -77,6 +77,7 @@ public class Map {
     private static final float MAX_FIRE_RATE_MULTIPLIER = 1.35f;
     private static final float AVERAGE_FIRE_RATE_MULTIPLIER = (MIN_FIRE_RATE_MULTIPLIER + MAX_FIRE_RATE_MULTIPLIER)/2f;
 
+<<<<<<< HEAD
     private static final float MIN_HEALTH_MULTIPLIER = 0.8f;
     private static final float MAX_HEALTH_MULTIPLIER = 1.5f;
     private static final float AVERAGE_HEALTH_MULTIPLIER = (MIN_HEALTH_MULTIPLIER + MAX_HEALTH_MULTIPLIER)/2f;
@@ -86,6 +87,10 @@ public class Map {
     //-----------------------------------------------------------------------------------------------------
 
     private static final float GRID_LINE_SEPARATION_DISTANCE = 150f;
+=======
+    private static final float MIN_ENEMIES_PER_MAP_AREA = 3;
+    private static final float MAX_ENEMIES_PER_MAP_AREA = 5;
+>>>>>>> c8d7e2e37209a1cc540d1cca162f1ce7bcace020
 
     private transient Main main;
 
@@ -98,6 +103,7 @@ public class Map {
     private float chanceOfNextAreaHavingStairs;
     // Maximum pixel points, distributed evenly to all enemies, when generating MapAreas
     private float maxPixelPoints;
+    private float maxEnemiesIncrease;
 
     private MapArea currentArea;
 
@@ -126,6 +132,8 @@ public class Map {
 
         chanceOfNextAreaHavingStairs = 0f;
         maxPixelPoints = INITIAL_MAP_AREA_PIXEL_POINTS + MAP_AREA_PIXEL_POINTS_INCREMENT*(float)floor;
+
+        maxEnemiesIncrease = floor/10f;
 
         // First MapArea always has stairs leading to the previous floor
         MapArea mapArea = new MapArea(MapArea.MAP_AREA_MIN_SIZE);
@@ -235,9 +243,9 @@ public class Map {
     }
 
     private void randomlyPopulate(MapArea mapArea) {
-        int enemies = MathUtils.random(MIN_ENEMIES_PER_MAP_AREA, MAX_ENEMIES_PER_MAP_AREA);
+        int enemies = Math.round(MathUtils.random(MIN_ENEMIES_PER_MAP_AREA + maxEnemiesIncrease/2f, MAX_ENEMIES_PER_MAP_AREA + maxEnemiesIncrease));
         mapArea.setEnemyCount(enemies);
-        float ppPerEnemy = maxPixelPoints/(float)enemies;
+        float ppPerEnemy = maxPixelPoints/(float)enemies * (MIN_ENEMIES_PER_MAP_AREA + MAX_ENEMIES_PER_MAP_AREA)/2f;
 
         // Array list of circles that surround each enemy's hitbox
         // Used to avoid spawning enemies too close to each other
@@ -278,8 +286,8 @@ public class Map {
             // Max speed is a random number between 1f and 5f
             ecd.setMaxSpeed(MathUtils.random(1f, 3f));
 
-            // Max health is 5000% to 7500% of total pp
-            ecd.setMaxHealth(ppPerEnemy * MathUtils.random(50f, 75f));
+            // Max health is 500% to 2000% of total pp
+            ecd.setMaxHealth(ppPerEnemy * MathUtils.random(5f, 20f));
 
             ArrayList<CircleHitbox> circles = ecd.getCircleHitboxes();
 
@@ -293,11 +301,8 @@ public class Map {
             // Put -15% to 15% of total pp into fire rate
             float fireRateMultiplier = MathUtils.random(MIN_FIRE_RATE_MULTIPLIER, MAX_FIRE_RATE_MULTIPLIER);
             pp += 0.15f * (AVERAGE_FIRE_RATE_MULTIPLIER - fireRateMultiplier)/(MAX_FIRE_RATE_MULTIPLIER - MIN_FIRE_RATE_MULTIPLIER) * ppPerEnemy * 2f;
-            // Put -15% to 15% of total pp into hp multiplier
-            float healthMultiplier = MathUtils.random(MIN_HEALTH_MULTIPLIER, MAX_HEALTH_MULTIPLIER);
-            pp += 0.15f * (AVERAGE_HEALTH_MULTIPLIER - fireRateMultiplier)/(MIN_HEALTH_MULTIPLIER - MAX_HEALTH_MULTIPLIER) * ppPerEnemy * 2f;
-            // Put 45% to 75% of remaining pp into damage
-            float percentDamage = MathUtils.random(0.45f, 0.75f);
+            // Put 15% to 40% of remaining pp into damage
+            float percentDamage = MathUtils.random(0.15f, 0.4f);
             float bulletTotalDamage = pp * percentDamage * attackPattern.getAttackParts().length;
             pp -= pp * percentDamage;
             // Put remaining pp into radius
@@ -313,6 +318,8 @@ public class Map {
                 // Same is done to radius
                 a.setRadius(a.getRadius()/attackPattern.getTotalRadius() * bulletTotalRadius);
             }
+
+            CircleHitbox c1 = new CircleHitbox();
 
             // If circle hitbox contains more than 1 circle, each circle except the first is placed
             // so that it is tangential to the first circle
@@ -331,11 +338,6 @@ public class Map {
                 float radius = getRandomCircleRadius(circlesCount);
                 c.setRadius(radius);
 
-                // Set health
-                float health = ecd.getMaxHealth()/(float)circlesCount;
-                c.setMaxHealth(health);
-                c.setHealth(health);
-
                 // Randomize angle from first circle until this circle does not overlap with any other
                 float angle = MathUtils.random(0, MathUtils.PI2);
                 c.setPosition((c1Radius + radius) * MathUtils.cos(angle), (c1Radius + radius) * MathUtils.sin(angle));
@@ -344,6 +346,24 @@ public class Map {
                     c.setPosition((c1Radius + radius)*MathUtils.cos(angle), (c1Radius + radius)*MathUtils.sin(angle));
                 }
                 circles.add(c);
+            }
+
+            float totalCircleRadius = c1Radius;
+            for(int a = 0; a < circlesCount - 1; a++) {
+                totalCircleRadius += circles.get(a).radius;
+            }
+
+            // Scale circle health to radius
+            float c1Health = c1Radius/totalCircleRadius * ecd.getMaxHealth();
+            c1.setMaxHealth(c1Health);
+            c1.setHealth(c1Health);
+            for(int a = 0; a < circlesCount - 1; a++) {
+                CircleHitbox c = circles.get(a);
+
+                // Set health
+                float health = c.radius/totalCircleRadius * ecd.getMaxHealth();
+                c.setMaxHealth(health);
+                c.setHealth(health);
             }
 
             // Calculate max size of entity hitbox
@@ -375,14 +395,10 @@ public class Map {
             enemyBoundingCircles.add(boundingCircle);
 
             // Create first circle
-            CircleHitbox c1 = new CircleHitbox();
             c1.setHitboxTextureType(RenderSystem.HitboxTextureType.ENEMY);
             c1.setPosition(0, 0);
             c1.setRadius(c1Radius);
             c1.setAttackPattern(attackPattern);
-            float health = ecd.getMaxHealth()/(float)circlesCount;
-            c1.setMaxHealth(health);
-            c1.setHealth(health);
             circles.add(c1);
 
             mapArea.entityCreationDataArrayList.add(ecd);

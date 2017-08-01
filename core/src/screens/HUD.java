@@ -18,6 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Timer;
+import com.miv.AudioPlayer;
 import com.miv.GestureListener;
 import com.miv.Main;
 import com.miv.Mappers;
@@ -39,6 +40,8 @@ public class HUD implements Screen {
 
     private Entity player;
 
+    private Main main;
+
     private float screenWidth;
     private float screenHeight;
 
@@ -58,13 +61,18 @@ public class HUD implements Screen {
     private float screenOverlayDeltaAlpha;
     private Timer.Task taskToBeRunAfterScreenFade;
 
-    public HUD(AssetManager assetManager, InputMultiplexer inputMultiplexer, GestureListener gestureListener, final Entity player, Map map) {
+    private AudioPlayer audioPlayer;
+
+    public HUD(Main main, AssetManager assetManager, InputMultiplexer inputMultiplexer, GestureListener gestureListener, final Entity player, Map map) {
+        this.main = main;
         this.inputMultiplexer = inputMultiplexer;
         this.gestureListener = gestureListener;
         this.player = player;
 
         stage = new Stage();
         stage.addListener(new ClickListener() {});
+
+        audioPlayer = new AudioPlayer(assetManager, Main.WORLD_MUSIC_PATHS);
 
         shapeRenderer = new ShapeRenderer();
         shapeRenderer.setAutoShapeType(true);
@@ -101,6 +109,18 @@ public class HUD implements Screen {
         });
         stage.addActor(primaryFireButton);
 
+        //TODO: map button top left
+
+        // TODO: Player customization button
+        /**
+        Texture attackButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.ATTACK_BUTTON_UP_PATH).path());
+        Texture attackButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.ATTACK_BUTTON_DOWN_PATH).path());
+        ImageButton.ImageButtonStyle imageButtonStyle = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(attackButtonUp)), new TextureRegionDrawable(new TextureRegion(attackButtonDown)), null, null, null, null);
+        // Primary fire button
+        float padding = 20f;
+        ImageButton primaryFireButton = new ImageButton(imageButtonStyle);
+         */
+
         //TODO: change calculation for this as more attack buttons are added
         disableGesturesLowerXBound = Gdx.graphics.getWidth() - primaryFireButton.getWidth() - padding;
         disableGesturesLowerYBound = Gdx.graphics.getHeight() - primaryFireButton.getHeight() - padding;
@@ -115,6 +135,7 @@ public class HUD implements Screen {
     @Override
     public void show() {
         inputMultiplexer.addProcessor(stage);
+        audioPlayer.playRandomMusic();
     }
 
     @Override
@@ -169,17 +190,19 @@ public class HUD implements Screen {
 
     @Override
     public void pause() {
-
+        audioPlayer.pause();
     }
 
     @Override
     public void resume() {
-
+        audioPlayer.resume();
     }
 
     @Override
     public void hide() {
         inputMultiplexer.removeProcessor(stage);
+        audioPlayer.stop();
+        audioPlayer.reset();
     }
 
     @Override

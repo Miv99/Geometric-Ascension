@@ -73,4 +73,9 @@ public class SimpleWander extends AI {
         }
         time += deltaTime;
     }
+
+    @Override
+    public AI clone(Entity newSelf) {
+        return new SimpleWander(newSelf, wanderRadius, minInterval, maxInterval, minAcceleration, maxAcceleration);
+    }
 }

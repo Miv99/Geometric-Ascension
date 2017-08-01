@@ -38,6 +38,7 @@ public class Options implements Screen {
         this.inputMultiplexer = inputMultiplexer;
         this.music = music;
 
+<<<<<<< HEAD
         Skin skin = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.SKIN_PATH).path());
 
         /**
@@ -162,6 +163,9 @@ public class Options implements Screen {
         enemyHealthBar.setSize(CHECKBOX_WIDTH, CHECKBOX_HEIGHT);
         enemyHealthBar.setPosition(playerHealthBar.getX(), playerHealthBar.getY() - CHECKBOX_HEIGHT - CHECKBOX_PADDING);
         stage.addActor(enemyHealthBar);
+=======
+        //TODO: back button
+>>>>>>> c8d7e2e37209a1cc540d1cca162f1ce7bcace020
     }
 
     @Override

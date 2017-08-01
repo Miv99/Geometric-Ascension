@@ -19,7 +19,7 @@ public class AttackPatternFactory {
             ap.setAttackPart(0,
                     new AttackPart()
                             .setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.AIM_RELATIVE_TO_PARENT_ROTATION)
-                            .setAngleInRadians(0f)
+                            .setAngleInDegrees(0f)
                             .setOriginX(0).setOriginY(0)
                             .setDelay(0)
                             .setSpeed(20f)
@@ -27,18 +27,101 @@ public class AttackPatternFactory {
                             .setRadius(15f));
             attackPatterns.put(name, ap);
             return ap;
-        } else if(name.equalsIgnoreCase("SINGLE_SHOT")) {
+        }
+        // Shoots a single bullet at the player
+        else if(name.equalsIgnoreCase("SINGLE")) {
             AttackPattern ap = new AttackPattern(1);
-            ap.setDuration(7f);
+            ap.setDuration(1f);
             ap.setAttackPart(0,
                     new AttackPart()
-                    .setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.AIM_AT_PLAYER)
-                    .setAngleInRadians(0f)
-                    .setOriginX(0).setOriginY(0)
-                    .setDelay(0)
-                    .setSpeed(20f)
-                    .setDamage(10f)
-                    .setRadius(15f));
+                            .setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.AIM_AT_PLAYER)
+                            .setAngleInDegrees(0f)
+                            .setOriginX(0).setOriginY(0)
+                            .setDelay(0)
+                            .setSpeed(20f)
+                            .setDamage(10f)
+                            .setRadius(15f));
+            attackPatterns.put(name, ap);
+            return ap;
+        }
+        // Shoots a single bullet near the player
+        else if(name.equalsIgnoreCase("RANDOM_SINGLE")) {
+            AttackPattern ap = new AttackPattern(1);
+            ap.setDuration(0.7f);
+            ap.setAttackPart(0,
+                    new AttackPart()
+                            .setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.AIM_AT_PLAYER)
+                            .setRandomAngleInDegrees(-30f, 30f)
+                            .setOriginX(0).setOriginY(0)
+                            .setDelay(0)
+                            .setSpeed(20f)
+                            .setDamage(10f)
+                            .setRadius(15f));
+            attackPatterns.put(name, ap);
+            return ap;
+        }
+        // Shoots a single bullet near the player
+        else if(name.equalsIgnoreCase("RANDOM_SINGLE")) {
+            AttackPattern ap = new AttackPattern(1);
+            ap.setDuration(0.7f);
+            ap.setAttackPart(0,
+                    new AttackPart()
+                            .setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.AIM_AT_PLAYER)
+                            .setRandomAngleInDegrees(-30f, 30f)
+                            .setOriginX(0).setOriginY(0)
+                            .setDelay(0)
+                            .setSpeed(20f)
+                            .setDamage(10f)
+                            .setRadius(15f));
+            attackPatterns.put(name, ap);
+            return ap;
+        }
+        // Shoots one bullet at the player and another near the player at the same time
+        else if(name.equalsIgnoreCase("DOUBLE")) {
+            AttackPattern ap = new AttackPattern(1);
+            ap.setDuration(1.4f);
+            ap.setAttackPart(0,
+                    new AttackPart()
+                            .setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.AIM_AT_PLAYER)
+                            .setAngleInDegrees(0f)
+                            .setOriginX(0).setOriginY(0)
+                            .setDelay(0)
+                            .setSpeed(20f)
+                            .setDamage(10f)
+                            .setRadius(15f));
+            ap.setAttackPart(0,
+                    new AttackPart()
+                            .setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.AIM_AT_PLAYER)
+                            .setRandomAngleInDegrees(-20f, 20f)
+                            .setDelay(0)
+                            .setSpeed(20f)
+                            .setDamage(10f)
+                            .setRadius(15f));
+            attackPatterns.put(name, ap);
+            return ap;
+        }
+        // Shoots two bullets on either side of the player
+        else if(name.equalsIgnoreCase("PINCERS")) {
+            AttackPattern ap = new AttackPattern(1);
+            ap.setDuration(1f);
+            ap.setAttackPart(0,
+                    new AttackPart()
+                            .setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.AIM_AT_PLAYER)
+                            .setRandomAngleInDegrees(5f, 20f)
+                            .setOriginX(0).setOriginY(0)
+                            .setDelay(0)
+                            .setSpeed(20f)
+                            .setDamage(10f)
+                            .setRadius(15f));
+            ap.setAttackPart(0,
+                    new AttackPart()
+                            .setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.AIM_AT_PLAYER)
+                            .setRandomAngleInDegrees(-20f, -5f)
+                            .setOriginX(0).setOriginY(0)
+                            .setDelay(0)
+                            .setSpeed(20f)
+                            .setDamage(10f)
+                            .setRadius(15f));
             attackPatterns.put(name, ap);
             return ap;
         }
@@ -50,9 +133,9 @@ public class AttackPatternFactory {
             case 0:
                 return getAttackPattern("PLAYER_STARTING");
             case 1:
-                return getAttackPattern("SINGLE_SHOT");
+                return getAttackPattern("SINGLE");
             default:
-                return getAttackPattern("SINGLE_SHOT");
+                return getAttackPattern("SINGLE");
         }
     }
 
