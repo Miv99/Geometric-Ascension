@@ -30,7 +30,9 @@ import systems.ShootingSystem;
 public class Main extends Game {
 	public static enum GameState {
 		MAIN_MENU,
-		MAIN_GAME
+		MAIN_GAME,
+		MAP,
+		CUSTOMIZE
 	}
 
 	public static final int SCREEN_WIDTH = 1600;
@@ -68,6 +70,8 @@ public class Main extends Game {
 	public static final String NEXT_BUTTON_DOWN_PATH = "next_button_down.png";
 	public static final String OPTIONS_BUTTON_UP_PATH = "options_button_up.png";
 	public static final String OPTIONS_BUTTON_DOWN_PATH = "options_button_down.png";
+	public static final String MAP_BUTTON_UP_PATH = "map_button_up.png";
+	public static final String MAP_BUTTON_DOWN_PATH = "map_button_down.png";
 	public static final String BUBBLE_DEFAULT_PATH = "bubble_default.png";
     public static final String BUBBLE_SHIELD_PATH = "bubble_shield.png";
 
@@ -128,6 +132,21 @@ public class Main extends Game {
 		state = GameState.MAIN_MENU;
 	}
 
+	public void loadMapScreen() {
+		//TODO
+		state = GameState.MAP;
+
+		//TODO: on exit, set state to main game
+	}
+
+	public void loadCustomizeScreen() {
+		System.out.println("LOAD CUSTOMIZE SCREEN");
+		//TODO
+		state = GameState.CUSTOMIZE;
+
+		//TODO: on exit, set state to main game
+	}
+
 	public void loadAssets() {
 		InternalFileHandleResolver fileHandler = new InternalFileHandleResolver();
 		assetManager = new AssetManager(fileHandler);
@@ -165,6 +184,8 @@ public class Main extends Game {
 		assetManager.load(NEXT_BUTTON_DOWN_PATH, Texture.class);
 		assetManager.load(OPTIONS_BUTTON_UP_PATH, Texture.class);
 		assetManager.load(OPTIONS_BUTTON_DOWN_PATH, Texture.class);
+		assetManager.load(MAP_BUTTON_UP_PATH, Texture.class);
+		assetManager.load(MAP_BUTTON_DOWN_PATH, Texture.class);
 
 		assetManager.load(BUBBLE_SHIELD_PATH, Texture.class);
 		assetManager.load(BUBBLE_DEFAULT_PATH, Texture.class);

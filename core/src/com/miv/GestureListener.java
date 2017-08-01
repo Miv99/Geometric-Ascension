@@ -1,6 +1,7 @@
 package com.miv;
 
 import com.badlogic.ashley.core.Entity;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
@@ -11,6 +12,9 @@ import com.badlogic.gdx.math.Vector2;
 import components.HitboxComponent;
 import components.PlayerComponent;
 import utils.Point;
+
+import static screens.HUD.SMALL_BUTTON_PADDING;
+import static screens.HUD.SMALL_BUTTON_SIZE;
 
 /**
  * Created by Miv on 6/9/2017.
@@ -30,12 +34,17 @@ public class GestureListener implements GestureDetector.GestureListener {
     // Angle from touch down to current point
     private float movementArrowAngle;
 
+    private float screenWidth;
+    private float screenHeight;
+
     public GestureListener(Main main, InputMultiplexer inputMultiplexer) {
         this.main = main;
         movementDragTouchDownPoint = new Point(-1, 0);
         movementDragCurrentPoint = new Point(-1, 0);
 
         inputMultiplexer.addProcessor(new TouchListener());
+        screenHeight = Gdx.graphics.getHeight();
+        screenWidth = Gdx.graphics.getWidth();
     }
 
     public void setPlayer(Entity player) {
@@ -46,8 +55,10 @@ public class GestureListener implements GestureDetector.GestureListener {
     @Override
     public boolean touchDown(float x, float y, int pointer, int button) {
         if(main.getState() == Main.GameState.MAIN_GAME) {
-            // Prevent movement touches in a rectangle around the attack buttons
-            if(!(x > main.getHud().getDisableGesturesLowerXBound() && y > main.getHud().getDisableGesturesLowerYBound()) && !playerHitbox.isTravelling()) {
+            // Prevent movement touches in a rectangle around the attack buttons, map button, and customize button
+            System.out.println(x + ", " + y);
+            if(!(x > main.getHud().getDisableGesturesLowerXBound() && y > main.getHud().getDisableGesturesLowerYBound()) && !playerHitbox.isTravelling()
+                    && !(y < SMALL_BUTTON_SIZE + SMALL_BUTTON_PADDING && (x < SMALL_BUTTON_SIZE + SMALL_BUTTON_PADDING || x > screenWidth - SMALL_BUTTON_SIZE - SMALL_BUTTON_PADDING))) {
                 movementDragTouchDownPoint.x = x;
                 movementDragTouchDownPoint.y = y;
                 movementDragCurrentPoint.x = x;
@@ -55,6 +66,10 @@ public class GestureListener implements GestureDetector.GestureListener {
                 movementArrowLength = 0;
                 movementArrowAngle = MathUtils.PI2;
             }
+        } else if(main.getState() == Main.GameState.MAP) {
+
+        } else if(main.getState() == Main.GameState.CUSTOMIZE) {
+
         }
         return false;
     }
@@ -66,6 +81,10 @@ public class GestureListener implements GestureDetector.GestureListener {
             if(!playerHitbox.isTravelling()) {
                 playerHitbox.setVelocity(0, 0);
             }
+        } else if(main.getState() == Main.GameState.MAP) {
+
+        } else if(main.getState() == Main.GameState.CUSTOMIZE) {
+
         }
         return false;
     }
@@ -84,6 +103,10 @@ public class GestureListener implements GestureDetector.GestureListener {
 
             playerHitbox.setVelocity(velocityX, -velocityY);
             playerHitbox.setLastFacedAngle(-movementArrowAngle);
+        } else if(main.getState() == Main.GameState.MAP) {
+
+        } else if(main.getState() == Main.GameState.CUSTOMIZE) {
+
         }
         return false;
     }

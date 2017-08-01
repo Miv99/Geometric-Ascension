@@ -13,12 +13,10 @@ import com.miv.EntityActions;
 import com.miv.Options;
 
 import java.util.ArrayList;
-<<<<<<< HEAD
-=======
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
->>>>>>> c8d7e2e37209a1cc540d1cca162f1ce7bcace020
 
 import utils.CircleHitbox;
 import utils.Point;

@@ -21,6 +21,7 @@ public class AudioPlayer {
         for(int i = 0; i < songs.length; i++) {
             songs[i] = assetManager.get(assetManager.getFileHandleResolver().resolve(songPaths[i]).path());
         }
+        onVolumeChange();
     }
 
     public void pause() {
@@ -68,5 +69,11 @@ public class AudioPlayer {
                 onCompletion(music);
             }
         });
+    }
+
+    public void onVolumeChange() {
+        for(Music m : songs) {
+            m.setVolume(Options.MASTER_VOLUME * Options.MUSIC_VOLUME);
+        }
     }
 }

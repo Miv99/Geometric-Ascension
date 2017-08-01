@@ -7,6 +7,7 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -14,12 +15,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-<<<<<<< HEAD
-=======
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
->>>>>>> c8d7e2e37209a1cc540d1cca162f1ce7bcace020
 import com.miv.Main;
 
 /**
@@ -51,26 +49,22 @@ public class MainMenu implements Screen {
 		newGameButton.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-				System.out.println("START THE GAME");
 				main.startGame();
 				music.stop();
 			}
 		});
 		stage.addActor(newGameButton);
 
-		Texture attackButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.ATTACK_BUTTON_UP_PATH).path());
-		Texture attackButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.ATTACK_BUTTON_DOWN_PATH).path());
-		ImageButton.ImageButtonStyle imageButtonStyle = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(attackButtonUp)), new TextureRegionDrawable(new TextureRegion(attackButtonDown)), null, null, null, null);
-		// Primary fire button
-		float padding = 20f;
-		ImageButton primaryFireButton = new ImageButton(imageButtonStyle);
-		Button optionsButton = new Button(skin, "small");
+		// Options button
+		Texture optionsButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.OPTIONS_BUTTON_UP_PATH).path());
+		Texture optionsButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.OPTIONS_BUTTON_DOWN_PATH).path());
+		ImageButton.ImageButtonStyle optionsButtonStyle = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(optionsButtonUp)), new TextureRegionDrawable(new TextureRegion(optionsButtonDown)), null, null, null, null);
+		ImageButton optionsButton = new ImageButton(optionsButtonStyle);
 		optionsButton.setSize(70, 70);
-		optionsButton.setPosition(Gdx.graphics.getWidth() - 50 - optionsButton.getWidth(), 50);
+		optionsButton.setPosition(25, Gdx.graphics.getHeight() - 25 - optionsButton.getHeight());
 		optionsButton.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-				System.out.println("OPEN OPTIONS");
 				main.setScreen(new Options(main, assetManager, inputMultiplexer, music));
 			}
 		});
@@ -79,7 +73,6 @@ public class MainMenu implements Screen {
 
 	@Override
 	public void show() {
-		System.out.println("MAIN MENU SHOWN");
 		inputMultiplexer.addProcessor(stage);
 
 		music.play();

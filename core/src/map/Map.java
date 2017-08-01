@@ -77,7 +77,6 @@ public class Map {
     private static final float MAX_FIRE_RATE_MULTIPLIER = 1.35f;
     private static final float AVERAGE_FIRE_RATE_MULTIPLIER = (MIN_FIRE_RATE_MULTIPLIER + MAX_FIRE_RATE_MULTIPLIER)/2f;
 
-<<<<<<< HEAD
     private static final float MIN_HEALTH_MULTIPLIER = 0.8f;
     private static final float MAX_HEALTH_MULTIPLIER = 1.5f;
     private static final float AVERAGE_HEALTH_MULTIPLIER = (MIN_HEALTH_MULTIPLIER + MAX_HEALTH_MULTIPLIER)/2f;
@@ -87,10 +86,6 @@ public class Map {
     //-----------------------------------------------------------------------------------------------------
 
     private static final float GRID_LINE_SEPARATION_DISTANCE = 150f;
-=======
-    private static final float MIN_ENEMIES_PER_MAP_AREA = 3;
-    private static final float MAX_ENEMIES_PER_MAP_AREA = 5;
->>>>>>> c8d7e2e37209a1cc540d1cca162f1ce7bcace020
 
     private transient Main main;
 

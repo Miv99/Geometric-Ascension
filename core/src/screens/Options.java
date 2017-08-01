@@ -19,6 +19,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.miv.Main;
 import com.miv.Mappers;
@@ -33,12 +34,11 @@ public class Options implements Screen {
     private Music music;
     private InputMultiplexer inputMultiplexer;
 
-    public Options(final Main main, AssetManager assetManager, InputMultiplexer inputMultiplexer, Music music) {
+    public Options(final Main main, AssetManager assetManager, InputMultiplexer inputMultiplexer, final Music music) {
         stage = new Stage();
         this.inputMultiplexer = inputMultiplexer;
         this.music = music;
 
-<<<<<<< HEAD
         Skin skin = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.SKIN_PATH).path());
 
         /**
@@ -55,8 +55,8 @@ public class Options implements Screen {
         final float width = Gdx.graphics.getWidth();
         final float height = Gdx.graphics.getHeight();
 
-        final float TOP_PADDING = 50f;
-        final float LEFT_PADDING = 50f;
+        final float TOP_PADDING = 25f;
+        final float LEFT_PADDING = 25f;
 
         final float SLIDER_HEIGHT = 30f;
         final float SLIDER_LENGTH = 450f;
@@ -70,14 +70,15 @@ public class Options implements Screen {
         final float CHECKBOX_HEIGHT = 60f;
 
         // Back button
-        Texture backButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.BACK_BUTTON_UP_PATH).path());
-        Texture backButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.BACK_BUTTON_DOWN_PATH).path());
+        Texture backButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.HOME_BUTTON_UP_PATH).path());
+        Texture backButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.HOME_BUTTON_DOWN_PATH).path());
         ImageButton.ImageButtonStyle backButtonStyle = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(backButtonUp)), new TextureRegionDrawable(new TextureRegion(backButtonDown)), null, null, null, null);
         ImageButton backButton = new ImageButton(backButtonStyle);
-        backButton.setPosition(LEFT_PADDING, height - TOP_PADDING);
-        backButton.addListener(new InputListener() {
+        backButton.setSize(70f, 70f);
+        backButton.setPosition(LEFT_PADDING, height - TOP_PADDING - backButton.getHeight());
+        backButton.addListener(new ClickListener() {
             @Override
-            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+            public void clicked(InputEvent event, float x, float y) {
                 main.loadMainMenu();
             }
         });
@@ -87,7 +88,7 @@ public class Options implements Screen {
         final Label masterVolumeLabel = new Label("Master volume: " + (int)(com.miv.Options.MASTER_VOLUME*100) + "%", skin);
         masterVolumeLabel.setFontScale(2f);
         masterVolumeLabel.setSize(SLIDER_LENGTH, LABEL_HEIGHT);
-        masterVolumeLabel.setPosition(LEFT_PADDING, backButton.getY() - backButton.getHeight() - TOP_PADDING - LABEL_HEIGHT);
+        masterVolumeLabel.setPosition(LEFT_PADDING, backButton.getY() - masterVolumeLabel.getHeight() - TOP_PADDING - LABEL_HEIGHT);
         masterVolumeLabel.setColor(Color.BLACK);
         stage.addActor(masterVolumeLabel);
         // Create master volume slider
@@ -99,6 +100,7 @@ public class Options implements Screen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 com.miv.Options.MASTER_VOLUME = masterVolume.getValue()/100f;
+                music.setVolume(com.miv.Options.MASTER_VOLUME * com.miv.Options.MUSIC_VOLUME);
                 masterVolumeLabel.setText("Master volume: " + (int)(com.miv.Options.MASTER_VOLUME*100) + "%");
             }
         });
@@ -120,6 +122,7 @@ public class Options implements Screen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 com.miv.Options.MUSIC_VOLUME = musicVolume.getValue()/100f;
+                music.setVolume(com.miv.Options.MASTER_VOLUME * com.miv.Options.MUSIC_VOLUME);
                 musicVolumeLabel.setText("Music volume: " + (int)(com.miv.Options.MUSIC_VOLUME*100) + "%");
             }
         });
@@ -147,25 +150,22 @@ public class Options implements Screen {
         stage.addActor(soundVolume);
 
         // Create player health bar toggle
-        CheckBox playerHealthBar = new CheckBox("Show player health bar", skin);
+        CheckBox playerHealthBar = new CheckBox("Show player health bars", skin);
         playerHealthBar.getLabelCell().padLeft(15f);
         playerHealthBar.getLabel().setColor(Color.BLACK);
         playerHealthBar.getLabel().setFontScale(2f);
         playerHealthBar.setSize(CHECKBOX_WIDTH, CHECKBOX_HEIGHT);
-        playerHealthBar.setPosition(masterVolume.getX() + SLIDER_LENGTH*2f, height - TOP_PADDING - CHECKBOX_HEIGHT);
+        playerHealthBar.setPosition(masterVolume.getX() + SLIDER_LENGTH*1.5f + 60f, masterVolume.getY());
         stage.addActor(playerHealthBar);
 
         // Create player health bar toggle
-        CheckBox enemyHealthBar = new CheckBox("Show enemy health bar", skin);
+        CheckBox enemyHealthBar = new CheckBox("Show enemy health bars", skin);
         enemyHealthBar.getLabelCell().padLeft(15f);
         enemyHealthBar.getLabel().setColor(Color.BLACK);
         enemyHealthBar.getLabel().setFontScale(2f);
         enemyHealthBar.setSize(CHECKBOX_WIDTH, CHECKBOX_HEIGHT);
         enemyHealthBar.setPosition(playerHealthBar.getX(), playerHealthBar.getY() - CHECKBOX_HEIGHT - CHECKBOX_PADDING);
         stage.addActor(enemyHealthBar);
-=======
-        //TODO: back button
->>>>>>> c8d7e2e37209a1cc540d1cca162f1ce7bcace020
     }
 
     @Override

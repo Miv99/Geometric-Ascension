@@ -31,6 +31,9 @@ import utils.Point;
  * Created by Miv on 6/8/2017.
  */
 public class HUD implements Screen {
+    public static float SMALL_BUTTON_PADDING = 25f;
+    public static float SMALL_BUTTON_SIZE = 70f;
+
     private Stage stage;
     private InputMultiplexer inputMultiplexer;
 
@@ -63,7 +66,7 @@ public class HUD implements Screen {
 
     private AudioPlayer audioPlayer;
 
-    public HUD(Main main, AssetManager assetManager, InputMultiplexer inputMultiplexer, GestureListener gestureListener, final Entity player, Map map) {
+    public HUD(final Main main, AssetManager assetManager, InputMultiplexer inputMultiplexer, GestureListener gestureListener, final Entity player, Map map) {
         this.main = main;
         this.inputMultiplexer = inputMultiplexer;
         this.gestureListener = gestureListener;
@@ -90,9 +93,8 @@ public class HUD implements Screen {
         Texture attackButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.ATTACK_BUTTON_DOWN_PATH).path());
         ImageButton.ImageButtonStyle imageButtonStyle = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(attackButtonUp)), new TextureRegionDrawable(new TextureRegion(attackButtonDown)), null, null, null, null);
         // Primary fire button
-        float padding = 20f;
         ImageButton primaryFireButton = new ImageButton(imageButtonStyle);
-        primaryFireButton.setPosition(Gdx.graphics.getWidth() - primaryFireButton.getWidth() - padding, padding);
+        primaryFireButton.setPosition(Gdx.graphics.getWidth() - primaryFireButton.getWidth() - SMALL_BUTTON_PADDING, SMALL_BUTTON_PADDING);
         primaryFireButton.addListener(new InputListener() {
             HitboxComponent playerHitbox = Mappers.hitbox.get(player);
 
@@ -109,21 +111,39 @@ public class HUD implements Screen {
         });
         stage.addActor(primaryFireButton);
 
-        //TODO: map button top left
+        // Map button top left
+        Texture mapButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.MAP_BUTTON_UP_PATH).path());
+        Texture mapButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.MAP_BUTTON_DOWN_PATH).path());
+        ImageButton.ImageButtonStyle mapButtonStyle = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(mapButtonUp)), new TextureRegionDrawable(new TextureRegion(mapButtonDown)), null, null, null, null);
+        ImageButton mapButton = new ImageButton(mapButtonStyle);
+        mapButton.setSize(SMALL_BUTTON_SIZE, SMALL_BUTTON_SIZE);
+        mapButton.setPosition(SMALL_BUTTON_PADDING, Gdx.graphics.getHeight() - mapButton.getHeight() - SMALL_BUTTON_PADDING);
+        mapButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                main.loadMapScreen();
+            }
+        });
+        stage.addActor(mapButton);
 
-        // TODO: Player customization button
-        /**
-        Texture attackButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.ATTACK_BUTTON_UP_PATH).path());
-        Texture attackButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.ATTACK_BUTTON_DOWN_PATH).path());
-        ImageButton.ImageButtonStyle imageButtonStyle = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(attackButtonUp)), new TextureRegionDrawable(new TextureRegion(attackButtonDown)), null, null, null, null);
-        // Primary fire button
-        float padding = 20f;
-        ImageButton primaryFireButton = new ImageButton(imageButtonStyle);
-         */
+        // Player customization button
+        Texture customizeButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.CUSTOMIZE_BUTTON_UP_PATH).path());
+        Texture customizeButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.CUSTOMIZE_BUTTON_DOWN_PATH).path());
+        ImageButton.ImageButtonStyle customizeButtonStyle = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(customizeButtonUp)), new TextureRegionDrawable(new TextureRegion(customizeButtonDown)), null, null, null, null);
+        ImageButton customizeButton = new ImageButton(customizeButtonStyle);
+        customizeButton.setSize(SMALL_BUTTON_SIZE, SMALL_BUTTON_SIZE);
+        customizeButton.setPosition(Gdx.graphics.getWidth() - customizeButton.getWidth() - SMALL_BUTTON_PADDING, Gdx.graphics.getHeight() - customizeButton.getHeight() - SMALL_BUTTON_PADDING);
+        customizeButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                main.loadCustomizeScreen();
+            }
+        });
+        stage.addActor(customizeButton);
 
         //TODO: change calculation for this as more attack buttons are added
-        disableGesturesLowerXBound = Gdx.graphics.getWidth() - primaryFireButton.getWidth() - padding;
-        disableGesturesLowerYBound = Gdx.graphics.getHeight() - primaryFireButton.getHeight() - padding;
+        disableGesturesLowerXBound = Gdx.graphics.getWidth() - primaryFireButton.getWidth() - SMALL_BUTTON_PADDING;
+        disableGesturesLowerYBound = Gdx.graphics.getHeight() - primaryFireButton.getHeight() - SMALL_BUTTON_PADDING;
 
         movementDragTouchDownPoint = gestureListener.getMovementDragTouchDownPoint();
         movementDragCurrentPoint = gestureListener.getMovementDragCurrentPoint();
