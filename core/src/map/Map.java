@@ -33,6 +33,30 @@ import utils.Utils;
  * Created by Miv on 5/23/2017.
  */
 public class Map {
+    public static class GridLine {
+        private float startX;
+        private float startY;
+        private float endX;
+        private float endY;
+
+        public float getStartX() {
+            return startX;
+        }
+
+        public float getStartY() {
+            return startY;
+        }
+
+        public float getEndX() {
+            return endX;
+        }
+
+        public float getEndY() {
+            return endY;
+        }
+    }
+
+    //------------------------------------------------------------- MAP AREA GENERATION --------------------------------------------------
     private static final float MAX_CHANCE_OF_STAIRS_AREA = 0.3f;
     /**
      * How much {@link map.Map#chanceOfNextAreaHavingStairs} increases by each time a new MapArea is discovered
@@ -59,6 +83,9 @@ public class Map {
 
     private static final int MIN_ENEMIES_PER_MAP_AREA = 3;
     private  static final int MAX_ENEMIES_PER_MAP_AREA = 8;
+    //-----------------------------------------------------------------------------------------------------
+
+    private static final float GRID_LINE_SEPARATION_DISTANCE = 150f;
 
     private transient Main main;
 
@@ -74,6 +101,9 @@ public class Map {
 
     private MapArea currentArea;
 
+    // Positions of grid lines; purely visual effects
+    private ArrayList<GridLine> gridLines;
+
     /**
      * For Json files
      */
@@ -82,6 +112,7 @@ public class Map {
     public Map(Main main) {
         this.main = main;
 
+        gridLines = new ArrayList<GridLine>();
         areas = new HashMap<Point, MapArea>();
         focus = new Point(0, 0);
         chanceOfNextAreaHavingStairs = 0f;
@@ -119,6 +150,28 @@ public class Map {
             newMapArea = areas.get(new Point(x, y));
         }
         currentArea = newMapArea;
+
+        // Calculate grid line locations
+        gridLines.clear();
+        float gridPadding = (newMapArea.getRadius() % GRID_LINE_SEPARATION_DISTANCE)/2f;
+        // Lines from quadrants 1 and 2, extending down
+        for(float gridX = -newMapArea.getRadius() + gridPadding; gridX < newMapArea.getRadius() - gridPadding; gridX += GRID_LINE_SEPARATION_DISTANCE) {
+            GridLine gl = new GridLine();
+            gl.startX = gridX;
+            gl.startY = (float)Math.sqrt(newMapArea.getRadius()*newMapArea.getRadius() - gridX*gridX);
+            gl.endX = gridX;
+            gl.endY = -gl.startY;
+            gridLines.add(gl);
+        }
+        // Lines from quadrants 1 and 4, extending left
+        for(float gridY = -newMapArea.getRadius() + gridPadding; gridY < newMapArea.getRadius() - gridPadding; gridY += GRID_LINE_SEPARATION_DISTANCE) {
+            GridLine gl = new GridLine();
+            gl.startX = (float)Math.sqrt(newMapArea.getRadius()*newMapArea.getRadius() - gridY*gridY);
+            gl.startY = gridY;
+            gl.endX = -gl.startX;
+            gl.endY = gridY;
+            gridLines.add(gl);
+        }
 
         /**
          * Store all enemies currently in the engine as {@link map.EntityCreationData} objects inside {@link MapArea#entityCreationDataArrayList}
@@ -391,5 +444,9 @@ public class Map {
 
     public MapArea getCurrentArea() {
         return currentArea;
+    }
+
+    public ArrayList<GridLine> getGridLines() {
+        return gridLines;
     }
 }

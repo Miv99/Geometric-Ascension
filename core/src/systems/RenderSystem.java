@@ -57,6 +57,8 @@ public class RenderSystem extends EntitySystem {
     private static final Color STAIRS_MAP_AREA_BACKGROUND_COLOR = new Color(1f, 237/255f, 147/255f, 1f);
     private static final Color NORMAL_MAP_AREA_BORDER_COLOR = new Color(NORMAL_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.5f);
     private static final Color STAIRS_MAP_AREA_BORDER_COLOR = new Color(STAIRS_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.5f);
+    private static final Color NORMAL_MAP_AREA_GRID_LINE_COLOR = new Color(NORMAL_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.8f);
+    private static final Color STAIRS_MAP_AREA_GRID_LINE_COLOR = new Color(STAIRS_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.8f);
 
     private Map map;
 
@@ -112,13 +114,23 @@ public class RenderSystem extends EntitySystem {
         // Draw map area boundaries
         if(map != null) {
             // Color inside of map area
+            Color gridLineColor;
             if(map.getCurrentArea().getStairsDestination() == -1) {
                 shapeRenderer.setColor(NORMAL_MAP_AREA_BACKGROUND_COLOR);
+                gridLineColor = NORMAL_MAP_AREA_GRID_LINE_COLOR;
             } else {
                 shapeRenderer.setColor(STAIRS_MAP_AREA_BACKGROUND_COLOR);
+                gridLineColor = STAIRS_MAP_AREA_GRID_LINE_COLOR;
             }
             shapeRenderer.set(ShapeRenderer.ShapeType.Filled);
             shapeRenderer.circle(0, 0, map.getCurrentArea().getRadius());
+
+            // Draw grid lines
+            Gdx.gl.glLineWidth(10);
+            shapeRenderer.setColor(gridLineColor);
+            for(Map.GridLine gl : map.getGridLines()) {
+                shapeRenderer.line(gl.getStartX(), gl.getStartY(), gl.getEndX(), gl.getEndY());
+            }
 
             // Draw border
             Gdx.gl.glLineWidth(20);
