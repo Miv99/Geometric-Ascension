@@ -26,7 +26,7 @@ public class MainMenu implements Screen {
 
     private Stage stage;
 
-    public MainMenu(final Main main, AssetManager assetManager, final InputMultiplexer inputMultiplexer) {
+    public MainMenu(final Main main, final AssetManager assetManager, final InputMultiplexer inputMultiplexer) {
 		this.inputMultiplexer = inputMultiplexer;
 		stage = new Stage();
 
@@ -58,7 +58,7 @@ public class MainMenu implements Screen {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				System.out.println("OPEN OPTIONS");
-				main.setScreen(new Options(inputMultiplexer, music));
+				main.setScreen(new Options(main, assetManager, inputMultiplexer, music));
 			}
 		});
 		stage.addActor(optionsButton);
@@ -79,6 +79,10 @@ public class MainMenu implements Screen {
 
 	@Override
 	public void render(float delta) {
+		// Background color
+		Gdx.gl.glClearColor(240/255f, 1, 1, 1f);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
 		stage.getBatch().begin();
 		stage.getBatch().draw(background, 0, 0, Main.SCREEN_WIDTH, Main.SCREEN_HEIGHT);
 		stage.getBatch().end();
