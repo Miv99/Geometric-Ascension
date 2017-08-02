@@ -43,7 +43,8 @@ public class Main extends Game {
 	public static final String[] WORLD_MUSIC_PATHS = new String[] {
 			"music\\world1.mp3",
 			"music\\world2.ogg",
-			"music\\world3.wav"
+			"music\\world3.wav",
+			"music\\world4.ogg"
 	};
 	public static final String MAIN_MENU_MUSIC_1_PATH = "music\\main_menu1.ogg";
 	public static final String MAIN_MENU_BACKGROUND_PATH = "main_menu_background.png";

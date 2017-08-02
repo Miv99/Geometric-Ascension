@@ -57,8 +57,8 @@ public class RenderSystem extends EntitySystem {
     private static final Color STAIRS_MAP_AREA_BACKGROUND_COLOR = new Color(1f, 237/255f, 147/255f, 1f);
     private static final Color NORMAL_MAP_AREA_BORDER_COLOR = new Color(NORMAL_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.5f);
     private static final Color STAIRS_MAP_AREA_BORDER_COLOR = new Color(STAIRS_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.5f);
-    private static final Color NORMAL_MAP_AREA_GRID_LINE_COLOR = new Color(NORMAL_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.8f);
-    private static final Color STAIRS_MAP_AREA_GRID_LINE_COLOR = new Color(STAIRS_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.8f);
+    private static final Color NORMAL_MAP_AREA_GRID_LINE_COLOR = new Color(NORMAL_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.2f);
+    private static final Color STAIRS_MAP_AREA_GRID_LINE_COLOR = new Color(STAIRS_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.2f);
 
     private Map map;
 
@@ -126,10 +126,9 @@ public class RenderSystem extends EntitySystem {
             shapeRenderer.circle(0, 0, map.getCurrentArea().getRadius());
 
             // Draw grid lines
-            Gdx.gl.glLineWidth(10);
             shapeRenderer.setColor(gridLineColor);
             for(Map.GridLine gl : map.getGridLines()) {
-                shapeRenderer.line(gl.getStartX(), gl.getStartY(), gl.getEndX(), gl.getEndY());
+                shapeRenderer.rectLine(gl.getStartX(), gl.getStartY(), gl.getEndX(), gl.getEndY(), 2.5f);
             }
 
             // Draw border

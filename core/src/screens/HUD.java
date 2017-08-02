@@ -149,7 +149,6 @@ public class HUD implements Screen {
         movementDragCurrentPoint = gestureListener.getMovementDragCurrentPoint();
         screenWidth = Gdx.graphics.getWidth();
         screenHeight = Gdx.graphics.getHeight();
-
     }
 
     @Override
@@ -183,7 +182,6 @@ public class HUD implements Screen {
             Gdx.gl.glEnable(GL20.GL_BLEND);
             Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-            System.out.println(screenOverlayColor.r + ", " + screenOverlayColor.g + ", " + screenOverlayColor.b + ", " + screenOverlayColor.a);
             shapeRenderer.setColor(screenOverlayColor);
 
             screenOverlayColor.a += screenOverlayDeltaAlpha * delta;
@@ -231,7 +229,7 @@ public class HUD implements Screen {
     }
 
     /**
-     * Fades screen to white and then runs the task
+     * Fades screen to a color and then runs the task
      * @param time - time it takes to completely fade
      * @param task - task to be run after screen is done fading to white
      */

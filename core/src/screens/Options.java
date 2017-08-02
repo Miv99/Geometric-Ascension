@@ -41,18 +41,6 @@ public class Options implements Screen {
 
         Skin skin = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.SKIN_PATH).path());
 
-        /**
-         * public static float MUSIC_VOLUME = 0.5f;
-         public static float SOUND_VOLUME = 0.5f;
-         public static float MASTER_VOLUME = 0.5f;
-         // Maximum distance dragged on the screen before the player reaches maximum speed
-         public static float MOVEMENT_DRAG_ARROW_MAX_DISTANCE = 200f;
-         //TODO: set these to false in production
-         public static boolean SHOW_PLAYER_HEALTH_BARS = true;
-         public static boolean SHOW_ENEMY_HEALTH_BARS = true;
-         */
-
-        final float width = Gdx.graphics.getWidth();
         final float height = Gdx.graphics.getHeight();
 
         final float TOP_PADDING = 25f;
