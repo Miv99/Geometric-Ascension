@@ -24,6 +24,8 @@ public class MapArea {
     public static final float MAP_AREA_MIN_SIZE = 800f;
     public static final float MAP_AREA_MAX_SIZE = 1600f;
 
+    public static final float BOSS_MAP_AREA_SIZE = 1500f;
+
     public ArrayList<EntityCreationData> entityCreationDataArrayList;
     private float radius;
 

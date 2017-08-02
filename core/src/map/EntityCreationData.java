@@ -41,6 +41,15 @@ public class EntityCreationData {
         circleHitboxes = new ArrayList<CircleHitbox>();
     }
 
+    // For convenience
+    public EntityCreationData(boolean isBoss) {
+        if(isBoss) {
+            setIsEnemy(true);
+            setIsBoss(true);
+        }
+        circleHitboxes = new ArrayList<CircleHitbox>();
+    }
+
     public float getMaxHealth() {
         return maxHealth;
     }

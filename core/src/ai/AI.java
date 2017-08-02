@@ -11,6 +11,7 @@ import utils.Point;
  */
 public abstract class AI {
     public static enum AIType {
+        NONE,
         SIMPLE_FOLLOW_TARGET,
         SIMPLE_STALK_TARGET,
         SIMPLE_WANDER;
