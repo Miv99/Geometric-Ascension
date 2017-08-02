@@ -13,6 +13,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import ai.AI;
+import ai.SimpleFollowTarget;
+import ai.SimpleStalkTarget;
+import ai.SimpleWander;
+import components.AIComponent;
 import components.EnemyBulletComponent;
 import components.EnemyComponent;
 import components.HitboxComponent;
@@ -254,33 +258,7 @@ public class Map {
             EntityCreationData ecd = new EntityCreationData();
             ecd.setIsEnemy(true);
 
-            //TODO: add on to this as more AI types are added
-            // Randomize AI type
-            float rand = MathUtils.random();
-            // 75% for SimpleStalk
-            if(rand < 0.75f) {
-                ecd.setAiType(AI.AIType.SIMPLE_STALK_TARGET);
-                ecd.setSimpleStalkMinSpeedDistance(MathUtils.random(100f, 250f));
-                ecd.setSimpleStalkMaxSpeedDistance(MathUtils.random(330f, 450f));
-            }
-            /**
-            // 25% for SimpleFollow
-            else if(rand < 0.75f) {
-                ecd.setAiType(AI.AIType.SIMPLE_FOLLOW_TARGET);
-
-            }
-             */
-            // 25% for SimpleWander
-            else {
-                float mapRadius = mapArea.getRadius();
-
-                ecd.setAiType(AI.AIType.SIMPLE_WANDER);
-                ecd.setSimpleWanderRadius(MathUtils.random(0.1f * mapRadius, 0.2f * mapRadius));
-                ecd.setSimpleWanderMinInterval(0.5f);
-                ecd.setSimpleWanderMaxInterval(1.5f);
-                ecd.setSimpleWanderMinAcceleration(1 / 60f);
-                ecd.setSimpleWanderMaxAcceleration(1.5f / 60f);
-            }
+            randomizeEnemyMovementAI(ecd, mapArea.getRadius());
 
             // Max speed is a random number between 1f and 5f
             ecd.setMaxSpeed(MathUtils.random(1f, 3f));
@@ -402,6 +380,47 @@ public class Map {
 
             mapArea.entityCreationDataArrayList.add(ecd);
         }
+    }
+
+    private static void randomizeEnemyMovementAI(EntityCreationData ecd, float mapAreaRadius) {
+        //TODO: add on to this as more AI types are added
+        float rand = MathUtils.random();
+        // 75% for SimpleStalk
+        if(rand < 0.75f) {
+            ecd.setAiType(AI.AIType.SIMPLE_STALK_TARGET);
+            ecd.setSimpleStalkMinSpeedDistance(MathUtils.random(100f, 250f));
+            ecd.setSimpleStalkMaxSpeedDistance(MathUtils.random(330f, 450f));
+        }
+        /**
+         // 25% for SimpleFollow
+         else if(rand < 0.75f) {
+         ecd.setAiType(AI.AIType.SIMPLE_FOLLOW_TARGET);
+
+         }
+         */
+        // 25% for SimpleWander
+        else {
+            float mapRadius = mapAreaRadius;
+
+            ecd.setAiType(AI.AIType.SIMPLE_WANDER);
+            ecd.setSimpleWanderRadius(MathUtils.random(0.1f * mapRadius, 0.2f * mapRadius));
+            ecd.setSimpleWanderMinInterval(0.5f);
+            ecd.setSimpleWanderMaxInterval(1.5f);
+            ecd.setSimpleWanderMinAcceleration(1 / 60f);
+            ecd.setSimpleWanderMaxAcceleration(1.5f / 60f);
+        }
+    }
+
+    //TODO: add to this as more AI types are added
+    public static AIComponent createAIComponent(PooledEngine engine, Entity e, EntityCreationData ecd, Entity player) {
+        if(ecd.getAiType() == AI.AIType.SIMPLE_FOLLOW_TARGET) {
+           return engine.createComponent(AIComponent.class).setAi(new SimpleFollowTarget(e, player));
+        } else if(ecd.getAiType() == AI.AIType.SIMPLE_STALK_TARGET) {
+            return engine.createComponent(AIComponent.class).setAi(new SimpleStalkTarget(e, player, ecd.getSimpleStalkMinSpeedDistance(), ecd.getSimpleStalkMaxSpeedDistance(), 0));
+        } else if(ecd.getAiType() == AI.AIType.SIMPLE_WANDER) {
+            return engine.createComponent(AIComponent.class).setAi(new SimpleWander(e, ecd.getSimpleWanderRadius(), ecd.getSimpleWanderMinInterval(), ecd.getSimpleWanderMaxInterval(), ecd.getSimpleWanderMinAcceleration(), ecd.getSimpleWanderMaxAcceleration()));
+        }
+        return null;
     }
 
     /**

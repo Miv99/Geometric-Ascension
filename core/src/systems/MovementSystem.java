@@ -138,7 +138,6 @@ public class MovementSystem extends EntitySystem {
         if(origin.x*origin.x + origin.y*origin.y > boundary*boundary) {
             float angle = MathUtils.atan2(origin.y, origin.x);
             angle = Utils.normalizeAngle(angle);
-            System.out.println(angle * MathUtils.radiansToDegrees);
             if(angle >= Math.PI/4f && angle <= 3f * Math.PI/4f) {
                 EntityActions.playerEnterNewMapArea(e, EntityActions.Direction.UP);
             } else if(angle >= 3f * Math.PI/4f && angle <= 5f * Math.PI/4f) {

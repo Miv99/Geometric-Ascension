@@ -197,7 +197,6 @@ public class HitboxComponent implements Component, Pool.Poolable {
             ArrayList<CircleHitbox> removalQueue = new ArrayList<CircleHitbox>();
             for(CircleHitbox c : circles) {
                 if(!cSet.contains(c)) {
-                    System.out.println("Removing...");
                     subEntityCircles.add(c);
                     removalQueue.add(c);
                 }

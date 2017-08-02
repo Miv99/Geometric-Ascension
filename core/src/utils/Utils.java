@@ -65,12 +65,11 @@ public class Utils {
         for(CircleHitbox c : circles) {
             hitbox.addCircle(c);
         }
-        //TODO: check if it's recenterCirlces() instead or even both
         hitbox.recenterCircles();
         hitbox.recenterOriginalCirclePositions();
         e.add(hitbox);
 
-        e.add(engine.createComponent(AIComponent.class).setAi(Mappers.ai.get(original).getAi().clone(e)));
+        e.add(engine.createComponent(AIComponent.class).setAi(Mappers.ai.get(original).getAi().getSubEntityAI().clone(e)));
         e.add(engine.createComponent(EnemyComponent.class));
 
         return e;

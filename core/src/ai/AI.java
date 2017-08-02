@@ -16,6 +16,8 @@ public abstract class AI {
         SIMPLE_WANDER;
     }
 
+    protected AI subEntityAI;
+
     protected HitboxComponent selfHitbox;
     protected Point targetPos;
 
@@ -32,4 +34,16 @@ public abstract class AI {
     public abstract void update(float deltaTime);
 
     public abstract AI clone(Entity newSelf);
+
+    public void setSubEntityAI(AI subEntityAI) {
+        this.subEntityAI = subEntityAI;
+    }
+
+    public AI getSubEntityAI() {
+        if(subEntityAI == null) {
+            return this;
+        } else {
+            return subEntityAI;
+        }
+    }
 }

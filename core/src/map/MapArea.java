@@ -80,14 +80,7 @@ public class MapArea {
             hitbox.setIsShooting(true);
             e.add(hitbox);
 
-            //TODO: add to this as more AI types are added
-            if(ecd.getAiType() == AI.AIType.SIMPLE_FOLLOW_TARGET) {
-                e.add(engine.createComponent(AIComponent.class).setAi(new SimpleFollowTarget(e, player)));
-            } else if(ecd.getAiType() == AI.AIType.SIMPLE_STALK_TARGET) {
-                e.add(engine.createComponent(AIComponent.class).setAi(new SimpleStalkTarget(e, player, ecd.getSimpleStalkMinSpeedDistance(), ecd.getSimpleStalkMaxSpeedDistance(), 0)));
-            } else if(ecd.getAiType() == AI.AIType.SIMPLE_WANDER) {
-                e.add(engine.createComponent(AIComponent.class).setAi(new SimpleWander(e, ecd.getSimpleWanderRadius(), ecd.getSimpleWanderMinInterval(), ecd.getSimpleWanderMaxInterval(), ecd.getSimpleWanderMinAcceleration(), ecd.getSimpleWanderMaxAcceleration())));
-            }
+            e.add(Map.createAIComponent(engine, e, ecd, player));
 
             engine.addEntity(e);
         }
