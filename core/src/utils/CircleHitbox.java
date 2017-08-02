@@ -7,6 +7,8 @@ import com.badlogic.gdx.math.MathUtils;
 import com.miv.AttackPart;
 import com.miv.AttackPattern;
 
+import java.util.ArrayList;
+
 import systems.RenderSystem;
 
 /**
@@ -36,9 +38,9 @@ public class CircleHitbox extends Circle {
         resetAttackPattern();
         time = MathUtils.random(0, attackPattern.getDuration());
 
-        AttackPart[] aps = attackPattern.getAttackParts();
-        for(int i = 0; i < attackPattern.getAttackParts().length; i++) {
-            if(aps[i].getDelay() <= time) {
+        ArrayList<AttackPart> aps = attackPattern.getAttackParts();
+        for(int i = 0; i < attackPattern.getAttackParts().size(); i++) {
+            if(aps.get(i).getDelay() <= time) {
                 fired[i] = true;
             }
         }
@@ -67,7 +69,7 @@ public class CircleHitbox extends Circle {
 
     public void setAttackPattern(AttackPattern attackPattern) {
         this.attackPattern = attackPattern;
-        fired = new boolean[attackPattern.getAttackParts().length];
+        fired = new boolean[attackPattern.getAttackParts().size()];
         time = 0;
     }
 

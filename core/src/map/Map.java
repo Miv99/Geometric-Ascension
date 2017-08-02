@@ -280,10 +280,10 @@ public class Map {
             pp += 0.15f * (AVERAGE_FIRE_RATE_MULTIPLIER - fireRateMultiplier)/(MAX_FIRE_RATE_MULTIPLIER - MIN_FIRE_RATE_MULTIPLIER) * ppPerEnemy * 2f;
             // Put 15% to 40% of remaining pp into damage
             float percentDamage = MathUtils.random(0.15f, 0.4f);
-            float bulletTotalDamage = pp * percentDamage * attackPattern.getAttackParts().length;
+            float bulletTotalDamage = pp * percentDamage * attackPattern.getAttackParts().size();
             pp -= pp * percentDamage;
             // Put remaining pp into radius
-            float bulletTotalRadius = pp * attackPattern.getAttackParts().length;
+            float bulletTotalRadius = pp * attackPattern.getAttackParts().size();
 
             // Modify the attack pattern according to pp distribution
             for(AttackPart a : attackPattern.getAttackParts()) {
