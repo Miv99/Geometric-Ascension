@@ -147,7 +147,7 @@ public class Map {
         Point newPos = new Point(x, y);
         if(!areas.containsKey(newPos)) {
             increaseChanceOfNextAreaHavingStairs = true;
-            newMapArea = generateRandomMapArea();
+            newMapArea = generateRandomMapArea(newPos);
             areas.put(newPos, newMapArea);
         } else {
             newMapArea = areas.get(new Point(x, y));
@@ -222,17 +222,21 @@ public class Map {
         }
     }
 
-    private MapArea generateRandomMapArea() {
+    private MapArea generateRandomMapArea(Point pos) {
         MapArea mapArea;
-        if(Math.random() < chanceOfNextAreaHavingStairs) {
-            mapArea = new MapArea(MathUtils.random(MapArea.MAP_AREA_MIN_SIZE, MapArea.MAP_AREA_MAX_SIZE));
-            mapArea.addStairs(floor + 1);
+        if(pos.x == 0 && pos.y == 0) {
+            mapArea = new MapArea(MapArea.MAP_AREA_MIN_SIZE);
         } else {
-            mapArea = new MapArea(MathUtils.random(MapArea.MAP_AREA_MIN_SIZE, MapArea.MAP_AREA_MAX_SIZE));
-        }
+            if(Math.random() < chanceOfNextAreaHavingStairs) {
+                mapArea = new MapArea(MathUtils.random(MapArea.MAP_AREA_MIN_SIZE, MapArea.MAP_AREA_MAX_SIZE));
+                mapArea.addStairs(floor + 1);
+            } else {
+                mapArea = new MapArea(MathUtils.random(MapArea.MAP_AREA_MIN_SIZE, MapArea.MAP_AREA_MAX_SIZE));
+            }
 
-        // Populate map area with entities
-        randomlyPopulate(mapArea);
+            // Populate map area with entities
+            randomlyPopulate(mapArea);
+        }
 
         return mapArea;
     }

@@ -234,10 +234,19 @@ public class HUD implements Screen {
      * @param task - task to be run after screen is done fading to white
      */
     public void fadeToColor(Color color, float time, Timer.Task task) {
+        fadeToColor(color, time, task, 0);
+    }
+
+    /**
+     * Fades screen to a color and then runs the task
+     * @param time - time it takes to completely fade
+     * @param task - task to be run after screen is done fading to white
+     */
+    public void fadeToColor(Color color, float time, Timer.Task task, float startingAlpha) {
         taskToBeRunAfterScreenFade = task;
-        color.a = 0;
-        screenOverlayColor = color;
-        screenOverlayDeltaAlpha = 1f/time;
+        screenOverlayColor = new Color(color);
+        screenOverlayColor.a = startingAlpha;
+        screenOverlayDeltaAlpha = (1f - startingAlpha)/time;
     }
 
     public float getDisableGesturesLowerXBound() {

@@ -317,7 +317,7 @@ public class MovementSystem extends EntitySystem {
                 }
             } else if(hitbox.isTravelling()) {
                 // I already know this is bad code; it's used only for player travelling
-                if(!hitbox.isTravellingFlag() && (hitbox.getTravellingTime() > NEW_MAP_AREA_LEAVE_TRAVEL_TIME || getCameraDistanceFromMapAreaCenterWhenTravelling(hitbox.getTravellingDirection()) > map.getCurrentArea().getRadius())) {
+                if(!hitbox.isTravellingFlag() && (hitbox.getTravellingTime() > NEW_MAP_AREA_LEAVE_TRAVEL_TIME || mapAreaIsOutOfCameraRange())) {
                     EntityActions.Direction directionOfTravel = hitbox.getTravellingDirection();
 
                     map.enterNewArea(engine, e, (int)map.getFocus().x + directionOfTravel.getDeltaX(), (int)map.getFocus().y + directionOfTravel.getDeltaY());
@@ -403,11 +403,8 @@ public class MovementSystem extends EntitySystem {
         entityRemovalQueue.clear();
     }
 
-    private float getCameraDistanceFromMapAreaCenterWhenTravelling(EntityActions.Direction travellingDirection) {
-        if(travellingDirection.getDeltaX() != 0) {
-            return map.getMain().getCamera().position.x - screenWidth/2f;
-        } else {
-            return map.getMain().getCamera().position.y - screenHeight/2f;
-        }
+    private boolean mapAreaIsOutOfCameraRange() {
+        return Math.abs(map.getMain().getCamera().position.x) - map.getMain().getCamera().viewportWidth/1.7f > map.getCurrentArea().getRadius()
+                || Math.abs(map.getMain().getCamera().position.y) - map.getMain().getCamera().viewportHeight/1.7f > map.getCurrentArea().getRadius();
     }
 }

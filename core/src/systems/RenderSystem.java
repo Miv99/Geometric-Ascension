@@ -60,6 +60,7 @@ public class RenderSystem extends EntitySystem {
     private static final Color NORMAL_MAP_AREA_GRID_LINE_COLOR = new Color(NORMAL_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.2f);
     private static final Color STAIRS_MAP_AREA_GRID_LINE_COLOR = new Color(STAIRS_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.2f);
 
+    private Main main;
     private Map map;
 
     private ImmutableArray<Entity> entities;
@@ -70,7 +71,8 @@ public class RenderSystem extends EntitySystem {
     private Drawable[] bubbleDrawables;
     private Drawable bubbleShieldDrawable;
 
-    public RenderSystem(Map map) {
+    public RenderSystem(Main main, Map map) {
+        this.main = main;
         this.map = map;
 
         batch = new SpriteBatch();
@@ -126,9 +128,11 @@ public class RenderSystem extends EntitySystem {
             shapeRenderer.circle(0, 0, map.getCurrentArea().getRadius());
 
             // Draw grid lines
-            shapeRenderer.setColor(gridLineColor);
-            for(Map.GridLine gl : map.getGridLines()) {
-                shapeRenderer.rectLine(gl.getStartX(), gl.getStartY(), gl.getEndX(), gl.getEndY(), 2.5f);
+            if(main.getState() != Main.GameState.MAIN_MENU) {
+                shapeRenderer.setColor(gridLineColor);
+                for (Map.GridLine gl : map.getGridLines()) {
+                    shapeRenderer.rectLine(gl.getStartX(), gl.getStartY(), gl.getEndX(), gl.getEndY(), 2.5f);
+                }
             }
 
             // Draw border
