@@ -45,6 +45,7 @@ public class Save {
      */
     public static void load(Main main) {
         PooledEngine engine = main.getEngine();
+        engine.removeAllEntities();
 
         if(!Gdx.files.local(SAVE_DATA_PATH).exists()) {
             Json save = new Json();
@@ -83,6 +84,10 @@ public class Save {
 
             // Create new map
             main.setMap(new Map(main));
+
+    public static void deleteSave() {
+        if(Gdx.files.local(SAVE_DATA_PATH).exists()) {
+            Gdx.files.local(SAVE_DATA_PATH).delete();
         }
     }
 

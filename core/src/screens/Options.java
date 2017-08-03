@@ -18,11 +18,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.miv.Main;
 import com.miv.Mappers;
+import com.miv.Save;
 
 import components.HitboxComponent;
 
@@ -170,6 +172,21 @@ public class Options implements Screen {
             }
         });
         stage.addActor(enemyHealthBar);
+
+        // Delete save button
+        TextButton deleteSave = new TextButton("Delete save", skin);
+        deleteSave.getLabel().setFontScale(0.6f);
+        deleteSave.setSize(250, 80);
+        deleteSave.setPosition(Gdx.graphics.getWidth() - LEFT_PADDING - deleteSave.getWidth(), TOP_PADDING);
+        deleteSave.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                Save.deleteSave();
+                main.loadMainMenuMapPreview();
+                main.loadMainMenu();
+            }
+        });
+        stage.addActor(deleteSave);
     }
 
     @Override
