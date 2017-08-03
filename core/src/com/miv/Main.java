@@ -9,6 +9,7 @@ import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
@@ -16,6 +17,7 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGeneratorLoader;
 import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -47,7 +49,6 @@ public class Main extends Game {
 			"music\\world4.ogg"
 	};
 	public static final String MAIN_MENU_MUSIC_1_PATH = "music\\main_menu1.ogg";
-	public static final String MAIN_MENU_BACKGROUND_PATH = "main_menu_background.png";
 	public static final String MOVEMENT_ARROW_TAIL_PATH = "movement_arrow_tail.png";
 	public static final String MOVEMENT_ARROW_BODY_PATH = "movement_arrow_body.png";
 	public static final String MOVEMENT_ARROW_HEAD_PATH = "movement_arrow_head.png";
@@ -108,17 +109,20 @@ public class Main extends Game {
 		loadAssets();
 
 		Save.load(this);
+		engine.addEntity(player);
+		map.enterNewArea(engine, player, 0, 0);
 
 		// Add entity systems
 		engine.addSystem(new AISystem());
 		engine.addSystem(new MovementSystem(engine, map));
 		shootingSystem = new ShootingSystem(engine);
 		engine.addSystem(shootingSystem);
-		RenderSystem renderSystem = new RenderSystem(map);
+		RenderSystem renderSystem = new RenderSystem(this, map);
 		engine.addSystem(renderSystem);
 
 		camera = new Camera(renderSystem);
 		camera.resetViewport();
+		camera.position.set(0, 0, 0);
 
 		assetManager.finishLoading();
 		renderSystem.loadTextures(assetManager);
@@ -160,7 +164,6 @@ public class Main extends Game {
 			assetManager.load(s, Music.class);
 		}
 		assetManager.load(MAIN_MENU_MUSIC_1_PATH, Music.class);
-		assetManager.load(MAIN_MENU_BACKGROUND_PATH, Texture.class);
 		assetManager.load(MOVEMENT_ARROW_TAIL_PATH, Texture.class);
 		assetManager.load(MOVEMENT_ARROW_BODY_PATH, Texture.class);
 		assetManager.load(MOVEMENT_ARROW_HEAD_PATH, Texture.class);
@@ -202,13 +205,20 @@ public class Main extends Game {
 		preferences.putBoolean(Options.SHOW_PLAYER_HEALTH_BARS_STRING, preferences.getBoolean(Options.SHOW_PLAYER_HEALTH_BARS_STRING, Options.SHOW_PLAYER_HEALTH_BARS));
 	}
 
+	/**
+	 * Must be called while current screen is main menu
+	 */
 	public void startGame() {
 		playerDead = false;
-		engine.addEntity(player);
+		try {
+			engine.addEntity(player);
+		} catch(IllegalArgumentException e) {
+
+		}
 		map.enterNewArea(engine, player, 0, 0);
 
 		gestureListener.setPlayer(player);
-		hud = new HUD(this, assetManager, inputMultiplexer, gestureListener, player, map);
+		hud = new HUD(Main.this, assetManager, inputMultiplexer, gestureListener, player, map);
 		setScreen(hud);
 		state = GameState.MAIN_GAME;
 		camera.setFocus(player);
@@ -239,6 +249,9 @@ public class Main extends Game {
 				engine.getSystem(MovementSystem.class).update(deltaTime);
 				engine.getSystem(RenderSystem.class).update(deltaTime);
 			}
+			camera.update();
+		} else if(state == GameState.MAIN_MENU) {
+			engine.getSystem(RenderSystem.class).update(deltaTime);
 			camera.update();
 		}
 		super.render();
