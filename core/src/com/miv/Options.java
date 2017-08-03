@@ -19,7 +19,7 @@ public class Options {
     public static float SOUND_VOLUME = 0.5f;
     public static float MASTER_VOLUME = 0.5f;
     // Maximum distance dragged on the screen before the player reaches maximum speed
-    public static float MOVEMENT_DRAG_ARROW_MAX_DISTANCE = 200f;
+    public static float MOVEMENT_DRAG_ARROW_MAX_DISTANCE = 50f;
     //TODO: set these to false in production
     public static boolean SHOW_PLAYER_HEALTH_BARS = true;
     public static boolean SHOW_ENEMY_HEALTH_BARS = true;

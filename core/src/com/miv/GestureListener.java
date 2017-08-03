@@ -34,17 +34,31 @@ public class GestureListener implements GestureDetector.GestureListener {
     // Angle from touch down to current point
     private float movementArrowAngle;
 
+    // The point where the finger was touched down to set shooting angle of the player
+    // x-pos is set to -1 in place of shootingDragTouchDownPoint being set to null
+    private Point shootingDragTouchDownPoint;
+    // The current position of the finger after touching down to rotate the player
+    private Point shootingDragCurrentPoint;
+    // Length of the movement arrow in pixels
+    private float shootingArrowLength;
+    // Angle from touch down to current point
+    private float shootingArrowAngle;
+
     private float screenWidth;
     private float screenHeight;
+    private float screenSplitX;
 
     public GestureListener(Main main, InputMultiplexer inputMultiplexer) {
         this.main = main;
         movementDragTouchDownPoint = new Point(-1, 0);
         movementDragCurrentPoint = new Point(-1, 0);
+        shootingDragCurrentPoint = new Point(-1, 0);
+        shootingDragTouchDownPoint = new Point(-1, 0);
 
         inputMultiplexer.addProcessor(new TouchListener());
         screenHeight = Gdx.graphics.getHeight();
         screenWidth = Gdx.graphics.getWidth();
+        screenSplitX = screenWidth/2f;
     }
 
     public void setPlayer(Entity player) {
@@ -55,9 +69,8 @@ public class GestureListener implements GestureDetector.GestureListener {
     @Override
     public boolean touchDown(float x, float y, int pointer, int button) {
         if(main.getState() == Main.GameState.MAIN_GAME) {
-            // Prevent movement touches in a rectangle around the attack buttons, map button, and customize button
-            System.out.println(x + ", " + y);
-            if(!(x > main.getHud().getDisableGesturesLowerXBound() && y > main.getHud().getDisableGesturesLowerYBound()) && !playerHitbox.isTravelling()
+            // Prevent movement touches on right side of screen and near map button
+            if(!(x > screenSplitX) && !playerHitbox.isTravelling()
                     && !(y < SMALL_BUTTON_SIZE + SMALL_BUTTON_PADDING && (x < SMALL_BUTTON_SIZE + SMALL_BUTTON_PADDING || x > screenWidth - SMALL_BUTTON_SIZE - SMALL_BUTTON_PADDING))) {
                 movementDragTouchDownPoint.x = x;
                 movementDragTouchDownPoint.y = y;
@@ -65,6 +78,18 @@ public class GestureListener implements GestureDetector.GestureListener {
                 movementDragCurrentPoint.y = y;
                 movementArrowLength = 0;
                 movementArrowAngle = MathUtils.PI2;
+            }
+            // Prevent rotation touches on left side of screen and near customize button
+            if(!(x <= screenSplitX) && !playerHitbox.isTravelling()
+                    && !(y < SMALL_BUTTON_SIZE + SMALL_BUTTON_PADDING && (x < SMALL_BUTTON_SIZE + SMALL_BUTTON_PADDING || x > screenWidth - SMALL_BUTTON_SIZE - SMALL_BUTTON_PADDING))) {
+                shootingDragTouchDownPoint.x = x;
+                shootingDragTouchDownPoint.y = y;
+                shootingDragCurrentPoint.x = x;
+                shootingDragCurrentPoint.y = y;
+                shootingArrowLength = 0;
+                shootingArrowAngle = MathUtils.PI2;
+
+                playerHitbox.setIsShooting(true);
             }
         } else if(main.getState() == Main.GameState.MAP) {
 
@@ -76,10 +101,11 @@ public class GestureListener implements GestureDetector.GestureListener {
 
     public boolean touchUp(float x, float y, int pointer, int button) {
         if(main.getState() == Main.GameState.MAIN_GAME) {
-            // Prevent movement touches in a rectangle around the attack buttons
-            movementDragTouchDownPoint.x = -1;
-            if(!playerHitbox.isTravelling()) {
-                playerHitbox.setVelocity(0, 0);
+            if(movementDragTouchDownPoint.x != -1 && x < screenSplitX) {
+                movementTouchUp();
+            }
+            if(shootingDragTouchDownPoint.x != -1 && x >= screenSplitX) {
+                shootingTouchUp();
             }
         } else if(main.getState() == Main.GameState.MAP) {
 
@@ -89,20 +115,42 @@ public class GestureListener implements GestureDetector.GestureListener {
         return false;
     }
 
+    private void movementTouchUp() {
+        movementDragTouchDownPoint.x = -1;
+        if (!playerHitbox.isTravelling()) {
+            playerHitbox.setVelocity(0, 0);
+        }
+    }
+
+    private void shootingTouchUp() {
+        shootingDragTouchDownPoint.x = -1;
+        playerHitbox.setIsShooting(false);
+    }
+
     public boolean touchDragged(float x, float y, int pointer, int button) {
-        if(main.getState() == Main.GameState.MAIN_GAME && movementDragTouchDownPoint.x != -1 && !playerHitbox.isTravelling()) {
-            // Prevent movement touches in a rectangle around the attack buttons
-            movementDragCurrentPoint.x = x;
-            movementDragCurrentPoint.y = y;
+        if(main.getState() == Main.GameState.MAIN_GAME && !playerHitbox.isTravelling()) {
+            if(movementDragTouchDownPoint.x != -1 && x < screenSplitX) {
+                movementDragCurrentPoint.x = x;
+                movementDragCurrentPoint.y = y;
 
-            // Get angle from touch down to current finger pointer position
-            movementArrowAngle = MathUtils.atan2(y - movementDragTouchDownPoint.y, x - movementDragTouchDownPoint.x);
-            movementArrowLength = Math.min((float) Math.sqrt((x - movementDragTouchDownPoint.x) * (x - movementDragTouchDownPoint.x) + (y - movementDragTouchDownPoint.y) * (y - movementDragTouchDownPoint.y)), Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE);
-            float velocityX = (movementArrowLength / Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE) * playerHitbox.getMaxSpeed() * MathUtils.cos(movementArrowAngle);
-            float velocityY = (movementArrowLength / Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE) * playerHitbox.getMaxSpeed() * MathUtils.sin(movementArrowAngle);
+                movementArrowAngle = MathUtils.atan2(y - movementDragTouchDownPoint.y, x - movementDragTouchDownPoint.x);
+                movementArrowLength = Math.min((float) Math.sqrt((x - movementDragTouchDownPoint.x) * (x - movementDragTouchDownPoint.x) + (y - movementDragTouchDownPoint.y) * (y - movementDragTouchDownPoint.y)), Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE);
 
-            playerHitbox.setVelocity(velocityX, -velocityY);
-            playerHitbox.setLastFacedAngle(-movementArrowAngle);
+                // Get angle from touch down to current finger pointer position
+                float velocityX = (movementArrowLength / Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE) * playerHitbox.getMaxSpeed() * MathUtils.cos(movementArrowAngle);
+                float velocityY = (movementArrowLength / Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE) * playerHitbox.getMaxSpeed() * MathUtils.sin(movementArrowAngle);
+
+                playerHitbox.setVelocity(velocityX, -velocityY);
+            }
+            if(shootingDragTouchDownPoint.x != -1 && x >= screenSplitX) {
+                shootingDragCurrentPoint.x = x;
+                shootingDragCurrentPoint.x = y;
+
+                shootingArrowAngle = MathUtils.atan2(y - shootingDragTouchDownPoint.y, x - shootingDragTouchDownPoint.x);
+                shootingArrowLength = Math.min((float) Math.sqrt((x - shootingDragTouchDownPoint.x) * (x - shootingDragTouchDownPoint.x) + (y - shootingDragTouchDownPoint.y) * (y - shootingDragTouchDownPoint.y)), Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE);
+
+                playerHitbox.setLastFacedAngle(-shootingArrowAngle);
+            }
         } else if(main.getState() == Main.GameState.MAP) {
 
         } else if(main.getState() == Main.GameState.CUSTOMIZE) {
@@ -155,8 +203,8 @@ public class GestureListener implements GestureDetector.GestureListener {
         return movementDragTouchDownPoint;
     }
 
-    public Point getMovementDragCurrentPoint() {
-        return movementDragCurrentPoint;
+    public Point getShootingDragTouchDownPoint() {
+        return shootingDragTouchDownPoint;
     }
 
     public float getMovementArrowLength() {
@@ -165,6 +213,14 @@ public class GestureListener implements GestureDetector.GestureListener {
 
     public float getMovementArrowAngle() {
         return movementArrowAngle;
+    }
+
+    public float getShootingArrowLength() {
+        return shootingArrowLength;
+    }
+
+    public float getShootingArrowAngle() {
+        return shootingArrowAngle;
     }
 
     // Class used solely for listening for touchUp/touchDragged because libgdx is dumb

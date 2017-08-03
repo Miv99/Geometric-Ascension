@@ -39,7 +39,7 @@ public class HUD implements Screen {
 
     private GestureListener gestureListener;
     private Point movementDragTouchDownPoint;
-    private Point movementDragCurrentPoint;
+    private Point shootingDragTouchDownPoint;
 
     private Entity player;
 
@@ -88,6 +88,7 @@ public class HUD implements Screen {
         temp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.MOVEMENT_ARROW_HEAD_PATH).path());
         movementArrowHead = new TextureRegion(temp);
 
+        /**
         // Attack buttons
         Texture attackButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.ATTACK_BUTTON_UP_PATH).path());
         Texture attackButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.ATTACK_BUTTON_DOWN_PATH).path());
@@ -110,6 +111,7 @@ public class HUD implements Screen {
             }
         });
         stage.addActor(primaryFireButton);
+            */
 
         // Map button top left
         Texture mapButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.MAP_BUTTON_UP_PATH).path());
@@ -142,11 +144,11 @@ public class HUD implements Screen {
         stage.addActor(customizeButton);
 
         //TODO: change calculation for this as more attack buttons are added
-        disableGesturesLowerXBound = Gdx.graphics.getWidth() - primaryFireButton.getWidth() - SMALL_BUTTON_PADDING;
-        disableGesturesLowerYBound = Gdx.graphics.getHeight() - primaryFireButton.getHeight() - SMALL_BUTTON_PADDING;
+        //disableGesturesLowerXBound = Gdx.graphics.getWidth() - primaryFireButton.getWidth() - SMALL_BUTTON_PADDING;
+        //disableGesturesLowerYBound = Gdx.graphics.getHeight() - primaryFireButton.getHeight() - SMALL_BUTTON_PADDING;
 
         movementDragTouchDownPoint = gestureListener.getMovementDragTouchDownPoint();
-        movementDragCurrentPoint = gestureListener.getMovementDragCurrentPoint();
+        shootingDragTouchDownPoint = gestureListener.getShootingDragTouchDownPoint();
         screenWidth = Gdx.graphics.getWidth();
         screenHeight = Gdx.graphics.getHeight();
     }
@@ -175,6 +177,21 @@ public class HUD implements Screen {
             stage.getBatch().draw(movementArrowHead, movementDragTouchDownPoint.x + MathUtils.cos(gestureListener.getMovementArrowAngle()) * gestureListener.getMovementArrowLength(),
                     screenHeight - (movementDragTouchDownPoint.y + (movementArrowHead.getRegionHeight()/2) + MathUtils.sin(gestureListener.getMovementArrowAngle()) * gestureListener.getMovementArrowLength()),
                     0, movementArrowHead.getRegionHeight()/2f, movementArrowHead.getRegionWidth(), movementArrowHead.getRegionHeight(), 1, 1, -MathUtils.radiansToDegrees * gestureListener.getMovementArrowAngle());
+        }
+        if(shootingDragTouchDownPoint.x != -1) {
+            // Draw arrow tail
+            stage.getBatch().draw(movementArrowTail, shootingDragTouchDownPoint.x - movementArrowTail.getRegionWidth() / 2, screenHeight - (shootingDragTouchDownPoint.y + movementArrowTail.getRegionHeight() / 2));
+
+            // Draw stretched arrow body
+            float bodyThickness = 10f;
+            stage.getBatch().draw(movementArrowBody, shootingDragTouchDownPoint.x,
+                    screenHeight - (shootingDragTouchDownPoint.y + (bodyThickness / 2) + MathUtils.sin(gestureListener.getShootingArrowAngle())),
+                    0, bodyThickness/2f, gestureListener.getShootingArrowLength(), bodyThickness, 1, 1, -MathUtils.radiansToDegrees * gestureListener.getShootingArrowAngle());
+
+            // Draw arrow head
+            stage.getBatch().draw(movementArrowHead, shootingDragTouchDownPoint.x + MathUtils.cos(gestureListener.getShootingArrowAngle()) * gestureListener.getShootingArrowLength(),
+                    screenHeight - (shootingDragTouchDownPoint.y + (movementArrowHead.getRegionHeight()/2) + MathUtils.sin(gestureListener.getShootingArrowAngle()) * gestureListener.getShootingArrowLength()),
+                    0, movementArrowHead.getRegionHeight()/2f, movementArrowHead.getRegionWidth(), movementArrowHead.getRegionHeight(), 1, 1, -MathUtils.radiansToDegrees * gestureListener.getShootingArrowAngle());
         }
         stage.getBatch().end();
 
