@@ -3,6 +3,7 @@ package ai;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.math.MathUtils;
 
+import map.EntityCreationData;
 import utils.Point;
 
 /**
@@ -50,5 +51,12 @@ public class SimpleStalkTarget extends AI {
     @Override
     public AI clone(Entity newSelf) {
         return new SimpleStalkTarget(newSelf, target, minSpeedDistance, maxSpeedDistance, minSpeed);
+    }
+
+    @Override
+    public void saveToEntityCreationData(EntityCreationData ecd) {
+        ecd.setAiType(AIType.SIMPLE_STALK_TARGET);
+        ecd.setSimpleStalkMaxSpeedDistance(maxSpeedDistance);
+        ecd.setSimpleStalkMinSpeedDistance(minSpeedDistance);
     }
 }

@@ -37,6 +37,8 @@ public abstract class AI {
 
     public abstract AI clone(Entity newSelf);
 
+    public abstract void saveToEntityCreationData(EntityCreationData ecd);
+
     public void setSubEntityAI(AI subEntityAI) {
         this.subEntityAI = subEntityAI;
     }

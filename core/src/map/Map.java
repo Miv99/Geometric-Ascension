@@ -23,6 +23,7 @@ import components.HitboxComponent;
 import components.IgnoreRespawnOnAreaResetComponent;
 import components.PlayerBulletComponent;
 import factories.AttackPatternFactory;
+import factories.BossFactory;
 import systems.RenderSystem;
 import utils.CircleHitbox;
 import utils.Point;
@@ -127,6 +128,7 @@ public class Map {
         // First MapArea always has stairs leading to the previous floor
         MapArea mapArea = new MapArea(MapArea.MAP_AREA_MIN_SIZE);
         areas.put(new Point(0, 0), mapArea);
+        Mappers.hitbox.get(main.getPlayer()).setOrigin(0, 0);
         enterNewArea(main.getEngine(), main.getPlayer(), 0, 0);
 
         main.save();
@@ -183,6 +185,11 @@ public class Map {
                     ecd.setIsBoss(true);
                 }
 
+                // Save AI
+                if(Mappers.ai.has(e)) {
+                    Mappers.ai.get(e).getAi().saveToEntityCreationData(ecd);
+                }
+
                 // Restore health
                 for(CircleHitbox c : Mappers.hitbox.get(e).getCircles()) {
                     c.setHealth(c.getMaxHealth());
@@ -224,15 +231,19 @@ public class Map {
             if(Math.random() < chanceOfNextAreaHavingStairs) {
                 mapArea = new MapArea(BOSS_MAP_AREA_SIZE);
                 mapArea.addStairs(floor + 1);
+                populateWithBoss(mapArea);
             } else {
                 mapArea = new MapArea(MathUtils.random(MapArea.MAP_AREA_MIN_SIZE, MapArea.MAP_AREA_MAX_SIZE));
+                // Populate map area with enemies
+                randomlyPopulate(mapArea);
             }
-
-            // Populate map area with entities
-            randomlyPopulate(mapArea);
         }
 
         return mapArea;
+    }
+
+    public void populateWithBoss(MapArea mapArea) {
+        mapArea.entityCreationDataArrayList.addAll(BossFactory.getBossByFloor(floor, mapArea.getRadius(), maxPixelPoints));
     }
 
     private void randomlyPopulate(MapArea mapArea) {
@@ -384,6 +395,8 @@ public class Map {
             return engine.createComponent(AIComponent.class).setAi(new SimpleStalkTarget(e, player, ecd.getSimpleStalkMinSpeedDistance(), ecd.getSimpleStalkMaxSpeedDistance(), 0));
         } else if(ecd.getAiType() == AI.AIType.SIMPLE_WANDER) {
             return engine.createComponent(AIComponent.class).setAi(new SimpleWander(e, ecd.getSimpleWanderRadius(), ecd.getSimpleWanderMinInterval(), ecd.getSimpleWanderMaxInterval(), ecd.getSimpleWanderMinAcceleration(), ecd.getSimpleWanderMaxAcceleration()));
+        } else {
+            System.out.println("347SJDFIODS CREATING AI COMPONENT FROM NULL AITYPE ???");
         }
         return null;
     }

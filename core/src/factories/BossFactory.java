@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.MathUtils;
 import java.util.ArrayList;
 
 import ai.AI;
+import ai.SimpleStalkTarget;
 import components.HitboxComponent;
 import components.PlayerComponent;
 import map.EntityCreationData;
@@ -34,17 +35,20 @@ public class BossFactory {
             float subRadius = 50f;
 
             ArrayList<CircleHitbox> ca1 = new ArrayList<CircleHitbox>();
-            CircleHitbox c1 = new CircleHitbox();
+            CircleHitbox c1 = new CircleHitbox(true);
             ca1.add(c1);
             c1.setPosition(0, 0);
             c1.setAttackPattern(AttackPatternFactory.getAttackPattern("BOSS_1_1"));
+            c1.setHealth(pp * 12.5f);
+            c1.setMaxHealth(pp * 12.5f);
             c1.setRadius(mainRadius);
             for(int i = 0; i < 16; i++) {
-                CircleHitbox c = new CircleHitbox();
+                CircleHitbox c = new CircleHitbox(true);
                 ca1.add(c);
                 float angle = i * MathUtils.degreesToRadians * (360/16f);
                 c.setPosition((mainRadius + subRadius) * MathUtils.cos(angle), (mainRadius + subRadius) * MathUtils.sin(angle));
                 c.setAttackPattern(AttackPatternFactory.getAttackPattern("BOSS_1_2"));
+                c.setHealth(pp);
                 c.setMaxHealth(pp);
                 c.setRadius(subRadius);
             }
@@ -57,9 +61,13 @@ public class BossFactory {
             // Give subentities higher speed and stalker AI
             HitboxComponent.SubEntityStats subStats = new HitboxComponent.SubEntityStats();
             subStats.maxSpeed = 3.5f;
+            subStats.aiData = new EntityCreationData();
+            Map.randomizeSimpleStalkTargetAI(subStats.aiData);
             e1.setSubEntityStats(subStats);
         } else if(id == 1) {
 
+        } else {
+            return getBossById(0, mapAreaRadius, pp);
         }
 
         return ecds;

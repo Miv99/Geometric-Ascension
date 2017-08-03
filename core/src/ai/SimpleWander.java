@@ -3,6 +3,7 @@ package ai;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.math.MathUtils;
 
+import map.EntityCreationData;
 import utils.Point;
 import utils.Utils;
 
@@ -77,5 +78,15 @@ public class SimpleWander extends AI {
     @Override
     public AI clone(Entity newSelf) {
         return new SimpleWander(newSelf, wanderRadius, minInterval, maxInterval, minAcceleration, maxAcceleration);
+    }
+
+    @Override
+    public void saveToEntityCreationData(EntityCreationData ecd) {
+        ecd.setAiType(AIType.SIMPLE_WANDER);
+        ecd.setSimpleWanderMaxAcceleration(maxAcceleration);
+        ecd.setSimpleWanderMaxInterval(maxInterval);
+        ecd.setSimpleWanderMinAcceleration(minAcceleration);
+        ecd.setSimpleWanderRadius(wanderRadius);
+        ecd.setSimpleWanderMinInterval(minInterval);
     }
 }

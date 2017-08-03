@@ -3,6 +3,7 @@ package ai;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.math.MathUtils;
 
+import map.EntityCreationData;
 import utils.Point;
 
 /**
@@ -29,5 +30,10 @@ public class SimpleFollowTarget extends AI {
     @Override
     public AI clone(Entity newSelf) {
         return new SimpleFollowTarget(newSelf, target);
+    }
+
+    @Override
+    public void saveToEntityCreationData(EntityCreationData ecd) {
+        ecd.setAiType(AIType.SIMPLE_FOLLOW_TARGET);
     }
 }

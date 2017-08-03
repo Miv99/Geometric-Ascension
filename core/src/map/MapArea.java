@@ -84,8 +84,8 @@ public class MapArea {
 
             if(ecd.getSubEntityStats() != null) {
                 hitbox.setSubEntityStats(ecd.getSubEntityStats());
-                if(ecd.getSubEntityStats().ai != null) {
-                    e.add(engine.createComponent(AIComponent.class).setAi(ecd.getSubEntityStats().ai.clone(e)));
+                if(ecd.getSubEntityStats().aiData != null) {
+                    e.add(Map.createAIComponent(engine, e, ecd.getSubEntityStats().aiData, player));
                 }
             } else {
                 e.add(Map.createAIComponent(engine, e, ecd, player));

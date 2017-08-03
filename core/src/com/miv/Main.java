@@ -108,9 +108,7 @@ public class Main extends Game {
 		loadPreferences();
 		loadAssets();
 
-		Save.load(this);
-		engine.addEntity(player);
-		map.enterNewArea(engine, player, 0, 0);
+		loadMainMenuMapPreview();
 
 		// Add entity systems
 		engine.addSystem(new AISystem());
@@ -127,6 +125,12 @@ public class Main extends Game {
 		assetManager.finishLoading();
 		renderSystem.loadTextures(assetManager);
 		loadMainMenu();
+	}
+
+	public void loadMainMenuMapPreview() {
+		Save.load(this);
+		engine.addEntity(player);
+		map.enterNewArea(engine, player, 0, 0);
 	}
 
 	public void loadMainMenu() {
@@ -240,8 +244,8 @@ public class Main extends Game {
 		float deltaTime = Gdx.graphics.getDeltaTime();
 
 		assetManager.update();
-		if(state == GameState.MAIN_GAME) {
-			if(!playerDead) {
+		if (state == GameState.MAIN_GAME) {
+			if (!playerDead) {
 				engine.update(deltaTime);
 			} else {
 				// Update all systems except for ShootingSystem
@@ -250,7 +254,7 @@ public class Main extends Game {
 				engine.getSystem(RenderSystem.class).update(deltaTime);
 			}
 			camera.update();
-		} else if(state == GameState.MAIN_MENU) {
+		} else if (state == GameState.MAIN_MENU) {
 			engine.getSystem(RenderSystem.class).update(deltaTime);
 			camera.update();
 		}

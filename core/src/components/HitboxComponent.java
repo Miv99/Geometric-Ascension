@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import ai.AI;
+import map.EntityCreationData;
 import utils.CircleHitbox;
 import utils.Point;
 import utils.Utils;
@@ -32,7 +33,7 @@ import utils.Utils;
 public class HitboxComponent implements Component, Pool.Poolable {
     public static class SubEntityStats {
         public float maxSpeed;
-        public AI ai;
+        public EntityCreationData aiData;
     }
 
     // Position of hitbox

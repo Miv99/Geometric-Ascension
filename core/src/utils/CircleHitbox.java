@@ -27,6 +27,14 @@ public class CircleHitbox extends Circle {
     private float originalPosX;
     private float originalPosY;
 
+    public CircleHitbox() {}
+
+    public CircleHitbox(boolean isEnemy) {
+        if(isEnemy) {
+            setHitboxTextureType(RenderSystem.HitboxTextureType.ENEMY);
+        }
+    }
+
     /**
      * True if the attack part has been fired off.
      * Is reset (all fields set to false) by {@link components.HitboxComponent#update(PooledEngine, Entity, Entity, float)}

@@ -33,7 +33,7 @@ public class AttackPatternFactory {
                             .setAngleInDegrees(0f)
                             .setOriginX(0).setOriginY(0)
                             .setDelay(0)
-                            .setSpeed(20f)
+                            .setSpeed(4f)
                             .setDamage(10f)
                             .setRadius(15f));
             return ap;
@@ -47,7 +47,7 @@ public class AttackPatternFactory {
                             .setRandomAngleInDegrees(-30f, 30f)
                             .setOriginX(0).setOriginY(0)
                             .setDelay(0)
-                            .setSpeed(20f)
+                            .setSpeed(5f)
                             .setDamage(10f)
                             .setRadius(15f));
             return ap;
@@ -61,14 +61,14 @@ public class AttackPatternFactory {
                             .setAngleInDegrees(0f)
                             .setOriginX(0).setOriginY(0)
                             .setDelay(0)
-                            .setSpeed(20f)
+                            .setSpeed(4f)
                             .setDamage(10f)
                             .setRadius(15f));
             ap.addAttackPart(new AttackPart()
                             .setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.AIM_AT_PLAYER)
                             .setRandomAngleInDegrees(-20f, 20f)
                             .setDelay(0)
-                            .setSpeed(20f)
+                            .setSpeed(4f)
                             .setDamage(10f)
                             .setRadius(15f));
             return ap;
@@ -82,7 +82,7 @@ public class AttackPatternFactory {
                             .setRandomAngleInDegrees(5f, 20f)
                             .setOriginX(0).setOriginY(0)
                             .setDelay(0)
-                            .setSpeed(20f)
+                            .setSpeed(5f)
                             .setDamage(10f)
                             .setRadius(15f));
             ap.addAttackPart(new AttackPart()
@@ -90,7 +90,7 @@ public class AttackPatternFactory {
                             .setRandomAngleInDegrees(-20f, -5f)
                             .setOriginX(0).setOriginY(0)
                             .setDelay(0)
-                            .setSpeed(20f)
+                            .setSpeed(5f)
                             .setDamage(10f)
                             .setRadius(15f));
             return ap;
@@ -98,7 +98,7 @@ public class AttackPatternFactory {
         // Shoots two bullets on either side of the player
         else if(name.equalsIgnoreCase("BOSS_1_1")) {
             AttackPattern ap = new AttackPattern();
-            ap.setDuration(0.5f);
+            ap.setDuration(1f);
             ap.addAttackPart(new AttackPart()
                     .setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.NONE)
                     .setRandomAngleInDegrees(0f, 360f)
@@ -112,7 +112,7 @@ public class AttackPatternFactory {
         // Shoots a single bullet at the player
         else if(name.equalsIgnoreCase("BOSS_1_2")) {
             AttackPattern ap = new AttackPattern();
-            ap.setDuration(2.5f);
+            ap.setDuration(4f);
             ap.addAttackPart(new AttackPart()
                     .setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.AIM_AT_PLAYER)
                     .setAngleInDegrees(0f)
