@@ -75,7 +75,7 @@ public class MainMenu implements Screen {
 		Texture optionsButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.OPTIONS_BUTTON_DOWN_PATH).path());
 		ImageButton.ImageButtonStyle optionsButtonStyle = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(optionsButtonUp)), new TextureRegionDrawable(new TextureRegion(optionsButtonDown)), null, null, null, null);
 		ImageButton optionsButton = new ImageButton(optionsButtonStyle);
-		optionsButton.setSize(70, 70);
+		optionsButton.setSize(120, 120);
 		optionsButton.setPosition(25, Gdx.graphics.getHeight() - 25 - optionsButton.getHeight());
 		optionsButton.addListener(new ClickListener() {
 			@Override

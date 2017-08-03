@@ -138,21 +138,37 @@ public class Options implements Screen {
         stage.addActor(soundVolume);
 
         // Create player health bar toggle
-        CheckBox playerHealthBar = new CheckBox("Show player health bars", skin);
+        final CheckBox playerHealthBar = new CheckBox("Show player health bars", skin);
+        playerHealthBar.setChecked(com.miv.Options.SHOW_PLAYER_HEALTH_BARS);
         playerHealthBar.getLabelCell().padLeft(15f);
         playerHealthBar.getLabel().setColor(Color.BLACK);
         playerHealthBar.getLabel().setFontScale(2f);
         playerHealthBar.setSize(CHECKBOX_WIDTH, CHECKBOX_HEIGHT);
         playerHealthBar.setPosition(masterVolume.getX() + SLIDER_LENGTH*1.5f + 60f, masterVolume.getY());
+        playerHealthBar.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                com.miv.Options.SHOW_PLAYER_HEALTH_BARS = !com.miv.Options.SHOW_PLAYER_HEALTH_BARS;
+                playerHealthBar.setChecked(com.miv.Options.SHOW_PLAYER_HEALTH_BARS);
+            }
+        });
         stage.addActor(playerHealthBar);
 
         // Create player health bar toggle
-        CheckBox enemyHealthBar = new CheckBox("Show enemy health bars", skin);
+        final CheckBox enemyHealthBar = new CheckBox("Show enemy health bars", skin);
+        enemyHealthBar.setChecked(com.miv.Options.SHOW_ENEMY_HEALTH_BARS);
         enemyHealthBar.getLabelCell().padLeft(15f);
         enemyHealthBar.getLabel().setColor(Color.BLACK);
         enemyHealthBar.getLabel().setFontScale(2f);
         enemyHealthBar.setSize(CHECKBOX_WIDTH, CHECKBOX_HEIGHT);
         enemyHealthBar.setPosition(playerHealthBar.getX(), playerHealthBar.getY() - CHECKBOX_HEIGHT - CHECKBOX_PADDING);
+        playerHealthBar.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                com.miv.Options.SHOW_ENEMY_HEALTH_BARS = !com.miv.Options.SHOW_ENEMY_HEALTH_BARS;
+                enemyHealthBar.setChecked(com.miv.Options.SHOW_ENEMY_HEALTH_BARS);
+            }
+        });
         stage.addActor(enemyHealthBar);
     }
 
