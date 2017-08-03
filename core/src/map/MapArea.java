@@ -24,6 +24,8 @@ public class MapArea {
     public static final float MAP_AREA_MIN_SIZE = 800f;
     public static final float MAP_AREA_MAX_SIZE = 1600f;
 
+    public static final float BOSS_MAP_AREA_SIZE = 1500f;
+
     public ArrayList<EntityCreationData> entityCreationDataArrayList;
     private float radius;
 
@@ -69,6 +71,7 @@ public class MapArea {
             }
 
             HitboxComponent hitbox = engine.createComponent(HitboxComponent.class);
+            hitbox.setSubEntityStats(ecd.getSubEntityStats());
             for(CircleHitbox c : ecd.getCircleHitboxes()) {
                 c.randomizeAttackPatternTime();
                 hitbox.addCircle(c);
@@ -80,14 +83,7 @@ public class MapArea {
             hitbox.setIsShooting(true);
             e.add(hitbox);
 
-            //TODO: add to this as more AI types are added
-            if(ecd.getAiType() == AI.AIType.SIMPLE_FOLLOW_TARGET) {
-                e.add(engine.createComponent(AIComponent.class).setAi(new SimpleFollowTarget(e, player)));
-            } else if(ecd.getAiType() == AI.AIType.SIMPLE_STALK_TARGET) {
-                e.add(engine.createComponent(AIComponent.class).setAi(new SimpleStalkTarget(e, player, ecd.getSimpleStalkMinSpeedDistance(), ecd.getSimpleStalkMaxSpeedDistance(), 0)));
-            } else if(ecd.getAiType() == AI.AIType.SIMPLE_WANDER) {
-                e.add(engine.createComponent(AIComponent.class).setAi(new SimpleWander(e, ecd.getSimpleWanderRadius(), ecd.getSimpleWanderMinInterval(), ecd.getSimpleWanderMaxInterval(), ecd.getSimpleWanderMinAcceleration(), ecd.getSimpleWanderMaxAcceleration())));
-            }
+            e.add(Map.createAIComponent(engine, e, ecd, player));
 
             engine.addEntity(e);
         }

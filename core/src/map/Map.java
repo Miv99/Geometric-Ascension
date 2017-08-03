@@ -13,6 +13,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import ai.AI;
+import ai.SimpleFollowTarget;
+import ai.SimpleStalkTarget;
+import ai.SimpleWander;
+import components.AIComponent;
 import components.EnemyBulletComponent;
 import components.EnemyComponent;
 import components.HitboxComponent;
@@ -23,6 +27,8 @@ import systems.RenderSystem;
 import utils.CircleHitbox;
 import utils.Point;
 import utils.Utils;
+
+import static map.MapArea.BOSS_MAP_AREA_SIZE;
 
 /**
  * Only the MapArea that is being focused on {@link map.Map#focus} has its entities in the engine.
@@ -57,29 +63,17 @@ public class Map {
     }
 
     //------------------------------------------------------------- MAP AREA GENERATION --------------------------------------------------
-    private static final float MAX_CHANCE_OF_STAIRS_AREA = 0.3f;
+    private static final float MAX_CHANCE_OF_STAIRS_AREA = 1;
     /**
      * How much {@link map.Map#chanceOfNextAreaHavingStairs} increases by each time a new MapArea is discovered
      */
     private static final float CHANCE_OF_STAIRS_AREA_INCREMENT = 0.01f;
 
-    private static final float INITIAL_MAP_AREA_PIXEL_POINTS = 20f;
+    public static final float INITIAL_MAP_AREA_PIXEL_POINTS = 20f;
     /**
      * How much {@link map.Map#maxPixelPoints} increases by each time the player enters a new floor
      */
     private static final float MAP_AREA_PIXEL_POINTS_INCREMENT = 2.5f;
-
-    private static final float MIN_BULLET_SPEED_MULTIPLIER = 0.8f;
-    private static final float MAX_BULLET_SPEED_MULTIPLIER = 1.2f;
-    private static final float AVERAGE_BULLET_SPEED_MULTIPLIER = (MAX_BULLET_SPEED_MULTIPLIER + MIN_BULLET_SPEED_MULTIPLIER)/2f;
-
-    private static final float MIN_FIRE_RATE_MULTIPLIER = 0.8f;
-    private static final float MAX_FIRE_RATE_MULTIPLIER = 1.35f;
-    private static final float AVERAGE_FIRE_RATE_MULTIPLIER = (MIN_FIRE_RATE_MULTIPLIER + MAX_FIRE_RATE_MULTIPLIER)/2f;
-
-    private static final float MIN_HEALTH_MULTIPLIER = 0.8f;
-    private static final float MAX_HEALTH_MULTIPLIER = 1.5f;
-    private static final float AVERAGE_HEALTH_MULTIPLIER = (MIN_HEALTH_MULTIPLIER + MAX_HEALTH_MULTIPLIER)/2f;
 
     private static final int MIN_ENEMIES_PER_MAP_AREA = 3;
     private  static final int MAX_ENEMIES_PER_MAP_AREA = 8;
@@ -228,7 +222,7 @@ public class Map {
             mapArea = new MapArea(MapArea.MAP_AREA_MIN_SIZE);
         } else {
             if(Math.random() < chanceOfNextAreaHavingStairs) {
-                mapArea = new MapArea(MathUtils.random(MapArea.MAP_AREA_MIN_SIZE, MapArea.MAP_AREA_MAX_SIZE));
+                mapArea = new MapArea(BOSS_MAP_AREA_SIZE);
                 mapArea.addStairs(floor + 1);
             } else {
                 mapArea = new MapArea(MathUtils.random(MapArea.MAP_AREA_MIN_SIZE, MapArea.MAP_AREA_MAX_SIZE));
@@ -254,33 +248,7 @@ public class Map {
             EntityCreationData ecd = new EntityCreationData();
             ecd.setIsEnemy(true);
 
-            //TODO: add on to this as more AI types are added
-            // Randomize AI type
-            float rand = MathUtils.random();
-            // 75% for SimpleStalk
-            if(rand < 0.75f) {
-                ecd.setAiType(AI.AIType.SIMPLE_STALK_TARGET);
-                ecd.setSimpleStalkMinSpeedDistance(MathUtils.random(100f, 250f));
-                ecd.setSimpleStalkMaxSpeedDistance(MathUtils.random(330f, 450f));
-            }
-            /**
-            // 25% for SimpleFollow
-            else if(rand < 0.75f) {
-                ecd.setAiType(AI.AIType.SIMPLE_FOLLOW_TARGET);
-
-            }
-             */
-            // 25% for SimpleWander
-            else {
-                float mapRadius = mapArea.getRadius();
-
-                ecd.setAiType(AI.AIType.SIMPLE_WANDER);
-                ecd.setSimpleWanderRadius(MathUtils.random(0.1f * mapRadius, 0.2f * mapRadius));
-                ecd.setSimpleWanderMinInterval(0.5f);
-                ecd.setSimpleWanderMaxInterval(1.5f);
-                ecd.setSimpleWanderMinAcceleration(1 / 60f);
-                ecd.setSimpleWanderMaxAcceleration(1.5f / 60f);
-            }
+            randomizeEnemyMovementAI(ecd, mapArea.getRadius());
 
             // Max speed is a random number between 1f and 5f
             ecd.setMaxSpeed(MathUtils.random(1f, 3f));
@@ -291,32 +259,8 @@ public class Map {
             ArrayList<CircleHitbox> circles = ecd.getCircleHitboxes();
 
             AttackPattern attackPattern = AttackPatternFactory.getRandomAttackPatternByFloor(floor);
-
-            // Randomly distribute pixel points to various aspects of attack pattern bullets
-            float pp = ppPerEnemy;
-            // Put -15% to 15% of total pp into speed multiplier
-            float speedMultiplier = MathUtils.random(MIN_BULLET_SPEED_MULTIPLIER, MAX_BULLET_SPEED_MULTIPLIER);
-            pp += 0.15f * (AVERAGE_BULLET_SPEED_MULTIPLIER - speedMultiplier)/(MAX_BULLET_SPEED_MULTIPLIER - MIN_BULLET_SPEED_MULTIPLIER) * ppPerEnemy * 2f;
-            // Put -15% to 15% of total pp into fire rate
-            float fireRateMultiplier = MathUtils.random(MIN_FIRE_RATE_MULTIPLIER, MAX_FIRE_RATE_MULTIPLIER);
-            pp += 0.15f * (AVERAGE_FIRE_RATE_MULTIPLIER - fireRateMultiplier)/(MAX_FIRE_RATE_MULTIPLIER - MIN_FIRE_RATE_MULTIPLIER) * ppPerEnemy * 2f;
-            // Put 15% to 40% of remaining pp into damage
-            float percentDamage = MathUtils.random(0.15f, 0.4f);
-            float bulletTotalDamage = pp * percentDamage * attackPattern.getAttackParts().length;
-            pp -= pp * percentDamage;
-            // Put remaining pp into radius
-            float bulletTotalRadius = pp * attackPattern.getAttackParts().length;
-
-            // Modify the attack pattern according to pp distribution
-            for(AttackPart a : attackPattern.getAttackParts()) {
-                a.setSpeed(a.getSpeed() * speedMultiplier);
-                a.setDelay(a.getDelay() * fireRateMultiplier);
-
-                // New bullet damage is the old bullet damage's percent of the attack pattern's total damage, multiplied by the new total bullet damage
-                a.setDamage(a.getDamage() / attackPattern.getTotalDamage() * bulletTotalDamage);
-                // Same is done to radius
-                a.setRadius(a.getRadius()/attackPattern.getTotalRadius() * bulletTotalRadius);
-            }
+            float[] attackPatternStats = attackPattern.getAttackPatternStatModifiers(ppPerEnemy);
+            attackPattern.modify(attackPatternStats[0], attackPatternStats[1], attackPatternStats[2], attackPatternStats[3]);
 
             CircleHitbox c1 = new CircleHitbox();
 
@@ -402,6 +346,46 @@ public class Map {
 
             mapArea.entityCreationDataArrayList.add(ecd);
         }
+    }
+
+    public static void randomizeEnemyMovementAI(EntityCreationData ecd, float mapAreaRadius) {
+        //TODO: add on to this as more AI types are added
+        float rand = MathUtils.random();
+        // 75% for SimpleStalk
+        if(rand < 0.75f) {
+            randomizeSimpleStalkTargetAI(ecd);
+        }
+        // 25% for SimpleWander
+        else {
+            randomizeSimpleWanderAI(ecd, mapAreaRadius);
+        }
+    }
+
+    public static void randomizeSimpleStalkTargetAI(EntityCreationData ecd) {
+        ecd.setAiType(AI.AIType.SIMPLE_STALK_TARGET);
+        ecd.setSimpleStalkMinSpeedDistance(MathUtils.random(100f, 250f));
+        ecd.setSimpleStalkMaxSpeedDistance(MathUtils.random(330f, 450f));
+    }
+
+    public static void randomizeSimpleWanderAI(EntityCreationData ecd, float mapAreaRadius) {
+        ecd.setAiType(AI.AIType.SIMPLE_WANDER);
+        ecd.setSimpleWanderRadius(MathUtils.random(0.2f * mapAreaRadius, 0.4f * mapAreaRadius));
+        ecd.setSimpleWanderMinInterval(0.5f);
+        ecd.setSimpleWanderMaxInterval(1.5f);
+        ecd.setSimpleWanderMinAcceleration(1 / 60f);
+        ecd.setSimpleWanderMaxAcceleration(1.5f / 60f);
+    }
+
+    //TODO: add to this as more AI types are added
+    public static AIComponent createAIComponent(PooledEngine engine, Entity e, EntityCreationData ecd, Entity player) {
+        if(ecd.getAiType() == AI.AIType.SIMPLE_FOLLOW_TARGET) {
+           return engine.createComponent(AIComponent.class).setAi(new SimpleFollowTarget(e, player));
+        } else if(ecd.getAiType() == AI.AIType.SIMPLE_STALK_TARGET) {
+            return engine.createComponent(AIComponent.class).setAi(new SimpleStalkTarget(e, player, ecd.getSimpleStalkMinSpeedDistance(), ecd.getSimpleStalkMaxSpeedDistance(), 0));
+        } else if(ecd.getAiType() == AI.AIType.SIMPLE_WANDER) {
+            return engine.createComponent(AIComponent.class).setAi(new SimpleWander(e, ecd.getSimpleWanderRadius(), ecd.getSimpleWanderMinInterval(), ecd.getSimpleWanderMaxInterval(), ecd.getSimpleWanderMinAcceleration(), ecd.getSimpleWanderMaxAcceleration()));
+        }
+        return null;
     }
 
     /**

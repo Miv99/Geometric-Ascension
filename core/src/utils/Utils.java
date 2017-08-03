@@ -56,6 +56,7 @@ public class Utils {
 
         HitboxComponent hitbox = engine.createComponent(HitboxComponent.class);
         HitboxComponent originalHitbox = Mappers.hitbox.get(original);
+        hitbox.setSubEntityStats(originalHitbox.getSubEntityStats());
         hitbox.setMaxSpeed(originalHitbox.getMaxSpeed());
         hitbox.setOrigin(originalHitbox.getOrigin().x, originalHitbox.getOrigin().y);
         hitbox.setIsShooting(true);
@@ -65,12 +66,11 @@ public class Utils {
         for(CircleHitbox c : circles) {
             hitbox.addCircle(c);
         }
-        //TODO: check if it's recenterCirlces() instead or even both
         hitbox.recenterCircles();
         hitbox.recenterOriginalCirclePositions();
         e.add(hitbox);
 
-        e.add(engine.createComponent(AIComponent.class).setAi(Mappers.ai.get(original).getAi().clone(e)));
+        e.add(engine.createComponent(AIComponent.class).setAi(Mappers.ai.get(original).getAi().getSubEntityAI().clone(e)));
         e.add(engine.createComponent(EnemyComponent.class));
 
         return e;

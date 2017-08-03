@@ -9,6 +9,7 @@ import java.util.ArrayList;
 
 import ai.AI;
 import components.EnemyComponent;
+import components.HitboxComponent;
 import components.PlayerComponent;
 import utils.CircleHitbox;
 
@@ -37,7 +38,18 @@ public class EntityCreationData {
     private float simpleWanderMinAcceleration;
     private float simpleWanderMaxAcceleration;
 
+    private HitboxComponent.SubEntityStats subEntityStats;
+
     public EntityCreationData() {
+        circleHitboxes = new ArrayList<CircleHitbox>();
+    }
+
+    // For convenience
+    public EntityCreationData(boolean isBoss) {
+        if(isBoss) {
+            setIsEnemy(true);
+            setIsBoss(true);
+        }
         circleHitboxes = new ArrayList<CircleHitbox>();
     }
 
@@ -156,5 +168,13 @@ public class EntityCreationData {
 
     public void setSimpleWanderRadius(float simpleWanderRadius) {
         this.simpleWanderRadius = simpleWanderRadius;
+    }
+
+    public HitboxComponent.SubEntityStats getSubEntityStats() {
+        return subEntityStats;
+    }
+
+    public void setSubEntityStats(HitboxComponent.SubEntityStats subEntityStats) {
+        this.subEntityStats = subEntityStats;
     }
 }

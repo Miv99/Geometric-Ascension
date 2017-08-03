@@ -4,6 +4,7 @@ import com.badlogic.ashley.core.Entity;
 import com.miv.Mappers;
 
 import components.HitboxComponent;
+import map.EntityCreationData;
 import utils.Point;
 
 /**
@@ -11,10 +12,13 @@ import utils.Point;
  */
 public abstract class AI {
     public static enum AIType {
+        NONE,
         SIMPLE_FOLLOW_TARGET,
         SIMPLE_STALK_TARGET,
         SIMPLE_WANDER;
     }
+
+    protected AI subEntityAI;
 
     protected HitboxComponent selfHitbox;
     protected Point targetPos;
@@ -32,4 +36,16 @@ public abstract class AI {
     public abstract void update(float deltaTime);
 
     public abstract AI clone(Entity newSelf);
+
+    public void setSubEntityAI(AI subEntityAI) {
+        this.subEntityAI = subEntityAI;
+    }
+
+    public AI getSubEntityAI() {
+        if(subEntityAI == null) {
+            return this;
+        } else {
+            return subEntityAI;
+        }
+    }
 }
