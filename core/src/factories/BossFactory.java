@@ -20,15 +20,13 @@ import static map.MapArea.BOSS_MAP_AREA_SIZE;
  */
 
 public class BossFactory {
-    public static ArrayList<EntityCreationData> getBoss(int floor, float mapAreaRadius, float pp) {
+    public static ArrayList<EntityCreationData> getBossById(int id, float mapAreaRadius, float pp) {
         ArrayList<EntityCreationData> ecds = new ArrayList<EntityCreationData>();
-
-
 
         // Make boss 10x harder than a normal enemy
         pp *= 10f;
 
-        if(floor == 0) {
+        if(id == 0) {
             EntityCreationData e1 = new EntityCreationData(true);
             ecds.add(e1);
 
@@ -47,16 +45,28 @@ public class BossFactory {
                 float angle = i * MathUtils.degreesToRadians * (360/16f);
                 c.setPosition((mainRadius + subRadius) * MathUtils.cos(angle), (mainRadius + subRadius) * MathUtils.sin(angle));
                 c.setAttackPattern(AttackPatternFactory.getAttackPattern("BOSS_1_2"));
+                c.setMaxHealth(pp);
                 c.setRadius(subRadius);
             }
 
             e1.setSpawnPosition(0, 0);
             Map.randomizeSimpleWanderAI(e1, mapAreaRadius);
             e1.setMaxSpeed(2f);
-            e1.setMaxHealth(pp * 12.5f);
             e1.setCircleHitboxes(ca1);
+
+            // Give subentities higher speed and stalker AI
+            HitboxComponent.SubEntityStats subStats = new HitboxComponent.SubEntityStats();
+            subStats.maxSpeed = 3.5f;
+            e1.setSubEntityStats(subStats);
+        } else if(id == 1) {
+
         }
 
         return ecds;
+    }
+
+    public static ArrayList<EntityCreationData> getBossByFloor(int floor, float mapAreaRadius, float pp) {
+        //TODO: getBossById(floor % (number of bosses in the game), mapAreaRadius, pp)
+        return getBossById(floor, mapAreaRadius, pp);
     }
 }

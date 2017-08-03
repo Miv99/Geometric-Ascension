@@ -4,6 +4,7 @@ import com.badlogic.ashley.core.Entity;
 import com.miv.Mappers;
 
 import components.HitboxComponent;
+import map.EntityCreationData;
 import utils.Point;
 
 /**

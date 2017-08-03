@@ -118,9 +118,23 @@ public class AttackPatternFactory {
                     .setRandomAngleInDegrees(0f, 360f)
                     .setOriginX(0).setOriginY(0)
                     .setDelay(0)
-                    .setSpeed(2f)
+                    .setSpeed(1.5f)
                     .setDamage(1f)
-                    .setRadius(120f));
+                    .setRadius(60f));
+            return ap;
+        }
+        // Shoots a single bullet at the player
+        else if(name.equalsIgnoreCase("BOSS_1_2")) {
+            AttackPattern ap = new AttackPattern();
+            ap.setDuration(2.5f);
+            ap.addAttackPart(new AttackPart()
+                    .setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.AIM_AT_PLAYER)
+                    .setAngleInDegrees(0f)
+                    .setOriginX(0).setOriginY(0)
+                    .setDelay(0)
+                    .setSpeed(4.5f)
+                    .setDamage(5f)
+                    .setRadius(17f));
             return ap;
         }
         return null;

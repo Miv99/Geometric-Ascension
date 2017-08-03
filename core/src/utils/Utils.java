@@ -56,6 +56,7 @@ public class Utils {
 
         HitboxComponent hitbox = engine.createComponent(HitboxComponent.class);
         HitboxComponent originalHitbox = Mappers.hitbox.get(original);
+        hitbox.setSubEntityStats(originalHitbox.getSubEntityStats());
         hitbox.setMaxSpeed(originalHitbox.getMaxSpeed());
         hitbox.setOrigin(originalHitbox.getOrigin().x, originalHitbox.getOrigin().y);
         hitbox.setIsShooting(true);

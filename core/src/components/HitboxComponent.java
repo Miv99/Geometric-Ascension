@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.Pool;
 import com.miv.AttackPart;
 import com.miv.AttackPattern;
 import com.miv.EntityActions;
+import com.miv.Mappers;
 import com.miv.Options;
 
 import java.util.ArrayList;
@@ -28,6 +29,10 @@ import utils.Utils;
  * Created by Miv on 5/23/2017.
  */
 public class HitboxComponent implements Component, Pool.Poolable {
+    public static class SubEntityStats {
+        public float maxSpeed;
+    }
+
     // Position of hitbox
     private Point origin;
     // Velocity of hitbox, in meters/frame
@@ -64,6 +69,8 @@ public class HitboxComponent implements Component, Pool.Poolable {
 
     private boolean ignoreSpeedLimit;
     private float maxSpeed;
+
+    private SubEntityStats subEntityStats;
 
     public HitboxComponent() {
         origin = new Point();
@@ -195,17 +202,42 @@ public class HitboxComponent implements Component, Pool.Poolable {
         if(cSet.size() != circles.size()) {
             ArrayList<CircleHitbox> subEntityCircles = new ArrayList<CircleHitbox>();
             ArrayList<CircleHitbox> removalQueue = new ArrayList<CircleHitbox>();
+
+            float totalRadius1 = 0f;
+            float totalRadius2 = 0f;
+
+            // TUrn set of smaller circles into subentity
             for(CircleHitbox c : circles) {
                 if(!cSet.contains(c)) {
-                    subEntityCircles.add(c);
-                    removalQueue.add(c);
+                    totalRadius1 += c.radius;
+                } else {
+                    totalRadius2 += c.radius;
+                }
+            }
+            if(totalRadius1 < totalRadius2) {
+                for(CircleHitbox c : circles) {
+                    if(!cSet.contains(c)) {
+                        subEntityCircles.add(c);
+                        removalQueue.add(c);
+                    }
+                }
+            } else {
+                for(CircleHitbox c : circles) {
+                    if(cSet.contains(c)) {
+                        subEntityCircles.add(c);
+                        removalQueue.add(c);
+                    }
                 }
             }
             for(CircleHitbox c : removalQueue) {
                 circles.remove(c);
             }
 
+            //TODO: add to this as more fields added to subentity stats
             Entity e = Utils.cloneEnemy(engine, self, subEntityCircles);
+            if(subEntityStats != null) {
+                Mappers.hitbox.get(e).setMaxSpeed(subEntityStats.maxSpeed);
+            }
             return e;
         } else {
             return null;
@@ -418,5 +450,13 @@ public class HitboxComponent implements Component, Pool.Poolable {
 
     public void setIgnoreGravity(boolean ignoreGravity) {
         this.ignoreGravity = ignoreGravity;
+    }
+
+    public SubEntityStats getSubEntityStats() {
+        return subEntityStats;
+    }
+
+    public void setSubEntityStats(SubEntityStats subEntityStats) {
+        this.subEntityStats = subEntityStats;
     }
 }

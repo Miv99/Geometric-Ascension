@@ -71,6 +71,7 @@ public class MapArea {
             }
 
             HitboxComponent hitbox = engine.createComponent(HitboxComponent.class);
+            hitbox.setSubEntityStats(ecd.getSubEntityStats());
             for(CircleHitbox c : ecd.getCircleHitboxes()) {
                 c.randomizeAttackPatternTime();
                 hitbox.addCircle(c);
