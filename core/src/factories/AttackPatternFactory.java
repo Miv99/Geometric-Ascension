@@ -27,7 +27,7 @@ public class AttackPatternFactory {
         // Shoots a single bullet at the player
         else if(name.equalsIgnoreCase("SINGLE")) {
             AttackPattern ap = new AttackPattern();
-            ap.setDuration(1f);
+            ap.setDuration(4f);
             ap.addAttackPart(new AttackPart()
                             .setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.AIM_AT_PLAYER)
                             .setAngleInDegrees(0f)
@@ -41,21 +41,7 @@ public class AttackPatternFactory {
         // Shoots a single bullet near the player
         else if(name.equalsIgnoreCase("RANDOM_SINGLE")) {
             AttackPattern ap = new AttackPattern();
-            ap.setDuration(0.7f);
-            ap.addAttackPart(new AttackPart()
-                            .setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.AIM_AT_PLAYER)
-                            .setRandomAngleInDegrees(-30f, 30f)
-                            .setOriginX(0).setOriginY(0)
-                            .setDelay(0)
-                            .setSpeed(20f)
-                            .setDamage(10f)
-                            .setRadius(15f));
-            return ap;
-        }
-        // Shoots a single bullet near the player
-        else if(name.equalsIgnoreCase("RANDOM_SINGLE")) {
-            AttackPattern ap = new AttackPattern();
-            ap.setDuration(0.7f);
+            ap.setDuration(2.5f);
             ap.addAttackPart(new AttackPart()
                             .setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.AIM_AT_PLAYER)
                             .setRandomAngleInDegrees(-30f, 30f)
@@ -69,7 +55,7 @@ public class AttackPatternFactory {
         // Shoots one bullet at the player and another near the player at the same time
         else if(name.equalsIgnoreCase("DOUBLE")) {
             AttackPattern ap = new AttackPattern();
-            ap.setDuration(1.4f);
+            ap.setDuration(2.4f);
             ap.addAttackPart(new AttackPart()
                             .setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.AIM_AT_PLAYER)
                             .setAngleInDegrees(0f)
@@ -90,7 +76,7 @@ public class AttackPatternFactory {
         // Shoots two bullets on either side of the player
         else if(name.equalsIgnoreCase("PINCERS")) {
             AttackPattern ap = new AttackPattern();
-            ap.setDuration(1f);
+            ap.setDuration(2f);
             ap.addAttackPart(new AttackPart()
                             .setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.AIM_AT_PLAYER)
                             .setRandomAngleInDegrees(5f, 20f)

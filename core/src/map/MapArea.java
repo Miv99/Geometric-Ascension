@@ -71,7 +71,6 @@ public class MapArea {
             }
 
             HitboxComponent hitbox = engine.createComponent(HitboxComponent.class);
-            hitbox.setSubEntityStats(ecd.getSubEntityStats());
             for(CircleHitbox c : ecd.getCircleHitboxes()) {
                 c.randomizeAttackPatternTime();
                 hitbox.addCircle(c);
@@ -83,7 +82,14 @@ public class MapArea {
             hitbox.setIsShooting(true);
             e.add(hitbox);
 
-            e.add(Map.createAIComponent(engine, e, ecd, player));
+            if(ecd.getSubEntityStats() != null) {
+                hitbox.setSubEntityStats(ecd.getSubEntityStats());
+                if(ecd.getSubEntityStats().ai != null) {
+                    e.add(engine.createComponent(AIComponent.class).setAi(ecd.getSubEntityStats().ai.clone(e)));
+                }
+            } else {
+                e.add(Map.createAIComponent(engine, e, ecd, player));
+            }
 
             engine.addEntity(e);
         }
