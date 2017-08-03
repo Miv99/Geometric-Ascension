@@ -366,8 +366,8 @@ public class MovementSystem extends EntitySystem {
             }
 
             if (isValidMovement) {
-                float deltaX = velocity.x;
-                float deltaY = velocity.y;
+                float deltaX = velocity.x * deltaTime * 30f;
+                float deltaY = velocity.y * deltaTime * 30f;
 
                 if(velocityAdditionDueToGravity == null) {
                     hitbox.setOrigin(origin.x + deltaX, origin.y + deltaY);
