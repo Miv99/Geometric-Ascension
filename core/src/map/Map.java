@@ -8,6 +8,7 @@ import com.miv.AttackPart;
 import com.miv.AttackPattern;
 import com.miv.Main;
 import com.miv.Mappers;
+import com.miv.Options;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -77,7 +78,7 @@ public class Map {
     private static final float MAP_AREA_PIXEL_POINTS_INCREMENT = 2.5f;
 
     private static final int MIN_ENEMIES_PER_MAP_AREA = 3;
-    private  static final int MAX_ENEMIES_PER_MAP_AREA = 8;
+    private static final int MAX_ENEMIES_PER_MAP_AREA = 8;
     //-----------------------------------------------------------------------------------------------------
 
     private static final float GRID_LINE_SEPARATION_DISTANCE = 150f;
@@ -93,7 +94,10 @@ public class Map {
     private float chanceOfNextAreaHavingStairs;
     // Maximum pixel points, distributed evenly to all enemies, when generating MapAreas
     private float maxPixelPoints;
-    private float maxEnemiesIncrease;
+
+    // min/max enemies per map area, affected by floor
+    private float minEnemiesPerMapArea;
+    private float maxEnemiesPerMapArea;
 
     private MapArea currentArea;
 
@@ -113,6 +117,9 @@ public class Map {
         focus = new Point(0, 0);
         chanceOfNextAreaHavingStairs = 0f;
         maxPixelPoints = INITIAL_MAP_AREA_PIXEL_POINTS;
+
+        minEnemiesPerMapArea = MIN_ENEMIES_PER_MAP_AREA;
+        maxEnemiesPerMapArea = MAX_ENEMIES_PER_MAP_AREA;
     }
 
     public void enterNewFloor(int floor) {
@@ -123,7 +130,9 @@ public class Map {
         chanceOfNextAreaHavingStairs = 0f;
         maxPixelPoints = INITIAL_MAP_AREA_PIXEL_POINTS + MAP_AREA_PIXEL_POINTS_INCREMENT*(float)floor;
 
-        maxEnemiesIncrease = floor/10f;
+        float enemyCountIncrease = floor/10f;
+        minEnemiesPerMapArea = MIN_ENEMIES_PER_MAP_AREA + enemyCountIncrease/2f;
+        maxEnemiesPerMapArea = MAX_ENEMIES_PER_MAP_AREA + enemyCountIncrease;
 
         // First MapArea always has stairs leading to the previous floor
         MapArea mapArea = new MapArea(MapArea.MAP_AREA_MIN_SIZE);
@@ -247,9 +256,10 @@ public class Map {
     }
 
     private void randomlyPopulate(MapArea mapArea) {
-        int enemies = Math.round(MathUtils.random(MIN_ENEMIES_PER_MAP_AREA + maxEnemiesIncrease/2f, MAX_ENEMIES_PER_MAP_AREA + maxEnemiesIncrease));
+        int enemies = Math.round(MathUtils.random(minEnemiesPerMapArea, maxEnemiesPerMapArea));
+        mapArea.setOriginalEnemyCount(enemies);
         mapArea.setEnemyCount(enemies);
-        float ppPerEnemy = maxPixelPoints/(float)enemies * (MIN_ENEMIES_PER_MAP_AREA + MAX_ENEMIES_PER_MAP_AREA)/2f;
+        float ppPerEnemy = maxPixelPoints/(float)enemies * (minEnemiesPerMapArea + maxEnemiesPerMapArea)/2f;
 
         // Array list of circles that surround each enemy's hitbox
         // Used to avoid spawning enemies too close to each other
@@ -282,6 +292,8 @@ public class Map {
             for(int a = 1; a < circlesCount; a++) {
                 CircleHitbox c = new CircleHitbox();
 
+                c.setPpGain(ppPerEnemy / circlesCount * Options.PP_GAIN_MULTIPLIER);
+
                 // Set color
                 c.setHitboxTextureType(RenderSystem.HitboxTextureType.ENEMY);
 
@@ -306,6 +318,8 @@ public class Map {
             for(int a = 0; a < circlesCount - 1; a++) {
                 totalCircleRadius += circles.get(a).radius;
             }
+
+            c1.setPpGain(ppPerEnemy / circlesCount * Options.PP_GAIN_MULTIPLIER);
 
             // Scale circle health to radius
             float c1Health = c1Radius/totalCircleRadius * ecd.getMaxHealth();
@@ -460,5 +474,17 @@ public class Map {
 
     public ArrayList<GridLine> getGridLines() {
         return gridLines;
+    }
+
+    public float getMaxPixelPoints() {
+        return maxPixelPoints;
+    }
+
+    public float getMinEnemiesPerMapArea() {
+        return minEnemiesPerMapArea;
+    }
+
+    public float getMaxEnemiesPerMapArea() {
+        return maxEnemiesPerMapArea;
     }
 }

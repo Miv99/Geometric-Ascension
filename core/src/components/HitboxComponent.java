@@ -36,6 +36,9 @@ public class HitboxComponent implements Component, Pool.Poolable {
         public EntityCreationData aiData;
     }
 
+    // How much health is healed per pp spent
+    public static float HEALTH_PER_PP_HEALING_COST_RATIO = 10;
+
     // Position of hitbox
     private Point origin;
     // Velocity of hitbox, in meters/frame
@@ -273,6 +276,45 @@ public class HitboxComponent implements Component, Pool.Poolable {
             return origin.y < travellingDestination.y;
         }
         return false;
+    }
+
+    public float getTotalMissingHealth() {
+        float missing = 0;
+        for(CircleHitbox c : circles) {
+            missing += c.getMaxHealth() - c.getHealth();
+        }
+        return missing;
+    }
+
+    public float getTotalHealingCostInPP() {
+        return getTotalMissingHealth()/HEALTH_PER_PP_HEALING_COST_RATIO;
+    }
+
+    /**
+     * @param pp amount of pp put into healing
+     * @return the leftover pp
+     */
+    public float heal(float pp) {
+        float newPP = pp;
+        for(CircleHitbox c : circles) {
+            newPP -= heal(c, newPP);
+            if(newPP <= 0) {
+                return 0;
+            }
+        }
+        return newPP;
+    }
+
+    public float heal(CircleHitbox circle, float pp) {
+        float missing = circle.getMaxHealth() - circle.getHealth();
+        float ppCost = missing/HEALTH_PER_PP_HEALING_COST_RATIO;
+        if(pp >= ppCost) {
+            circle.setHealth(circle.getMaxHealth());
+            return pp - ppCost;
+        } else {
+            circle.setHealth(circle.getHealth() + pp * HEALTH_PER_PP_HEALING_COST_RATIO);
+            return pp;
+        }
     }
 
     public Vector2 getVelocity() {

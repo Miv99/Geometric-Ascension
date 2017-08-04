@@ -27,6 +27,9 @@ public class CircleHitbox extends Circle {
     private float originalPosX;
     private float originalPosY;
 
+    // How much pp the player gains by killing this circle
+    private float ppGain;
+
     public CircleHitbox() {}
 
     public CircleHitbox(boolean isEnemy) {
@@ -123,5 +126,13 @@ public class CircleHitbox extends Circle {
 
     public void setOriginalPosY(float originalPosY) {
         this.originalPosY = originalPosY;
+    }
+
+    public float getPpGain() {
+        return ppGain;
+    }
+
+    public void setPpGain(float ppGain) {
+        this.ppGain = ppGain;
     }
 }

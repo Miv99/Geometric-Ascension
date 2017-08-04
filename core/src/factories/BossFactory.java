@@ -2,6 +2,7 @@ package factories;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.math.MathUtils;
+import com.miv.Options;
 
 import java.util.ArrayList;
 
@@ -25,7 +26,7 @@ public class BossFactory {
         ArrayList<EntityCreationData> ecds = new ArrayList<EntityCreationData>();
 
         // Make boss 10x harder than a normal enemy
-        pp *= 10f;
+        float scaledPP = pp * 10f;
 
         if(id == 0) {
             EntityCreationData e1 = new EntityCreationData(true);
@@ -39,8 +40,9 @@ public class BossFactory {
             ca1.add(c1);
             c1.setPosition(0, 0);
             c1.setAttackPattern(AttackPatternFactory.getAttackPattern("BOSS_1_1"));
-            c1.setHealth(pp * 12.5f);
-            c1.setMaxHealth(pp * 12.5f);
+            c1.setHealth(scaledPP * 15f);
+            c1.setMaxHealth(scaledPP * 15f);
+            c1.setPpGain(pp * Options.PP_GAIN_MULTIPLIER * 10f);
             c1.setRadius(mainRadius);
             for(int i = 0; i < 16; i++) {
                 CircleHitbox c = new CircleHitbox(true);
@@ -48,8 +50,9 @@ public class BossFactory {
                 float angle = i * MathUtils.degreesToRadians * (360/16f);
                 c.setPosition((mainRadius + subRadius) * MathUtils.cos(angle), (mainRadius + subRadius) * MathUtils.sin(angle));
                 c.setAttackPattern(AttackPatternFactory.getAttackPattern("BOSS_1_2"));
-                c.setHealth(pp);
-                c.setMaxHealth(pp);
+                c.setHealth(scaledPP);
+                c.setMaxHealth(scaledPP);
+                c.setPpGain(pp * Options.PP_GAIN_MULTIPLIER);
                 c.setRadius(subRadius);
             }
 

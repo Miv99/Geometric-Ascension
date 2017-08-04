@@ -24,6 +24,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import map.Map;
 import screens.HUD;
 import screens.MainMenu;
+import screens.PlayerBuilder;
 import systems.AISystem;
 import systems.MovementSystem;
 import systems.RenderSystem;
@@ -95,6 +96,7 @@ public class Main extends Game {
 
 	// Screens
 	private MainMenu mainMenu;
+	private PlayerBuilder playerBuilder;
 
 	@Override
 	public void create() {
@@ -112,7 +114,7 @@ public class Main extends Game {
 
 		// Add entity systems
 		engine.addSystem(new AISystem());
-		engine.addSystem(new MovementSystem(engine, map));
+		engine.addSystem(new MovementSystem(engine, map, player));
 		shootingSystem = new ShootingSystem(engine);
 		engine.addSystem(shootingSystem);
 		RenderSystem renderSystem = new RenderSystem(this, map);
@@ -149,11 +151,21 @@ public class Main extends Game {
 	}
 
 	public void loadCustomizeScreen() {
-		System.out.println("LOAD CUSTOMIZE SCREEN");
-		//TODO
+		if(playerBuilder == null) {
+			playerBuilder = new PlayerBuilder(this, inputMultiplexer, assetManager, player);
+		}
+		setScreen(playerBuilder);
 		state = GameState.CUSTOMIZE;
 
 		//TODO: on exit, set state to main game
+	}
+
+	public void loadHUD() {
+		if(hud == null) {
+			hud = new HUD(this, assetManager, inputMultiplexer, gestureListener, player, map);
+		}
+		setScreen(hud);
+		state = GameState.MAIN_GAME;
 	}
 
 	public void loadAssets() {

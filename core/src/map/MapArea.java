@@ -30,6 +30,7 @@ public class MapArea {
     private float radius;
 
     private int enemyCount;
+    private int originalEnemyCount;
 
     /**
      * Set to -1 if no stairs exist in this MapArea. Otherwise, an entity with an OnCollision event will be spawned in the middle of the MapArea
@@ -124,5 +125,13 @@ public class MapArea {
 
     public int getStairsDestination() {
         return stairsDestination;
+    }
+
+    public int getOriginalEnemyCount() {
+        return originalEnemyCount;
+    }
+
+    public void setOriginalEnemyCount(int originalEnemyCount) {
+        this.originalEnemyCount = originalEnemyCount;
     }
 }

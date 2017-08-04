@@ -49,19 +49,16 @@ public class MovementSystem extends EntitySystem {
     private PooledEngine engine;
     private Map map;
 
-    private int screenWidth, screenHeight;
+    private PlayerComponent playerPlayerComponent;
 
-    public MovementSystem(PooledEngine engine, Map map) {
+    public MovementSystem(PooledEngine engine, Map map, Entity player) {
         this.engine = engine;
         this.map = map;
         collisionCirclesToHandle = new ArrayList<CircleHitbox>();
         collisionEntitiesToHandle = new ArrayList<Entity>();
         entityRemovalQueue = new ArrayList<Entity>();
 
-        int a = Gdx.graphics.getWidth();
-        int b = Gdx.graphics.getHeight();
-        screenWidth = Math.max(a, b);
-        screenHeight = Math.min(a, b);
+        playerPlayerComponent = Mappers.player.get(player);
     }
 
     @Override
@@ -103,7 +100,7 @@ public class MovementSystem extends EntitySystem {
         }
     }
 
-    private void handleBulletCollision(Entity victim, CircleHitbox victimHitboxHit, Entity bullet) {
+    private void handleBulletCollision(Entity victim, CircleHitbox victimCircleHit, Entity bullet) {
         float damage = 0;
         if(Mappers.enemyBullet.has(bullet)) {
             damage = Mappers.enemyBullet.get(bullet).getDamage();
@@ -113,11 +110,21 @@ public class MovementSystem extends EntitySystem {
 
         // Victim takes damage
         HitboxComponent victimHitbox = Mappers.hitbox.get(victim);
-        victimHitboxHit.setHealth(victimHitboxHit.getHealth() - damage);
+        victimCircleHit.setHealth(victimCircleHit.getHealth() - damage);
 
-        if(victimHitboxHit.getHealth() <= 0) {
+        if(victimCircleHit.getHealth() <= 0) {
             //TODO: circle death animation
-            victimHitbox.queueCircleRemoval(victimHitboxHit);
+            victimHitbox.queueCircleRemoval(victimCircleHit);
+
+            if(Mappers.enemy.has(victim)) {
+                playerPlayerComponent.setPixelPoints(playerPlayerComponent.getPixelPoints() + victimCircleHit.getPpGain());
+
+                // TODO: remove this
+                if(victimCircleHit.getPpGain() <= 0) {
+                    System.out.println("you messed up; a circle has no pp gain for some reason 1374dskjfsd9");
+                }
+            }
+
             // All hit circles considered dead when number of circles is 1 because size() is not updated until
             // the circle removal queue is fired.
             if(victimHitbox.getCircles().size() == 1) {
@@ -328,8 +335,8 @@ public class MovementSystem extends EntitySystem {
                     float cameraDistanceXFromPlayer = hitbox.getOrigin().x - camera.position.x;
                     float cameraDistanceYFromPlayer = hitbox.getOrigin().y - camera.position.y;
 
-                    hitbox.setOrigin(-directionOfTravel.getDeltaX() * newMapAreaRadius - (directionOfTravel.getDeltaX() * NEW_MAP_AREA_ENTER_TRAVEL_TIME * hitbox.getTravellingSpeed() * Options.FPS),
-                            -directionOfTravel.getDeltaY() * newMapAreaRadius - (directionOfTravel.getDeltaY() * NEW_MAP_AREA_ENTER_TRAVEL_TIME * hitbox.getTravellingSpeed() * Options.FPS));
+                    hitbox.setOrigin(-directionOfTravel.getDeltaX() * newMapAreaRadius - (directionOfTravel.getDeltaX() * NEW_MAP_AREA_ENTER_TRAVEL_TIME * hitbox.getTravellingSpeed() * Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER),
+                            -directionOfTravel.getDeltaY() * newMapAreaRadius - (directionOfTravel.getDeltaY() * NEW_MAP_AREA_ENTER_TRAVEL_TIME * hitbox.getTravellingSpeed() * Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER));
                     // Instantly teleport camera to the same distance behind player from before to have illusion of smooth travel
                     camera.position.x = hitboxOrigin.x - cameraDistanceXFromPlayer;
                     camera.position.y = hitboxOrigin.y - cameraDistanceYFromPlayer;
@@ -366,8 +373,8 @@ public class MovementSystem extends EntitySystem {
             }
 
             if (isValidMovement) {
-                float deltaX = velocity.x * deltaTime * 30f;
-                float deltaY = velocity.y * deltaTime * 30f;
+                float deltaX = velocity.x * deltaTime * Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER;
+                float deltaY = velocity.y * deltaTime * Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER;
 
                 if(velocityAdditionDueToGravity == null) {
                     hitbox.setOrigin(origin.x + deltaX, origin.y + deltaY);
@@ -397,6 +404,12 @@ public class MovementSystem extends EntitySystem {
                 map.getMain().onPlayerDeath();
             } else if(Mappers.enemy.has(e)) {
                 map.getCurrentArea().setEnemyCount(engine, players.first(), map, map.getCurrentArea().getEnemyCount() - 1);
+
+                if(map.getCurrentArea().getEnemyCount() == 0) {
+                    // Bonus pp for killing all enemies
+                    float bonusPp = map.getCurrentArea().getOriginalEnemyCount()/((map.getMinEnemiesPerMapArea() + map.getMaxEnemiesPerMapArea())/2f) * map.getMaxPixelPoints() * Options.BONUS_PP_MULTIPLIER;
+                    playerPlayerComponent.setPixelPoints(playerPlayerComponent.getPixelPoints() + bonusPp);
+                }
             }
         }
         entityRemovalQueue.clear();

@@ -65,7 +65,7 @@ public class Options implements Screen {
         ImageButton.ImageButtonStyle backButtonStyle = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(backButtonUp)), new TextureRegionDrawable(new TextureRegion(backButtonDown)), null, null, null, null);
         ImageButton backButton = new ImageButton(backButtonStyle);
         backButton.setSize(70f, 70f);
-        backButton.setPosition(LEFT_PADDING, height - TOP_PADDING - backButton.getHeight());
+        backButton.setPosition(LEFT_PADDING, TOP_PADDING);
         backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -78,7 +78,7 @@ public class Options implements Screen {
         final Label masterVolumeLabel = new Label("Master volume: " + (int)(com.miv.Options.MASTER_VOLUME*100) + "%", skin);
         masterVolumeLabel.setFontScale(2f);
         masterVolumeLabel.setSize(SLIDER_LENGTH, LABEL_HEIGHT);
-        masterVolumeLabel.setPosition(LEFT_PADDING, backButton.getY() - masterVolumeLabel.getHeight() - TOP_PADDING - LABEL_HEIGHT);
+        masterVolumeLabel.setPosition(LEFT_PADDING, height - TOP_PADDING - masterVolumeLabel.getHeight());
         masterVolumeLabel.setColor(Color.BLACK);
         stage.addActor(masterVolumeLabel);
         // Create master volume slider
@@ -163,8 +163,8 @@ public class Options implements Screen {
         enemyHealthBar.getLabel().setColor(Color.BLACK);
         enemyHealthBar.getLabel().setFontScale(2f);
         enemyHealthBar.setSize(CHECKBOX_WIDTH, CHECKBOX_HEIGHT);
-        enemyHealthBar.setPosition(playerHealthBar.getX(), playerHealthBar.getY() - CHECKBOX_HEIGHT - CHECKBOX_PADDING);
-        playerHealthBar.addListener(new ChangeListener() {
+        enemyHealthBar.setPosition(playerHealthBar.getX() + 5f, playerHealthBar.getY() - CHECKBOX_HEIGHT - CHECKBOX_PADDING);
+        enemyHealthBar.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 com.miv.Options.SHOW_ENEMY_HEALTH_BARS = !com.miv.Options.SHOW_ENEMY_HEALTH_BARS;
@@ -175,6 +175,7 @@ public class Options implements Screen {
 
         // Delete save button
         TextButton deleteSave = new TextButton("Delete save", skin);
+        deleteSave.getLabel().setColor(Color.WHITE);
         deleteSave.getLabel().setFontScale(0.6f);
         deleteSave.setSize(250, 80);
         deleteSave.setPosition(Gdx.graphics.getWidth() - LEFT_PADDING - deleteSave.getWidth(), TOP_PADDING);

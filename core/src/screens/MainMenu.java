@@ -57,32 +57,36 @@ public class MainMenu implements Screen {
 
 		Button.ButtonStyle invisibleButtonStyle = new Button.ButtonStyle();
 
-		// Create buttons
-		Button newGameButton = new Button(invisibleButtonStyle);
-		newGameButton.setSize(Main.SCREEN_WIDTH, Main.SCREEN_HEIGHT);
-		newGameButton.setPosition(0, 0);
-		newGameButton.addListener(new ClickListener() {
-			@Override
-			public void clicked(InputEvent event, float x, float y) {
-				main.startGame();
-				music.stop();
-			}
-		});
-		stage.addActor(newGameButton);
-
 		// Options button
 		Texture optionsButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.OPTIONS_BUTTON_UP_PATH).path());
 		Texture optionsButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.OPTIONS_BUTTON_DOWN_PATH).path());
 		ImageButton.ImageButtonStyle optionsButtonStyle = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(optionsButtonUp)), new TextureRegionDrawable(new TextureRegion(optionsButtonDown)), null, null, null, null);
-		ImageButton optionsButton = new ImageButton(optionsButtonStyle);
-		optionsButton.setSize(120, 120);
-		optionsButton.setPosition(25, Gdx.graphics.getHeight() - 25 - optionsButton.getHeight());
+		final ImageButton optionsButton = new ImageButton(optionsButtonStyle);
+		optionsButton.setSize(70, 70);
+		optionsButton.setPosition(25, 25);
 		optionsButton.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				main.setScreen(new Options(main, assetManager, inputMultiplexer, music));
 			}
 		});
+		// Disable input around options button in case of fat fingers
+		final float optionsButtonDisabledInputPadding = 80f;
+
+		// New game button that covers almost entire screen
+		Button newGameButton = new Button(invisibleButtonStyle);
+		newGameButton.setSize(Main.SCREEN_WIDTH, Main.SCREEN_HEIGHT);
+		newGameButton.setPosition(0, 0);
+		newGameButton.addListener(new ClickListener() {
+			@Override
+			public void clicked(InputEvent event, float x, float y) {
+				if(x > optionsButton.getX() + optionsButton.getWidth() + optionsButtonDisabledInputPadding || y > optionsButton.getY() + optionsButton.getHeight() + optionsButtonDisabledInputPadding) {
+					main.startGame();
+					music.stop();
+				}
+			}
+		});
+		stage.addActor(newGameButton);
 		stage.addActor(optionsButton);
 
 		// Touch to start label
@@ -101,10 +105,6 @@ public class MainMenu implements Screen {
 
 		music.play();
 		music.setLooping(true);
-
-		for(Actor a : stage.getActors()) {
-			a.setVisible(true);
-		}
 	}
 
 	@Override
@@ -141,12 +141,8 @@ public class MainMenu implements Screen {
 
 	@Override
 	public void hide() {
-		System.out.println("MAIN MENU HIDDEN");
 		inputMultiplexer.removeProcessor(stage);
 		music.pause();
-		for(Actor a : stage.getActors()) {
-			a.setVisible(false);
-		}
 	}
 
 	@Override
