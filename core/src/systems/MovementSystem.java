@@ -11,6 +11,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.miv.Camera;
 import com.miv.EntityActions;
 import com.badlogic.gdx.math.Vector2;
+import com.miv.Main;
 import com.miv.Mappers;
 import com.miv.Options;
 
@@ -48,10 +49,12 @@ public class MovementSystem extends EntitySystem {
     private ImmutableArray<Entity> enemiesAndPlayers;
     private PooledEngine engine;
     private Map map;
+    private Main main;
 
     private PlayerComponent playerPlayerComponent;
 
-    public MovementSystem(PooledEngine engine, Map map, Entity player) {
+    public MovementSystem(Main main, PooledEngine engine, Map map, Entity player) {
+        this.main = main;
         this.engine = engine;
         this.map = map;
         collisionCirclesToHandle = new ArrayList<CircleHitbox>();
@@ -326,7 +329,7 @@ public class MovementSystem extends EntitySystem {
                 if(!hitbox.isTravellingFlag() && (hitbox.getTravellingTime() > NEW_MAP_AREA_LEAVE_TRAVEL_TIME || mapAreaIsOutOfCameraRange())) {
                     EntityActions.Direction directionOfTravel = hitbox.getTravellingDirection();
 
-                    map.enterNewArea(engine, e, (int)map.getFocus().x + directionOfTravel.getDeltaX(), (int)map.getFocus().y + directionOfTravel.getDeltaY());
+                    map.enterNewArea(engine, e, (int)map.getFocus().x + directionOfTravel.getDeltaX(), (int)map.getFocus().y + directionOfTravel.getDeltaY(), false);
 
                     // Set position of player so that the player will enter the new map area in a certain amount of time
                     final float newMapAreaRadius = map.getCurrentArea().getRadius();
@@ -359,6 +362,11 @@ public class MovementSystem extends EntitySystem {
                     }
                     hitbox.setVelocity(0, 0);
 
+                    // Save game
+                    main.save();
+                    // Manually clear new map area entityCreationData to avoid saving an empty one to the current map area
+                    map.getCurrentArea().entityCreationDataArrayList.clear();
+
                     // Make player no longer invincible
                     hitbox.setIntangible(false);
 
@@ -388,6 +396,7 @@ public class MovementSystem extends EntitySystem {
             for(CircleHitbox c : hitbox.getCircleRemovalQueue()) {
                 ArrayList<Entity> subEntitites = hitbox.removeCircle(engine, e, c);
                 if(subEntitites != null) {
+                    map.getCurrentArea().setEnemyCount(map.getCurrentArea().getEnemyCount() + subEntitites.size());
                     for (Entity sub : subEntitites) {
                         engine.addEntity(sub);
                     }
@@ -407,8 +416,13 @@ public class MovementSystem extends EntitySystem {
 
                 if(map.getCurrentArea().getEnemyCount() == 0) {
                     // Bonus pp for killing all enemies
+                    System.out.println("original: " + map.getCurrentArea().getOriginalEnemyCount());
                     float bonusPp = map.getCurrentArea().getOriginalEnemyCount()/((map.getMinEnemiesPerMapArea() + map.getMaxEnemiesPerMapArea())/2f) * map.getMaxPixelPoints() * Options.BONUS_PP_MULTIPLIER;
+                    System.out.println("bonus: " + bonusPp);
                     playerPlayerComponent.setPixelPoints(playerPlayerComponent.getPixelPoints() + bonusPp);
+
+                    // Save
+                    main.save();
                 }
             }
         }

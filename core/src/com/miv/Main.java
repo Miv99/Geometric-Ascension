@@ -114,7 +114,7 @@ public class Main extends Game {
 
 		// Add entity systems
 		engine.addSystem(new AISystem());
-		engine.addSystem(new MovementSystem(engine, map, player));
+		engine.addSystem(new MovementSystem(this, engine, map, player));
 		shootingSystem = new ShootingSystem(engine);
 		engine.addSystem(shootingSystem);
 		RenderSystem renderSystem = new RenderSystem(this, map);
@@ -123,6 +123,7 @@ public class Main extends Game {
 		camera = new Camera(renderSystem);
 		camera.resetViewport();
 		camera.position.set(0, 0, 0);
+		camera.setFocus(player);
 
 		assetManager.finishLoading();
 		renderSystem.loadTextures(assetManager);
@@ -132,7 +133,10 @@ public class Main extends Game {
 	public void loadMainMenuMapPreview() {
 		Save.load(this);
 		engine.addEntity(player);
-		map.enterNewArea(engine, player, 0, 0);
+		map.enterNewArea(engine, player, (int) map.getFocus().x, (int)map.getFocus().y, true);
+		if(camera != null) {
+			camera.setFocus(player);
+		}
 	}
 
 	public void loadMainMenu() {
@@ -231,7 +235,7 @@ public class Main extends Game {
 		} catch(IllegalArgumentException e) {
 
 		}
-		map.enterNewArea(engine, player, 0, 0);
+		// map.enterNewArea(engine, player, (int)map.getFocus().x, (int)map.getFocus().y);
 
 		gestureListener.setPlayer(player);
 		hud = new HUD(Main.this, assetManager, inputMultiplexer, gestureListener, player, map);

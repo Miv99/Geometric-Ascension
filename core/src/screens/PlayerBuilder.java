@@ -67,7 +67,7 @@ public class PlayerBuilder implements Screen {
         pp = new Label("", skin);
 
         // Heal button
-        heal = new TextButton("Heal (" + (int)Mappers.hitbox.get(player).getTotalHealingCostInPP() + "pp)", skin);
+        heal = new TextButton("Heal (" + Math.round(Mappers.hitbox.get(player).getTotalHealingCostInPP()) + "pp)", skin);
         heal.getLabel().setColor(Color.WHITE);
         heal.getLabel().setFontScale(0.6f);
         heal.setSize(450, 80);
@@ -79,16 +79,16 @@ public class PlayerBuilder implements Screen {
                 HitboxComponent hitboxComponent = Mappers.hitbox.get(player);
 
                 playerComponent.setPixelPoints(hitboxComponent.heal(playerComponent.getPixelPoints()));
-                heal.setText("Heal (" + (int)Mappers.hitbox.get(player).getTotalHealingCostInPP() + "pp)");
-                pp.setText((int)Mappers.player.get(player).getPixelPoints() + "pp");
+                heal.setText("Heal (" + Math.round(Mappers.hitbox.get(player).getTotalHealingCostInPP()) + "pp)");
+                pp.setText(Math.round(Mappers.player.get(player).getPixelPoints()) + "pp");
             }
         });
         stage.addActor(heal);
 
         pp.setFontScale(2.7f);
-        pp.setText((int) Mappers.player.get(player).getPixelPoints() + "pp");
+        pp.setText(Math.round(Mappers.player.get(player).getPixelPoints()) + "pp");
         pp.pack();
-        pp.setPosition(LEFT_PADDING, heal.getY() + 15f);
+        pp.setPosition(LEFT_PADDING, heal.getY() + 25f);
         pp.setColor(Color.BLACK);
         stage.addActor(pp);
     }
@@ -101,8 +101,8 @@ public class PlayerBuilder implements Screen {
     }
 
     public void updateText() {
-        heal.setText("Heal (" + (int)Mappers.hitbox.get(player).getTotalHealingCostInPP() + "pp)");
-        pp.setText((int)Mappers.player.get(player).getPixelPoints() + "pp");
+        heal.setText("Heal (" + Math.round(Mappers.hitbox.get(player).getTotalHealingCostInPP()) + "pp)");
+        pp.setText(Math.round(Mappers.player.get(player).getPixelPoints()) + "pp");
     }
 
     @Override

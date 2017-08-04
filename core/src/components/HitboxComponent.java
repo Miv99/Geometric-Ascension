@@ -297,7 +297,7 @@ public class HitboxComponent implements Component, Pool.Poolable {
     public float heal(float pp) {
         float newPP = pp;
         for(CircleHitbox c : circles) {
-            newPP -= heal(c, newPP);
+            newPP = heal(c, newPP);
             if(newPP <= 0) {
                 return 0;
             }
@@ -305,6 +305,10 @@ public class HitboxComponent implements Component, Pool.Poolable {
         return newPP;
     }
 
+    /**
+     * @param pp amount of pp put into healing
+     * @return the leftover pp
+     */
     public float heal(CircleHitbox circle, float pp) {
         float missing = circle.getMaxHealth() - circle.getHealth();
         float ppCost = missing/HEALTH_PER_PP_HEALING_COST_RATIO;
@@ -313,7 +317,7 @@ public class HitboxComponent implements Component, Pool.Poolable {
             return pp - ppCost;
         } else {
             circle.setHealth(circle.getHealth() + pp * HEALTH_PER_PP_HEALING_COST_RATIO);
-            return pp;
+            return 0;
         }
     }
 

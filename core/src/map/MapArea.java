@@ -1,8 +1,10 @@
 package map;
 
 import com.badlogic.ashley.core.Entity;
+import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.core.PooledEngine;
 import com.miv.EntityActions;
+import com.miv.Mappers;
 
 import java.util.ArrayList;
 
@@ -12,8 +14,11 @@ import ai.SimpleStalkTarget;
 import ai.SimpleWander;
 import components.AIComponent;
 import components.BossComponent;
+import components.EnemyBulletComponent;
 import components.EnemyComponent;
 import components.HitboxComponent;
+import components.IgnoreRespawnOnAreaResetComponent;
+import components.PlayerBulletComponent;
 import utils.CircleHitbox;
 
 /**
@@ -54,10 +59,10 @@ public class MapArea {
 
     /**
      * Spawns all entities in {@link map.MapArea#entityCreationDataArrayList}
-     * and stairs.
      */
-    public void spawnEntities(final PooledEngine engine, final Map map, Entity player) {
+    public void spawnEntities(final PooledEngine engine, Entity player, boolean clearEntityCreationDataAfterSpawning) {
         enemyCount = entityCreationDataArrayList.size();
+        System.out.println("ENEMY COUNT: " + enemyCount + "; original: " + originalEnemyCount);
 
         // Entities from entityCreationDataArrayList
         for(EntityCreationData ecd : entityCreationDataArrayList) {
@@ -95,7 +100,50 @@ public class MapArea {
             engine.addEntity(e);
         }
 
+        if(clearEntityCreationDataAfterSpawning) {
+            entityCreationDataArrayList.clear();
+        }
+    }
+
+    public void storeExistingEnemies(PooledEngine engine, boolean deleteEntitiesAfterwards) {
         entityCreationDataArrayList.clear();
+
+        for (Entity e : engine.getEntitiesFor(Family.all(EnemyComponent.class, HitboxComponent.class).exclude(IgnoreRespawnOnAreaResetComponent.class).get())) {
+            EntityCreationData ecd = new EntityCreationData();
+            ecd.setIsEnemy(true);
+            if (Mappers.boss.has(e)) {
+                ecd.setIsBoss(true);
+            }
+
+            // Save AI
+            if(Mappers.ai.has(e)) {
+                Mappers.ai.get(e).getAi().saveToEntityCreationData(ecd);
+            }
+
+            // Save position
+            ecd.setSpawnPosition(Mappers.hitbox.get(e).getOrigin().x, Mappers.hitbox.get(e).getOrigin().y);
+
+            // Restore health
+            for(CircleHitbox c : Mappers.hitbox.get(e).getCircles()) {
+                c.setHealth(c.getMaxHealth());
+            }
+
+            ArrayList<CircleHitbox> circles = new ArrayList<CircleHitbox>();
+            circles.addAll(Mappers.hitbox.get(e).getCircles());
+            ecd.setCircleHitboxes(circles);
+            entityCreationDataArrayList.add(ecd);
+
+            if(deleteEntitiesAfterwards) {
+                engine.removeEntity(e);
+            }
+        }
+
+        // Remove all bullets
+        if(deleteEntitiesAfterwards) {
+            for (Entity e : engine.getEntitiesFor(Family.one(EnemyBulletComponent.class, PlayerBulletComponent.class).get())) {
+                engine.removeEntity(e);
+            }
+        }
     }
 
     public float getRadius() {
@@ -106,6 +154,10 @@ public class MapArea {
         return enemyCount;
     }
 
+
+    /**
+     * Used for when killing enemies
+     */
     public void setEnemyCount(PooledEngine engine, Entity player, Map map, int enemyCount) {
         this.enemyCount = enemyCount;
 

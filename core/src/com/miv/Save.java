@@ -13,8 +13,10 @@ import factories.AttackPatternFactory;
 import map.Map;
 import systems.RenderSystem;
 import utils.CircleHitbox;
+import utils.Point;
 
 /**
+ * Game autosaves when entering a new map area (only via travelling) and when a map area is cleared of all enemies.
  * Created by Miv on 7/10/2017.
  */
 
@@ -26,16 +28,18 @@ public class Save {
         private PlayerComponent playerPlayerComponent;
         private Map map;
         private float playerMaxSpeed;
+        private Point playerOrigin;
 
         public SaveData() {
 
         }
 
-        private SaveData(ArrayList<CircleHitbox> playerCircles, float playerMaxSpeed, PlayerComponent playerPlayerComponent, Map map) {
+        private SaveData(ArrayList<CircleHitbox> playerCircles, float playerMaxSpeed, PlayerComponent playerPlayerComponent, Map map, Point playerOrigin) {
             this.playerCircles = playerCircles;
             this.playerMaxSpeed = playerMaxSpeed;
             this.playerPlayerComponent = playerPlayerComponent;
             this.map = map;
+            this.playerOrigin = playerOrigin;
         }
     }
 
@@ -47,43 +51,56 @@ public class Save {
         PooledEngine engine = main.getEngine();
         engine.removeAllEntities();
 
-        if(!Gdx.files.local(SAVE_DATA_PATH).exists()) {
-            Json save = new Json();
-            SaveData data = save.fromJson(SaveData.class, Gdx.files.local(SAVE_DATA_PATH));
+        if(Gdx.files.local(SAVE_DATA_PATH).exists()) {
+            try {
+                Json save = new Json();
+                SaveData data = save.fromJson(SaveData.class, Gdx.files.local(SAVE_DATA_PATH));
 
-            // Load player data
-            Entity player = engine.createEntity();
-            HitboxComponent hitbox = engine.createComponent(HitboxComponent.class);
-            for(CircleHitbox c : data.playerCircles) {
-                hitbox.addCircle(c);
+                // Load player data
+                Entity player = engine.createEntity();
+                HitboxComponent hitbox = engine.createComponent(HitboxComponent.class);
+                for (CircleHitbox c : data.playerCircles) {
+                    hitbox.addCircle(c);
+                }
+                hitbox.recenterOriginalCirclePositions();
+                hitbox.setMaxSpeed(data.playerMaxSpeed);
+                hitbox.setOrigin(data.playerOrigin.x, data.playerOrigin.y);
+                player.add(hitbox);
+                player.add(data.playerPlayerComponent);
+                main.setPlayer(player);
+
+                // Load map
+                main.setMap(data.map);
+            } catch(Exception e) {
+                createNewSave(engine, main);
             }
-            hitbox.recenterOriginalCirclePositions();
-            hitbox.setMaxSpeed(data.playerMaxSpeed);
-            player.add(hitbox);
-            player.add(data.playerPlayerComponent);
-            main.setPlayer(player);
-
-            // Load map
-            main.setMap(data.map);
         } else {
-            // Create new player entity
-            Entity player = engine.createEntity();
-            HitboxComponent hitboxComponent = engine.createComponent(HitboxComponent.class);
-            hitboxComponent.setMaxSpeed(5f);
-            CircleHitbox c = new CircleHitbox();
-            c.setHitboxTextureType(RenderSystem.HitboxTextureType.PLAYER);
-            c.setRadius(40f);
-            c.setMaxHealth(500f);
-            c.setHealth(500f);
-            c.setAttackPattern(AttackPatternFactory.getAttackPattern("PLAYER_STARTING"));
-            hitboxComponent.addCircle(c);
-            hitboxComponent.recenterOriginalCirclePositions();
-            player.add(hitboxComponent);
-            player.add(engine.createComponent(PlayerComponent.class));
-            main.setPlayer(player);
+            createNewSave(engine, main);
+        }
+    }
 
-            // Create new map
-            main.setMap(new Map(main));
+    private static void createNewSave(PooledEngine engine, Main main) {
+        System.out.println("CREATED NEW SAVE DATA");
+
+        // Create new player entity
+        Entity player = engine.createEntity();
+        HitboxComponent hitboxComponent = engine.createComponent(HitboxComponent.class);
+        hitboxComponent.setMaxSpeed(5f);
+        CircleHitbox c = new CircleHitbox();
+        c.setHitboxTextureType(RenderSystem.HitboxTextureType.PLAYER);
+        c.setRadius(40f);
+        c.setMaxHealth(500f);
+        c.setHealth(500f);
+        c.setAttackPattern(AttackPatternFactory.getAttackPattern("PLAYER_STARTING"));
+        hitboxComponent.addCircle(c);
+        hitboxComponent.recenterOriginalCirclePositions();
+        player.add(hitboxComponent);
+        player.add(engine.createComponent(PlayerComponent.class));
+        main.setPlayer(player);
+
+        // Create new map
+        main.setMap(new Map(main));
+    }
 
     public static void deleteSave() {
         if(Gdx.files.local(SAVE_DATA_PATH).exists()) {
@@ -94,7 +111,7 @@ public class Save {
     public static void save(Main session) {
         // TODO: auto save every time player kills all enemies in MapArea or enters new floor
         SaveData saveData = new SaveData(Mappers.hitbox.get(session.getPlayer()).getCircles(), Mappers.hitbox.get(session.getPlayer()).getMaxSpeed(),
-                Mappers.player.get(session.getPlayer()), session.getMap());
+                Mappers.player.get(session.getPlayer()), session.getMap(), Mappers.hitbox.get(session.getPlayer()).getOrigin());
 
         Json save = new Json();
         Gdx.files.local(SAVE_DATA_PATH).writeString(save.toJson(saveData), false);

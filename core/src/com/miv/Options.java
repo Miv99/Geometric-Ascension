@@ -8,7 +8,7 @@ import map.Map;
 public class Options {
     public static final float PP_GAIN_MULTIPLIER = 1.3f/Map.INITIAL_MAP_AREA_PIXEL_POINTS;
     // Affects bonus pp gain from clearing a map area
-    public static final float BONUS_PP_MULTIPLIER = 0.5f;
+    public static final float BONUS_PP_MULTIPLIER = 0.3f;
     public static final float GLOBAL_MOVEMENT_SPEED_MULTIPLIER = 30f;
 
     /**

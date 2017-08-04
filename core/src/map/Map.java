@@ -89,7 +89,7 @@ public class Map {
     private int floor;
     private Point focus;
     // Maps location on the world map to a specific MapArea
-    private HashMap<Point, MapArea> areas;
+    private HashMap<String, MapArea> areas;
     // Percent chance of the next undiscovered MapArea being having a stairway (0 to MAX_CHANCE_OF_STAIRS_AREA)*100 %
     private float chanceOfNextAreaHavingStairs;
     // Maximum pixel points, distributed evenly to all enemies, when generating MapAreas
@@ -113,7 +113,7 @@ public class Map {
         this.main = main;
 
         gridLines = new ArrayList<GridLine>();
-        areas = new HashMap<Point, MapArea>();
+        areas = new HashMap<String, MapArea>();
         focus = new Point(0, 0);
         chanceOfNextAreaHavingStairs = 0f;
         maxPixelPoints = INITIAL_MAP_AREA_PIXEL_POINTS;
@@ -136,26 +136,26 @@ public class Map {
 
         // First MapArea always has stairs leading to the previous floor
         MapArea mapArea = new MapArea(MapArea.MAP_AREA_MIN_SIZE);
-        areas.put(new Point(0, 0), mapArea);
+        areas.put(new Point(0, 0).toString(), mapArea);
         Mappers.hitbox.get(main.getPlayer()).setOrigin(0, 0);
-        enterNewArea(main.getEngine(), main.getPlayer(), 0, 0);
+        enterNewArea(main.getEngine(), main.getPlayer(), 0, 0, true);
 
         main.save();
     }
 
-    public void enterNewArea(PooledEngine engine, Entity player, int x, int y) {
-        MapArea oldMapArea = areas.get(focus);
+    public void enterNewArea(PooledEngine engine, Entity player, int x, int y, boolean clearNewMapAreaEntityCreationDataAfterSpawningEnemies) {
+        MapArea oldMapArea = areas.get(focus.toString());
 
         boolean increaseChanceOfNextAreaHavingStairs = false;
 
         MapArea newMapArea;
         Point newPos = new Point(x, y);
-        if(!areas.containsKey(newPos)) {
+        if(!areas.containsKey(newPos.toString())) {
             increaseChanceOfNextAreaHavingStairs = true;
             newMapArea = generateRandomMapArea(newPos);
-            areas.put(newPos, newMapArea);
+            areas.put(newPos.toString(), newMapArea);
         } else {
-            newMapArea = areas.get(new Point(x, y));
+            newMapArea = areas.get(new Point(x, y).toString());
         }
         currentArea = newMapArea;
 
@@ -184,46 +184,14 @@ public class Map {
         /**
          * Store all enemies currently in the engine as {@link map.EntityCreationData} objects inside {@link MapArea#entityCreationDataArrayList}
          */
-        if(oldMapArea != null) {
-            oldMapArea.entityCreationDataArrayList.clear();
-
-            for (Entity e : engine.getEntitiesFor(Family.all(EnemyComponent.class, HitboxComponent.class).exclude(IgnoreRespawnOnAreaResetComponent.class).get())) {
-                EntityCreationData ecd = new EntityCreationData();
-                ecd.setIsEnemy(true);
-                if (Mappers.boss.has(e)) {
-                    ecd.setIsBoss(true);
-                }
-
-                // Save AI
-                if(Mappers.ai.has(e)) {
-                    Mappers.ai.get(e).getAi().saveToEntityCreationData(ecd);
-                }
-
-                // Restore health
-                for(CircleHitbox c : Mappers.hitbox.get(e).getCircles()) {
-                    c.setHealth(c.getMaxHealth());
-                }
-
-                ArrayList<CircleHitbox> circles = new ArrayList<CircleHitbox>();
-                circles.addAll(Mappers.hitbox.get(e).getCircles());
-                ecd.setCircleHitboxes(circles);
-                oldMapArea.entityCreationDataArrayList.add(ecd);
-
-                engine.removeEntity(e);
-            }
-
-            // Remove all bullets
-            for(Entity e : engine.getEntitiesFor(Family.one(EnemyBulletComponent.class, PlayerBulletComponent.class).get())) {
-                engine.removeEntity(e);
-            }
+        if(oldMapArea != null && !(focus.x == x && focus.y == y)) {
+            oldMapArea.storeExistingEnemies(engine, true);
         }
 
-        newMapArea.spawnEntities(engine, this, player);
+        newMapArea.spawnEntities(engine, player, clearNewMapAreaEntityCreationDataAfterSpawningEnemies);
 
         focus.x = x;
         focus.y = y;
-
-        main.save();
 
         // Increase chance of next area having stairs after autosaving to avoid the user entering new areas and
         // reloading the game to avoid all enemies and quickly enter new floors
