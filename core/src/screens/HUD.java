@@ -15,8 +15,11 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Timer;
 import com.miv.AudioPlayer;
 import com.miv.GestureListener;
@@ -53,12 +56,6 @@ public class HUD implements Screen {
     private TextureRegion movementArrowBody;
     private TextureRegion movementArrowHead;
 
-    /**
-     * Lower x bound and upper y bound of rectangle in which {@link GestureListener} will not work for movement
-     */
-    private float disableGesturesLowerXBound;
-    private float disableGesturesLowerYBound;
-
     private ShapeRenderer shapeRenderer;
     private Color screenOverlayColor;
     private float screenOverlayDeltaAlpha;
@@ -66,11 +63,21 @@ public class HUD implements Screen {
 
     private AudioPlayer audioPlayer;
 
+    private Label pp;
+    private float ppY;
+
     public HUD(final Main main, AssetManager assetManager, InputMultiplexer inputMultiplexer, GestureListener gestureListener, final Entity player, Map map) {
         this.main = main;
         this.inputMultiplexer = inputMultiplexer;
         this.gestureListener = gestureListener;
         this.player = player;
+
+        Skin skin = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.SKIN_PATH).path());
+
+        movementDragTouchDownPoint = gestureListener.getMovementDragTouchDownPoint();
+        shootingDragTouchDownPoint = gestureListener.getShootingDragTouchDownPoint();
+        screenWidth = Gdx.graphics.getWidth();
+        screenHeight = Gdx.graphics.getHeight();
 
         stage = new Stage();
         stage.addListener(new ClickListener() {});
@@ -87,31 +94,6 @@ public class HUD implements Screen {
         movementArrowBody = new TextureRegion(temp);
         temp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.MOVEMENT_ARROW_HEAD_PATH).path());
         movementArrowHead = new TextureRegion(temp);
-
-        /**
-        // Attack buttons
-        Texture attackButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.ATTACK_BUTTON_UP_PATH).path());
-        Texture attackButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.ATTACK_BUTTON_DOWN_PATH).path());
-        ImageButton.ImageButtonStyle imageButtonStyle = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(attackButtonUp)), new TextureRegionDrawable(new TextureRegion(attackButtonDown)), null, null, null, null);
-        // Primary fire button
-        ImageButton primaryFireButton = new ImageButton(imageButtonStyle);
-        primaryFireButton.setPosition(Gdx.graphics.getWidth() - primaryFireButton.getWidth() - SMALL_BUTTON_PADDING, SMALL_BUTTON_PADDING);
-        primaryFireButton.addListener(new InputListener() {
-            HitboxComponent playerHitbox = Mappers.hitbox.get(player);
-
-            @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                playerHitbox.setIsShooting(true);
-                return true;
-            }
-
-            @Override
-            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                playerHitbox.setIsShooting(false);
-            }
-        });
-        stage.addActor(primaryFireButton);
-            */
 
         // Map button top left
         Texture mapButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.MAP_BUTTON_UP_PATH).path());
@@ -143,20 +125,37 @@ public class HUD implements Screen {
         });
         stage.addActor(customizeButton);
 
-        //TODO: change calculation for this as more attack buttons are added
-        //disableGesturesLowerXBound = Gdx.graphics.getWidth() - primaryFireButton.getWidth() - SMALL_BUTTON_PADDING;
-        //disableGesturesLowerYBound = Gdx.graphics.getHeight() - primaryFireButton.getHeight() - SMALL_BUTTON_PADDING;
+        ppY = screenHeight - 80f;
 
-        movementDragTouchDownPoint = gestureListener.getMovementDragTouchDownPoint();
-        shootingDragTouchDownPoint = gestureListener.getShootingDragTouchDownPoint();
-        screenWidth = Gdx.graphics.getWidth();
-        screenHeight = Gdx.graphics.getHeight();
+        pp = new Label(Math.round(Mappers.player.get(player).getPixelPoints()) + "pp", skin);
+        pp.setFontScale(2.7f);
+        pp.setAlignment(Align.center);
+        pp.setColor(Color.BLACK);
+        pp.pack();
+        pp.setPosition(screenWidth/2f - pp.getWidth()/2f, ppY);
+        stage.addActor(pp);
+
+        updateText();
+    }
+
+    public void updateText() {
+        // Update pp label
+        float pixelPoints = Mappers.player.get(player).getPixelPoints();
+        if(pixelPoints < 10) {
+            pp.setText(String.format("%.2f", pixelPoints) + "pp");
+        } else if(pixelPoints < 100) {
+            pp.setText(String.format("%.1f", pixelPoints) + "pp");
+        } else {
+            pp.setText(Math.round(pixelPoints) + "pp");
+        }
+        pp.setPosition((screenWidth - pp.getWidth())/2f, ppY);
     }
 
     @Override
     public void show() {
         inputMultiplexer.addProcessor(stage);
         audioPlayer.playRandomMusic();
+        updateText();
     }
 
     @Override
@@ -264,13 +263,5 @@ public class HUD implements Screen {
         screenOverlayColor = new Color(color);
         screenOverlayColor.a = startingAlpha;
         screenOverlayDeltaAlpha = (1f - startingAlpha)/time;
-    }
-
-    public float getDisableGesturesLowerXBound() {
-        return disableGesturesLowerXBound;
-    }
-
-    public float getDisableGesturesLowerYBound() {
-        return disableGesturesLowerYBound;
     }
 }

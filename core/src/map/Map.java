@@ -144,6 +144,8 @@ public class Map {
     }
 
     public void enterNewArea(PooledEngine engine, Entity player, int x, int y, boolean clearNewMapAreaEntityCreationDataAfterSpawningEnemies) {
+        main.getRenderSystem().clearFloatingTexts();
+
         MapArea oldMapArea = areas.get(focus.toString());
 
         boolean increaseChanceOfNextAreaHavingStairs = false;

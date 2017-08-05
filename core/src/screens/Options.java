@@ -22,6 +22,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Align;
 import com.miv.Main;
 import com.miv.Mappers;
 import com.miv.Save;
@@ -145,8 +146,9 @@ public class Options implements Screen {
         playerHealthBar.getLabelCell().padLeft(15f);
         playerHealthBar.getLabel().setColor(Color.BLACK);
         playerHealthBar.getLabel().setFontScale(2f);
+        playerHealthBar.align(Align.left);
         playerHealthBar.setSize(CHECKBOX_WIDTH, CHECKBOX_HEIGHT);
-        playerHealthBar.setPosition(masterVolume.getX() + SLIDER_LENGTH*1.5f + 60f, masterVolume.getY());
+        playerHealthBar.setPosition(masterVolume.getX() + SLIDER_LENGTH + 120f, masterVolume.getY());
         playerHealthBar.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -162,8 +164,9 @@ public class Options implements Screen {
         enemyHealthBar.getLabelCell().padLeft(15f);
         enemyHealthBar.getLabel().setColor(Color.BLACK);
         enemyHealthBar.getLabel().setFontScale(2f);
+        enemyHealthBar.align(Align.left);
         enemyHealthBar.setSize(CHECKBOX_WIDTH, CHECKBOX_HEIGHT);
-        enemyHealthBar.setPosition(playerHealthBar.getX() + 5f, playerHealthBar.getY() - CHECKBOX_HEIGHT - CHECKBOX_PADDING);
+        enemyHealthBar.setPosition(playerHealthBar.getX(), playerHealthBar.getY() - CHECKBOX_HEIGHT - CHECKBOX_PADDING);
         enemyHealthBar.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -172,6 +175,24 @@ public class Options implements Screen {
             }
         });
         stage.addActor(enemyHealthBar);
+
+        // Create pp gain display toggle
+        final CheckBox ppGainDisplay = new CheckBox("Show pp gain text", skin);
+        ppGainDisplay.setChecked(com.miv.Options.SHOW_ENEMY_HEALTH_BARS);
+        ppGainDisplay.getLabelCell().padLeft(15f);
+        ppGainDisplay.getLabel().setColor(Color.BLACK);
+        ppGainDisplay.getLabel().setFontScale(2f);
+        ppGainDisplay.align(Align.left);
+        ppGainDisplay.setSize(CHECKBOX_WIDTH, CHECKBOX_HEIGHT);
+        ppGainDisplay.setPosition(enemyHealthBar.getX(), enemyHealthBar.getY() - CHECKBOX_HEIGHT - CHECKBOX_PADDING);
+        ppGainDisplay.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                com.miv.Options.SHOW_PP_GAIN_FLOATING_TEXT = !com.miv.Options.SHOW_PP_GAIN_FLOATING_TEXT;
+                ppGainDisplay.setChecked(com.miv.Options.SHOW_PP_GAIN_FLOATING_TEXT);
+            }
+        });
+        stage.addActor(ppGainDisplay);
 
         // Delete save button
         TextButton deleteSave = new TextButton("Delete save", skin);

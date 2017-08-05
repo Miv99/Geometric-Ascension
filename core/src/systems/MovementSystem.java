@@ -120,7 +120,7 @@ public class MovementSystem extends EntitySystem {
             victimHitbox.queueCircleRemoval(victimCircleHit);
 
             if(Mappers.enemy.has(victim)) {
-                playerPlayerComponent.setPixelPoints(playerPlayerComponent.getPixelPoints() + victimCircleHit.getPpGain());
+                playerPlayerComponent.addPixelPoints(main, victimCircleHit.getPpGain());
 
                 // TODO: remove this
                 if(victimCircleHit.getPpGain() <= 0) {
@@ -416,10 +416,8 @@ public class MovementSystem extends EntitySystem {
 
                 if(map.getCurrentArea().getEnemyCount() == 0) {
                     // Bonus pp for killing all enemies
-                    System.out.println("original: " + map.getCurrentArea().getOriginalEnemyCount());
                     float bonusPp = map.getCurrentArea().getOriginalEnemyCount()/((map.getMinEnemiesPerMapArea() + map.getMaxEnemiesPerMapArea())/2f) * map.getMaxPixelPoints() * Options.BONUS_PP_MULTIPLIER;
-                    System.out.println("bonus: " + bonusPp);
-                    playerPlayerComponent.setPixelPoints(playerPlayerComponent.getPixelPoints() + bonusPp);
+                    playerPlayerComponent.addPixelPoints(main, bonusPp);
 
                     // Save
                     main.save();

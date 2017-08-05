@@ -78,9 +78,7 @@ public class PlayerBuilder implements Screen {
                 PlayerComponent playerComponent = Mappers.player.get(player);
                 HitboxComponent hitboxComponent = Mappers.hitbox.get(player);
 
-                playerComponent.setPixelPoints(hitboxComponent.heal(playerComponent.getPixelPoints()));
-                heal.setText("Heal (" + Math.round(Mappers.hitbox.get(player).getTotalHealingCostInPP()) + "pp)");
-                pp.setText(Math.round(Mappers.player.get(player).getPixelPoints()) + "pp");
+                playerComponent.setPixelPoints(main, hitboxComponent.heal(playerComponent.getPixelPoints()));
             }
         });
         stage.addActor(heal);
@@ -91,6 +89,8 @@ public class PlayerBuilder implements Screen {
         pp.setPosition(LEFT_PADDING, heal.getY() + 25f);
         pp.setColor(Color.BLACK);
         stage.addActor(pp);
+
+        updateText();
     }
 
     @Override
@@ -101,8 +101,23 @@ public class PlayerBuilder implements Screen {
     }
 
     public void updateText() {
-        heal.setText("Heal (" + Math.round(Mappers.hitbox.get(player).getTotalHealingCostInPP()) + "pp)");
-        pp.setText(Math.round(Mappers.player.get(player).getPixelPoints()) + "pp");
+        float pixelPoints = Mappers.player.get(player).getPixelPoints();
+        if(pixelPoints < 10) {
+            pp.setText(String.format("%.2f", pixelPoints) + "pp");
+        } else if(pixelPoints < 100) {
+            pp.setText(String.format("%.1f", pixelPoints) + "pp");
+        } else {
+            pp.setText(Math.round(pixelPoints) + "pp");
+        }
+
+        float healCost = Mappers.hitbox.get(player).getTotalHealingCostInPP();
+        if(healCost < 10) {
+            heal.setText("Heal (" + String.format("%.2f", healCost) + "pp)");
+        } else if(healCost < 100) {
+            heal.setText("Heal (" + String.format("%.1f", healCost) + "pp)");
+        } else {
+            heal.setText("Heal (" + Math.round(pixelPoints) + "pp)");
+        }
     }
 
     @Override

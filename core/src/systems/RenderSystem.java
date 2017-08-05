@@ -10,15 +10,20 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.miv.Main;
 import com.miv.Mappers;
 import com.miv.Options;
+
+import java.util.ArrayList;
 
 import components.HitboxComponent;
 import map.Map;
@@ -30,6 +35,28 @@ import utils.Point;
  * Created by Miv on 5/25/2017.
  */
 public class RenderSystem extends EntitySystem {
+    private static class FloatingText {
+        private String text;
+        private Color textColor;
+        private float x;
+        private float y;
+
+        private float timeLeft;
+        private float deltaAlpha;
+
+        private float width;
+        private float height;
+
+        private FloatingText(float x, float y, String text, Color textColor, float time) {
+            this.x = x;
+            this.y = y;
+            this.text = text;
+            this.textColor = new Color(textColor);
+            timeLeft = time;
+            deltaAlpha = textColor.a/time;
+        }
+    }
+
     public static enum HitboxTextureType {
         // ID must be in ascending order starting from 0
         PLAYER(0, new Color(Color.CYAN.r, Color.CYAN.g, Color.CYAN.b, 0.3f),new Color(0f, 163/255f, 33/255f, 1f)),
@@ -51,6 +78,8 @@ public class RenderSystem extends EntitySystem {
         }
     }
 
+    private static final float FLOATING_TEXT_BOUNDARY_PADDING = 20f;
+
     // Health bar y-axis offset from center of circle
     private static final float HEALTH_BAR_Y = -20f;
     private static final Color NORMAL_MAP_AREA_BACKGROUND_COLOR = new Color(224/255f, 1f, 1f, 1f);
@@ -71,9 +100,14 @@ public class RenderSystem extends EntitySystem {
     private Drawable[] bubbleDrawables;
     private Drawable bubbleShieldDrawable;
 
-    public RenderSystem(Main main, Map map) {
+    private GlyphLayout layout;
+    private BitmapFont floatingTextFont;
+    private ArrayList<FloatingText> floatingTexts;
+
+    public RenderSystem(Main main) {
         this.main = main;
-        this.map = map;
+        layout = new GlyphLayout();
+        floatingTexts = new ArrayList<FloatingText>();
 
         batch = new SpriteBatch();
 
@@ -94,6 +128,10 @@ public class RenderSystem extends EntitySystem {
 
         Texture bubbleShieldTexture = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.BUBBLE_SHIELD_PATH).path());
         bubbleShieldDrawable = new TextureRegionDrawable(new TextureRegion(bubbleShieldTexture));
+
+        // Load font
+        Skin skin = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.SKIN_PATH).path());
+        floatingTextFont = skin.getFont("font-big");
     }
 
     @Override
@@ -206,6 +244,77 @@ public class RenderSystem extends EntitySystem {
             }
         }
         shapeRenderer.end();
+
+        // Draw floating text
+        batch.begin();
+        for(int i = 0; i < floatingTexts.size(); i++) {
+            FloatingText f = floatingTexts.get(i);
+
+            floatingTextFont.setColor(f.textColor);
+            floatingTextFont.draw(batch, f.text, f.x, f.y);
+
+            f.timeLeft -= deltaTime;
+            f.textColor.a -= f.deltaAlpha * deltaTime;
+            f.y += Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER * 3f * deltaTime;
+            if(f.timeLeft <= 0 || f.textColor.a <= 0) {
+                floatingTexts.remove(f);
+                i--;
+            }
+        }
+        batch.end();
+    }
+
+    /**
+     * Adds text to originate from a point and fly up while losing alpha.
+     * @param x x-coordinate of text relative to the map area
+     * @param y y-coordinate of text relative to the map area
+     * @param text Text to be shown
+     * @param color Color of text
+     */
+    public void addFloatingText(float x, float y, String text, Color color) {
+        FloatingText ft = new FloatingText(x, y, text, color, 1.5f);
+        layout.setText(floatingTextFont, text);
+        ft.width = layout.width;
+        ft.height = layout.height;
+
+        // Center text on position given
+        ft.x -= ft.width/2f;
+
+        floatingTexts.add(ft);
+
+        checkOverlappingTexts(ft);
+    }
+
+    private void checkOverlappingTexts(FloatingText f1) {
+        // Check if text will overlap with any other texts
+        for(FloatingText f : floatingTexts) {
+            if(!f1.equals(f) && overlaps(f1, f)) {
+                // If it does, bump up the text that will expire first
+                if(f.timeLeft < f1.timeLeft) {
+                    f.y += f.height + FLOATING_TEXT_BOUNDARY_PADDING;
+
+                    checkOverlappingTexts(f);
+                } else {
+                    f1.y += f1.height + FLOATING_TEXT_BOUNDARY_PADDING;
+
+                    checkOverlappingTexts(f1);
+                }
+                break;
+            }
+        }
+    }
+
+    private boolean overlaps(FloatingText f1, FloatingText f2) {
+        return f1.x < f2.x + f2.width && f1.x + f1.width > f2.x && f1.y < f2.y + f2.height && f1.y + f1.height > f2.y;
+    }
+
+    public void addFloatingText(Entity origin, String text, Color color) {
+        Point p = Mappers.hitbox.get(origin).getOrigin();
+        addFloatingText(p.x, p.y, text, color);
+    }
+
+    public void clearFloatingTexts() {
+        floatingTexts.clear();
     }
 
     public ShapeRenderer getShapeRenderer() {
@@ -214,5 +323,9 @@ public class RenderSystem extends EntitySystem {
 
     public SpriteBatch getBatch() {
         return batch;
+    }
+
+    public void setMap(Map map) {
+        this.map = map;
     }
 }

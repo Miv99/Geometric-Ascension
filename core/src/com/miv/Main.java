@@ -80,6 +80,7 @@ public class Main extends Game {
 
 	private PooledEngine engine;
 	private ShootingSystem shootingSystem;
+	private RenderSystem renderSystem;
 	private Camera camera;
 	private InputMultiplexer inputMultiplexer;
 	private GestureListener gestureListener;
@@ -90,6 +91,7 @@ public class Main extends Game {
 
 	private AssetManager assetManager;
 	private Preferences preferences;
+	private Preferences highScores;
 
 	private GameState state;
 	private HUD hud;
@@ -110,14 +112,15 @@ public class Main extends Game {
 		loadPreferences();
 		loadAssets();
 
+		renderSystem = new RenderSystem(this);
 		loadMainMenuMapPreview();
+		renderSystem.setMap(map);
 
 		// Add entity systems
 		engine.addSystem(new AISystem());
 		engine.addSystem(new MovementSystem(this, engine, map, player));
 		shootingSystem = new ShootingSystem(engine);
 		engine.addSystem(shootingSystem);
-		RenderSystem renderSystem = new RenderSystem(this, map);
 		engine.addSystem(renderSystem);
 
 		camera = new Camera(renderSystem);
@@ -133,7 +136,7 @@ public class Main extends Game {
 	public void loadMainMenuMapPreview() {
 		Save.load(this);
 		engine.addEntity(player);
-		map.enterNewArea(engine, player, (int) map.getFocus().x, (int)map.getFocus().y, true);
+		map.enterNewArea(engine, player, (int) map.getFocus().x, (int) map.getFocus().y, true);
 		if(camera != null) {
 			camera.setFocus(player);
 		}
@@ -223,6 +226,15 @@ public class Main extends Game {
 		preferences.putFloat(Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE_STRING, preferences.getFloat(Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE_STRING, Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE));
 		preferences.putBoolean(Options.SHOW_ENEMY_HEALTH_BARS_STRING, preferences.getBoolean(Options.SHOW_ENEMY_HEALTH_BARS_STRING, Options.SHOW_ENEMY_HEALTH_BARS));
 		preferences.putBoolean(Options.SHOW_PLAYER_HEALTH_BARS_STRING, preferences.getBoolean(Options.SHOW_PLAYER_HEALTH_BARS_STRING, Options.SHOW_PLAYER_HEALTH_BARS));
+		preferences.putBoolean(Options.SHOW_PP_GAIN_FLOATING_TEXT_STRING , preferences.getBoolean(Options.SHOW_PP_GAIN_FLOATING_TEXT_STRING, Options.SHOW_PP_GAIN_FLOATING_TEXT));
+	}
+
+	public void updateScreenText() {
+		if(state == GameState.MAIN_GAME) {
+			hud.updateText();
+		} else if(state == GameState.CUSTOMIZE) {
+			playerBuilder.updateText();
+		}
 	}
 
 	/**
@@ -284,6 +296,14 @@ public class Main extends Game {
 
 	public void onPlayerDeath() {
 		playerDead = true;
+
+		//TODO: death screen --> wait a bit
+
+		//TODO: save high score
+		Save.deleteSave();
+
+		Save.load(this);
+		loadMainMenu();
 	}
 
 	public void save() {
@@ -341,5 +361,9 @@ public class Main extends Game {
 
 	public void setPlayerDead(boolean playerDead) {
 		this.playerDead = playerDead;
+	}
+
+	public RenderSystem getRenderSystem() {
+		return renderSystem;
 	}
 }

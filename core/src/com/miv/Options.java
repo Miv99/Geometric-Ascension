@@ -32,6 +32,7 @@ public class Options {
     public static final String MOVEMENT_DRAG_ARROW_MAX_DISTANCE_STRING = "movementDragArrowMaxDistance";
     public static final String SHOW_PLAYER_HEALTH_BARS_STRING = "showPlayerHealthBars";
     public static final String SHOW_ENEMY_HEALTH_BARS_STRING = "showEnemyHealthBars";
+    public static final String SHOW_PP_GAIN_FLOATING_TEXT_STRING = "showPpGainFloatingText";
 
     public static float MUSIC_VOLUME = 0.5f;
     public static float SOUND_VOLUME = 0.5f;
@@ -43,4 +44,5 @@ public class Options {
     //TODO: set these to false in production
     public static boolean SHOW_PLAYER_HEALTH_BARS = true;
     public static boolean SHOW_ENEMY_HEALTH_BARS = true;
+    public static boolean SHOW_PP_GAIN_FLOATING_TEXT = true;
 }
