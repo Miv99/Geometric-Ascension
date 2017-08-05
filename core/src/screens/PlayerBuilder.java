@@ -64,7 +64,7 @@ public class PlayerBuilder implements Screen {
         });
         stage.addActor(backButton);
 
-        pp = new Label("", skin);
+        pp = new Label("", skin, "big");
 
         // Heal button
         heal = new TextButton("Heal (" + Math.round(Mappers.hitbox.get(player).getTotalHealingCostInPP()) + "pp)", skin);
@@ -83,7 +83,7 @@ public class PlayerBuilder implements Screen {
         });
         stage.addActor(heal);
 
-        pp.setFontScale(2.7f);
+        pp.setFontScale(1f);
         pp.setText(Math.round(Mappers.player.get(player).getPixelPoints()) + "pp");
         pp.pack();
         pp.setPosition(LEFT_PADDING, heal.getY() + 25f);

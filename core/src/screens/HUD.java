@@ -127,8 +127,8 @@ public class HUD implements Screen {
 
         ppY = screenHeight - 80f;
 
-        pp = new Label(Math.round(Mappers.player.get(player).getPixelPoints()) + "pp", skin);
-        pp.setFontScale(2.7f);
+        pp = new Label(Math.round(Mappers.player.get(player).getPixelPoints()) + "pp", skin, "big");
+        pp.setFontScale(1f);
         pp.setAlignment(Align.center);
         pp.setColor(Color.BLACK);
         pp.pack();

@@ -42,7 +42,6 @@ public class Main extends Game {
 	public static final int SCREEN_HEIGHT = 900;
 
 	public static final String SKIN_PATH = "glassy\\skin\\glassy-ui.json";
-	public static final String DEFAULT_FONT_PATH = "Roboto-Regular.ttf";
 	public static final String[] WORLD_MUSIC_PATHS = new String[] {
 			"music\\world1.mp3",
 			"music\\world2.ogg",
@@ -182,7 +181,6 @@ public class Main extends Game {
 		assetManager.setLoader(BitmapFont.class, ".ttf", new FreetypeFontLoader(fileHandler));
 
 		assetManager.load(SKIN_PATH, Skin.class);
-		assetManager.load(DEFAULT_FONT_PATH, FreeTypeFontGenerator.class);
 		for(String s : WORLD_MUSIC_PATHS) {
 			assetManager.load(s, Music.class);
 		}
