@@ -90,17 +90,17 @@ public class PlayerBuilder implements Screen {
         pp.setColor(Color.BLACK);
         stage.addActor(pp);
 
-        updateText();
+        updateActors();
     }
 
     @Override
     public void show() {
         inputMultiplexer.addProcessor(stage);
 
-        updateText();
+        updateActors();
     }
 
-    public void updateText() {
+    public void updateActors() {
         float pixelPoints = Mappers.player.get(player).getPixelPoints();
         if(pixelPoints < 10) {
             pp.setText(String.format("%.2f", pixelPoints) + "pp");
@@ -153,5 +153,9 @@ public class PlayerBuilder implements Screen {
     @Override
     public void dispose() {
 
+    }
+
+    public void setPlayer(Entity player) {
+        this.player = player;
     }
 }

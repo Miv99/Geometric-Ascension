@@ -14,6 +14,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -55,6 +56,8 @@ public class HUD implements Screen {
     private TextureRegion movementArrowTail;
     private TextureRegion movementArrowBody;
     private TextureRegion movementArrowHead;
+
+    private ImageButton customizeButton;
 
     private ShapeRenderer shapeRenderer;
     private Color screenOverlayColor;
@@ -113,8 +116,10 @@ public class HUD implements Screen {
         // Player customization button
         Texture customizeButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.CUSTOMIZE_BUTTON_UP_PATH).path());
         Texture customizeButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.CUSTOMIZE_BUTTON_DOWN_PATH).path());
+        Texture customizeButtonDisabled = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.CUSTOMIZE_BUTTON_DISABLED_PATH).path());
         ImageButton.ImageButtonStyle customizeButtonStyle = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(customizeButtonUp)), new TextureRegionDrawable(new TextureRegion(customizeButtonDown)), null, null, null, null);
-        ImageButton customizeButton = new ImageButton(customizeButtonStyle);
+        customizeButtonStyle.disabled = new TextureRegionDrawable(new TextureRegion(customizeButtonDisabled));
+        customizeButton = new ImageButton(customizeButtonStyle);
         customizeButton.setSize(SMALL_BUTTON_SIZE, SMALL_BUTTON_SIZE);
         customizeButton.setPosition(Gdx.graphics.getWidth() - customizeButton.getWidth() - SMALL_BUTTON_PADDING, Gdx.graphics.getHeight() - customizeButton.getHeight() - SMALL_BUTTON_PADDING);
         customizeButton.addListener(new ClickListener() {
@@ -135,10 +140,10 @@ public class HUD implements Screen {
         pp.setPosition(screenWidth/2f - pp.getWidth()/2f, ppY);
         stage.addActor(pp);
 
-        updateText();
+        updateActors();
     }
 
-    public void updateText() {
+    public void updateActors() {
         // Update pp label
         float pixelPoints = Mappers.player.get(player).getPixelPoints();
         if(pixelPoints < 10) {
@@ -149,13 +154,22 @@ public class HUD implements Screen {
             pp.setText(Math.round(pixelPoints) + "pp");
         }
         pp.setPosition((screenWidth - pp.getWidth())/2f, ppY);
+
+        // Update customize button
+        if(main.getMap().getCurrentArea().getEnemyCount() == 0) {
+            customizeButton.setTouchable(Touchable.enabled);
+            customizeButton.setDisabled(false);
+        } else {
+            customizeButton.setTouchable(Touchable.disabled);
+            customizeButton.setDisabled(true);
+        }
     }
 
     @Override
     public void show() {
         inputMultiplexer.addProcessor(stage);
         audioPlayer.playRandomMusic();
-        updateText();
+        updateActors();
     }
 
     @Override
@@ -263,5 +277,9 @@ public class HUD implements Screen {
         screenOverlayColor = new Color(color);
         screenOverlayColor.a = startingAlpha;
         screenOverlayDeltaAlpha = (1f - startingAlpha)/time;
+    }
+
+    public void setPlayer(Entity player) {
+        this.player = player;
     }
 }

@@ -51,17 +51,16 @@ public class MovementSystem extends EntitySystem {
     private Map map;
     private Main main;
 
-    private PlayerComponent playerPlayerComponent;
+    private Entity player;
 
     public MovementSystem(Main main, PooledEngine engine, Map map, Entity player) {
         this.main = main;
         this.engine = engine;
         this.map = map;
+        this.player = player;
         collisionCirclesToHandle = new ArrayList<CircleHitbox>();
         collisionEntitiesToHandle = new ArrayList<Entity>();
         entityRemovalQueue = new ArrayList<Entity>();
-
-        playerPlayerComponent = Mappers.player.get(player);
     }
 
     @Override
@@ -120,7 +119,7 @@ public class MovementSystem extends EntitySystem {
             victimHitbox.queueCircleRemoval(victimCircleHit);
 
             if(Mappers.enemy.has(victim)) {
-                playerPlayerComponent.addPixelPoints(main, victimCircleHit.getPpGain());
+                Mappers.player.get(player).addPixelPoints(main, victimCircleHit.getPpGain());
 
                 // TODO: remove this
                 if(victimCircleHit.getPpGain() <= 0) {
@@ -412,12 +411,12 @@ public class MovementSystem extends EntitySystem {
             if(Mappers.player.has(e)) {
                 map.getMain().onPlayerDeath();
             } else if(Mappers.enemy.has(e)) {
-                map.getCurrentArea().setEnemyCount(engine, players.first(), map, map.getCurrentArea().getEnemyCount() - 1);
+                map.getCurrentArea().setEnemyCount(main, engine, players.first(), map, map.getCurrentArea().getEnemyCount() - 1);
 
                 if(map.getCurrentArea().getEnemyCount() == 0) {
                     // Bonus pp for killing all enemies
                     float bonusPp = map.getCurrentArea().getOriginalEnemyCount()/((map.getMinEnemiesPerMapArea() + map.getMaxEnemiesPerMapArea())/2f) * map.getMaxPixelPoints() * Options.BONUS_PP_MULTIPLIER;
-                    playerPlayerComponent.addPixelPoints(main, bonusPp);
+                    Mappers.player.get(player).addPixelPoints(main, bonusPp);
 
                     // Save
                     main.save();
@@ -430,5 +429,13 @@ public class MovementSystem extends EntitySystem {
     private boolean mapAreaIsOutOfCameraRange() {
         return Math.abs(map.getMain().getCamera().position.x) - map.getMain().getCamera().viewportWidth/1.7f > map.getCurrentArea().getRadius()
                 || Math.abs(map.getMain().getCamera().position.y) - map.getMain().getCamera().viewportHeight/1.7f > map.getCurrentArea().getRadius();
+    }
+
+    public void setMap(Map map) {
+        this.map = map;
+    }
+
+    public void setPlayer(Entity player) {
+        this.player = player;
     }
 }

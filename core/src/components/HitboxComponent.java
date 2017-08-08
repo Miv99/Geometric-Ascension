@@ -21,6 +21,7 @@ import java.util.Set;
 
 import ai.AI;
 import map.EntityCreationData;
+import map.Map;
 import utils.CircleHitbox;
 import utils.Point;
 import utils.Utils;
@@ -240,9 +241,12 @@ public class HitboxComponent implements Component, Pool.Poolable {
             }
 
             //TODO: add to this as more fields added to subentity stats
-            Entity e = Utils.cloneEnemy(engine, self, subEntityCircles);
+            Entity e = Utils.cloneEnemy(engine, self, subEntityCircles, false);
             if(subEntityStats != null) {
                 Mappers.hitbox.get(e).setMaxSpeed(subEntityStats.maxSpeed);
+                if(subEntityStats.aiData != null) {
+                    e.add(Map.createAIComponent(engine, e, subEntityStats.aiData, Mappers.ai.get(self).getAi().getTarget()));
+                }
             }
             return e;
         } else {
@@ -256,8 +260,8 @@ public class HitboxComponent implements Component, Pool.Poolable {
             set.add(c);
             for (int a = cIndex + 1; a < circles.size(); a++) {
                 CircleHitbox c2 = circles.get(a);
-                // Add 0.1f to distance check to account for inaccuracies
-                if (Utils.getDistance(c.x, c.y, c2.x, c2.y) < c.radius + c2.radius + 0.01f) {
+                // Add 1f to distance check to account for inaccuracies
+                if (!set.contains(c2) && Utils.getDistance(c.x, c.y, c2.x, c2.y) < c.radius + c2.radius + 1f) {
                     set.add(c2);
                     addConnectedCircles(a, set);
                 }

@@ -64,6 +64,7 @@ public class Main extends Game {
 	public static final String CHECKMARK_BUTTON_DISABLED_PATH = "checkmark_button_disabled.png";
 	public static final String CUSTOMIZE_BUTTON_UP_PATH = "customize_button_up.png";
 	public static final String CUSTOMIZE_BUTTON_DOWN_PATH = "customize_button_down.png";
+	public static final String CUSTOMIZE_BUTTON_DISABLED_PATH = "customize_button_disabled.png";
 	public static final String DELETE_BUTTON_UP_PATH = "delete_button_up.png";
 	public static final String DELETE_BUTTON_DOWN_PATH = "delete_button_down.png";
 	public static final String HOME_BUTTON_UP_PATH = "home_button_up.png";
@@ -80,6 +81,7 @@ public class Main extends Game {
 	private PooledEngine engine;
 	private ShootingSystem shootingSystem;
 	private RenderSystem renderSystem;
+	private MovementSystem movementSystem;
 	private Camera camera;
 	private InputMultiplexer inputMultiplexer;
 	private GestureListener gestureListener;
@@ -117,7 +119,8 @@ public class Main extends Game {
 
 		// Add entity systems
 		engine.addSystem(new AISystem());
-		engine.addSystem(new MovementSystem(this, engine, map, player));
+		movementSystem = new MovementSystem(this, engine, map, player);
+		engine.addSystem(movementSystem);
 		shootingSystem = new ShootingSystem(engine);
 		engine.addSystem(shootingSystem);
 		engine.addSystem(renderSystem);
@@ -132,9 +135,22 @@ public class Main extends Game {
 		loadMainMenu();
 	}
 
+	public void deleteSave() {
+		Save.deleteSave();
+		engine.removeAllEntities();
+		loadMainMenuMapPreview();
+
+		renderSystem.setMap(map);
+		movementSystem.setMap(map);
+		movementSystem.setPlayer(player);
+
+		loadMainMenu();
+	}
+
 	public void loadMainMenuMapPreview() {
 		Save.load(this);
 		engine.addEntity(player);
+		playerDead = false;
 		map.enterNewArea(engine, player, (int) map.getFocus().x, (int) map.getFocus().y, true);
 		if(camera != null) {
 			camera.setFocus(player);
@@ -145,6 +161,7 @@ public class Main extends Game {
 		if(mainMenu == null) {
 			mainMenu = new MainMenu(this, assetManager, inputMultiplexer);
 		}
+		playerDead = false;
 		setScreen(mainMenu);
 		state = GameState.MAIN_MENU;
 	}
@@ -201,6 +218,7 @@ public class Main extends Game {
 		assetManager.load(CHECKMARK_BUTTON_DISABLED_PATH, Texture.class);
 		assetManager.load(CUSTOMIZE_BUTTON_UP_PATH, Texture.class);
 		assetManager.load(CUSTOMIZE_BUTTON_DOWN_PATH, Texture.class);
+		assetManager.load(CUSTOMIZE_BUTTON_DISABLED_PATH, Texture.class);
 		assetManager.load(DELETE_BUTTON_UP_PATH, Texture.class);
 		assetManager.load(DELETE_BUTTON_DOWN_PATH, Texture.class);
 		assetManager.load(HOME_BUTTON_UP_PATH, Texture.class);
@@ -227,11 +245,11 @@ public class Main extends Game {
 		preferences.putBoolean(Options.SHOW_PP_GAIN_FLOATING_TEXT_STRING , preferences.getBoolean(Options.SHOW_PP_GAIN_FLOATING_TEXT_STRING, Options.SHOW_PP_GAIN_FLOATING_TEXT));
 	}
 
-	public void updateScreenText() {
+	public void updateScreenActors() {
 		if(state == GameState.MAIN_GAME) {
-			hud.updateText();
+			hud.updateActors();
 		} else if(state == GameState.CUSTOMIZE) {
-			playerBuilder.updateText();
+			playerBuilder.updateActors();
 		}
 	}
 
@@ -298,10 +316,8 @@ public class Main extends Game {
 		//TODO: death screen --> wait a bit
 
 		//TODO: save high score
-		Save.deleteSave();
 
-		Save.load(this);
-		loadMainMenu();
+		deleteSave();
 	}
 
 	public void save() {
@@ -342,10 +358,25 @@ public class Main extends Game {
 
 	public void setPlayer(Entity player) {
 		this.player = player;
+		if(movementSystem != null) {
+			movementSystem.setPlayer(player);
+		}
+		if(hud != null) {
+			hud.setPlayer(player);
+		}
+		if(playerBuilder != null) {
+			playerBuilder.setPlayer(player);
+		}
 	}
 
 	public void setMap(Map map) {
 		map.setMain(this);
+		if(renderSystem != null) {
+			renderSystem.setMap(map);
+		}
+		if(movementSystem != null) {
+			movementSystem.setMap(map);
+		}
 		this.map = map;
 	}
 

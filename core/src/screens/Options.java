@@ -203,9 +203,7 @@ public class Options implements Screen {
         deleteSave.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                Save.deleteSave();
-                main.loadMainMenuMapPreview();
-                main.loadMainMenu();
+                main.deleteSave();
             }
         });
         stage.addActor(deleteSave);

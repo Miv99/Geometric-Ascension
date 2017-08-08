@@ -69,7 +69,7 @@ public class Map {
     /**
      * How much {@link map.Map#chanceOfNextAreaHavingStairs} increases by each time a new MapArea is discovered
      */
-    private static final float CHANCE_OF_STAIRS_AREA_INCREMENT = 0.01f;
+    private static final float CHANCE_OF_STAIRS_AREA_INCREMENT = 1f;
 
     public static final float INITIAL_MAP_AREA_PIXEL_POINTS = 20f;
     /**
@@ -122,7 +122,13 @@ public class Map {
         maxEnemiesPerMapArea = MAX_ENEMIES_PER_MAP_AREA;
     }
 
-    public void enterNewFloor(int floor) {
+    public static void clearBullets(PooledEngine engine) {
+        for (Entity e : engine.getEntitiesFor(Family.one(EnemyBulletComponent.class, PlayerBulletComponent.class).get())) {
+            engine.removeEntity(e);
+        }
+    }
+
+    public void enterNewFloor(PooledEngine engine, int floor) {
         this.floor = floor;
         setFocus(0, 0);
         areas.clear();
@@ -133,6 +139,9 @@ public class Map {
         float enemyCountIncrease = floor/10f;
         minEnemiesPerMapArea = MIN_ENEMIES_PER_MAP_AREA + enemyCountIncrease/2f;
         maxEnemiesPerMapArea = MAX_ENEMIES_PER_MAP_AREA + enemyCountIncrease;
+
+        // Clear bullets
+        clearBullets(engine);
 
         // First MapArea always has stairs leading to the previous floor
         MapArea mapArea = new MapArea(MapArea.MAP_AREA_MIN_SIZE);
@@ -200,6 +209,8 @@ public class Map {
         if(increaseChanceOfNextAreaHavingStairs && (x != 0 && y != 0)) {
             chanceOfNextAreaHavingStairs = Math.min(MAX_CHANCE_OF_STAIRS_AREA, chanceOfNextAreaHavingStairs + CHANCE_OF_STAIRS_AREA_INCREMENT);
         }
+
+        main.updateScreenActors();
     }
 
     private MapArea generateRandomMapArea(Point pos) {

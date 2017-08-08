@@ -23,10 +23,10 @@ public class PlayerComponent implements Component, Pool.Poolable {
 
     public void addPixelPoints(Main main, float pixelPoints) {
         this.pixelPoints += pixelPoints;
-        main.updateScreenText();
+        main.updateScreenActors();
 
         // Create text from the player that displays gain in pp
-        if(Options.SHOW_PP_GAIN_FLOATING_TEXT) {
+        if(Options.SHOW_PP_GAIN_FLOATING_TEXT && pixelPoints != 0) {
             if(pixelPoints > 0) {
                 if (pixelPoints < 10) {
                     main.getRenderSystem().addFloatingText(main.getPlayer(), "+" + String.format("%.2f", pixelPoints) + "pp", Color.BLACK);

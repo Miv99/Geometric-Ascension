@@ -47,7 +47,7 @@ public class EntityActions {
         Mappers.hitbox.get(player).setTravellingSpeed(playerTravelSpeed);
     }
 
-    public static void playerEnterNewFloor(PooledEngine engine, final Entity player, final Map map, final int newFloor) {
+    public static void playerEnterNewFloor(final PooledEngine engine, final Entity player, final Map map, final int newFloor) {
         // Make player invincible
         Mappers.hitbox.get(player).setIntangible(true);
 
@@ -55,7 +55,7 @@ public class EntityActions {
         map.getMain().getHud().fadeToColor(new Color(1f, 1f, 1f, 1f), 3.5f, new Timer.Task() {
             @Override
             public void run() {
-                map.enterNewFloor(newFloor);
+                map.enterNewFloor(engine, newFloor);
 
                 // Make player no longer invincible
                 Mappers.hitbox.get(player).setIntangible(false);

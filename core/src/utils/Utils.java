@@ -51,7 +51,7 @@ public class Utils {
         }
     }
 
-    public static Entity cloneEnemy(PooledEngine engine, Entity original, ArrayList<CircleHitbox> circles) {
+    public static Entity cloneEnemy(PooledEngine engine, Entity original, ArrayList<CircleHitbox> circles, boolean cloneAI) {
         Entity e = engine.createEntity();
 
         HitboxComponent hitbox = engine.createComponent(HitboxComponent.class);
@@ -70,7 +70,10 @@ public class Utils {
         hitbox.recenterOriginalCirclePositions();
         e.add(hitbox);
 
-        e.add(engine.createComponent(AIComponent.class).setAi(Mappers.ai.get(original).getAi().getSubEntityAI().clone(e)));
+        if(cloneAI) {
+            e.add(engine.createComponent(AIComponent.class).setAi(Mappers.ai.get(original).getAi().getSubEntityAI().clone(e)));
+        }
+
         e.add(engine.createComponent(EnemyComponent.class));
 
         return e;

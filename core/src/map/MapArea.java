@@ -4,6 +4,7 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.core.PooledEngine;
 import com.miv.EntityActions;
+import com.miv.Main;
 import com.miv.Mappers;
 
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ public class MapArea {
 
     /**
      * Set to -1 if no stairs exist in this MapArea. Otherwise, an entity with an OnCollision event will be spawned in the middle of the MapArea
-     * when {@link MapArea#spawnEntities(PooledEngine, Map, Entity)}} is called.
+     * when {@link MapArea#spawnEntities(PooledEngine, Entity, boolean)} is called.
      */
     private int stairsDestination = -1;
 
@@ -62,7 +63,6 @@ public class MapArea {
      */
     public void spawnEntities(final PooledEngine engine, Entity player, boolean clearEntityCreationDataAfterSpawning) {
         enemyCount = entityCreationDataArrayList.size();
-        System.out.println("ENEMY COUNT: " + enemyCount + "; original: " + originalEnemyCount);
 
         // Entities from entityCreationDataArrayList
         for(EntityCreationData ecd : entityCreationDataArrayList) {
@@ -90,12 +90,9 @@ public class MapArea {
 
             if(ecd.getSubEntityStats() != null) {
                 hitbox.setSubEntityStats(ecd.getSubEntityStats());
-                if(ecd.getSubEntityStats().aiData != null) {
-                    e.add(Map.createAIComponent(engine, e, ecd.getSubEntityStats().aiData, player));
-                }
-            } else {
-                e.add(Map.createAIComponent(engine, e, ecd, player));
             }
+
+            e.add(Map.createAIComponent(engine, e, ecd, player));
 
             engine.addEntity(e);
         }
@@ -140,9 +137,7 @@ public class MapArea {
 
         // Remove all bullets
         if(deleteEntitiesAfterwards) {
-            for (Entity e : engine.getEntitiesFor(Family.one(EnemyBulletComponent.class, PlayerBulletComponent.class).get())) {
-                engine.removeEntity(e);
-            }
+            Map.clearBullets(engine);
         }
     }
 
@@ -158,8 +153,9 @@ public class MapArea {
     /**
      * Used for when killing enemies
      */
-    public void setEnemyCount(PooledEngine engine, Entity player, Map map, int enemyCount) {
+    public void setEnemyCount(Main main, PooledEngine engine, Entity player, Map map, int enemyCount) {
         this.enemyCount = enemyCount;
+        main.updateScreenActors();
 
         if(enemyCount == 0) {
             if(stairsDestination != -1) {

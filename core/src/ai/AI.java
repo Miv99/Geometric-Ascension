@@ -39,15 +39,15 @@ public abstract class AI {
 
     public abstract void saveToEntityCreationData(EntityCreationData ecd);
 
-    public void setSubEntityAI(AI subEntityAI) {
-        this.subEntityAI = subEntityAI;
-    }
-
     public AI getSubEntityAI() {
         if(subEntityAI == null) {
             return this;
         } else {
             return subEntityAI;
         }
+    }
+
+    public Entity getTarget() {
+        return target;
     }
 }
