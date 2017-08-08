@@ -100,6 +100,7 @@ public class Main extends Game {
 	// Screens
 	private MainMenu mainMenu;
 	private PlayerBuilder playerBuilder;
+	private screens.Options options;
 
 	@Override
 	public void create() {
@@ -145,6 +146,15 @@ public class Main extends Game {
 		movementSystem.setPlayer(player);
 
 		loadMainMenu();
+	}
+
+	public void loadOptionsScreen(Music musicToBeContinuedPlaying) {
+		if(options == null) {
+			options = new screens.Options(this, assetManager, inputMultiplexer, musicToBeContinuedPlaying);
+		} else {
+			options.setMusic(musicToBeContinuedPlaying);
+		}
+		setScreen(options);
 	}
 
 	public void loadMainMenuMapPreview() {

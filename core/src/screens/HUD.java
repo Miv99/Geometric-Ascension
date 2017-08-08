@@ -35,8 +35,9 @@ import utils.Point;
  * Created by Miv on 6/8/2017.
  */
 public class HUD implements Screen {
-    public static float SMALL_BUTTON_PADDING = 25f;
-    public static float SMALL_BUTTON_SIZE = 70f;
+    public static final float PP_LABEL_X = 25f;
+    public static final float SMALL_BUTTON_PADDING = 25f;
+    public static final float SMALL_BUTTON_SIZE = 70f;
 
     private Stage stage;
     private InputMultiplexer inputMultiplexer;
@@ -69,7 +70,7 @@ public class HUD implements Screen {
     private Label pp;
     private float ppY;
 
-    public HUD(final Main main, AssetManager assetManager, InputMultiplexer inputMultiplexer, GestureListener gestureListener, final Entity player, Map map) {
+    public HUD(final Main main, final AssetManager assetManager, final InputMultiplexer inputMultiplexer, final GestureListener gestureListener, final Entity player, Map map) {
         this.main = main;
         this.inputMultiplexer = inputMultiplexer;
         this.gestureListener = gestureListener;
@@ -98,13 +99,28 @@ public class HUD implements Screen {
         temp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.MOVEMENT_ARROW_HEAD_PATH).path());
         movementArrowHead = new TextureRegion(temp);
 
+        // Options button
+        Texture optionsButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.OPTIONS_BUTTON_UP_PATH).path());
+        Texture optionsButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.OPTIONS_BUTTON_DOWN_PATH).path());
+        ImageButton.ImageButtonStyle optionsButtonStyle = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(optionsButtonUp)), new TextureRegionDrawable(new TextureRegion(optionsButtonDown)), null, null, null, null);
+        final ImageButton optionsButton = new ImageButton(optionsButtonStyle);
+        optionsButton.setSize(SMALL_BUTTON_SIZE, SMALL_BUTTON_SIZE);
+        optionsButton.setPosition(Gdx.graphics.getWidth() - optionsButton.getWidth() - SMALL_BUTTON_PADDING, Gdx.graphics.getHeight() - optionsButton.getHeight() - SMALL_BUTTON_PADDING);
+        optionsButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                main.loadOptionsScreen(null);
+            }
+        });
+        stage.addActor(optionsButton);
+
         // Map button top left
         Texture mapButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.MAP_BUTTON_UP_PATH).path());
         Texture mapButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.MAP_BUTTON_DOWN_PATH).path());
         ImageButton.ImageButtonStyle mapButtonStyle = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(mapButtonUp)), new TextureRegionDrawable(new TextureRegion(mapButtonDown)), null, null, null, null);
         ImageButton mapButton = new ImageButton(mapButtonStyle);
         mapButton.setSize(SMALL_BUTTON_SIZE, SMALL_BUTTON_SIZE);
-        mapButton.setPosition(SMALL_BUTTON_PADDING, Gdx.graphics.getHeight() - mapButton.getHeight() - SMALL_BUTTON_PADDING);
+        mapButton.setPosition(optionsButton.getX() - mapButton.getWidth() - SMALL_BUTTON_PADDING, optionsButton.getY());
         mapButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -121,11 +137,15 @@ public class HUD implements Screen {
         customizeButtonStyle.disabled = new TextureRegionDrawable(new TextureRegion(customizeButtonDisabled));
         customizeButton = new ImageButton(customizeButtonStyle);
         customizeButton.setSize(SMALL_BUTTON_SIZE, SMALL_BUTTON_SIZE);
-        customizeButton.setPosition(Gdx.graphics.getWidth() - customizeButton.getWidth() - SMALL_BUTTON_PADDING, Gdx.graphics.getHeight() - customizeButton.getHeight() - SMALL_BUTTON_PADDING);
+        customizeButton.setPosition(mapButton.getX() - customizeButton.getWidth() - SMALL_BUTTON_PADDING, mapButton.getY());
         customizeButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                main.loadCustomizeScreen();
+                if(customizeButton.isDisabled()) {
+                    main.getRenderSystem().addFloatingText(player, "Enemies are still alive!", Color.BLACK);
+                } else {
+                    main.loadCustomizeScreen();
+                }
             }
         });
         stage.addActor(customizeButton);
@@ -134,10 +154,10 @@ public class HUD implements Screen {
 
         pp = new Label(Math.round(Mappers.player.get(player).getPixelPoints()) + "pp", skin, "big");
         pp.setFontScale(1f);
-        pp.setAlignment(Align.center);
+        pp.setAlignment(Align.left);
         pp.setColor(Color.BLACK);
         pp.pack();
-        pp.setPosition(screenWidth/2f - pp.getWidth()/2f, ppY);
+        pp.setPosition(PP_LABEL_X, ppY);
         stage.addActor(pp);
 
         updateActors();
@@ -153,14 +173,14 @@ public class HUD implements Screen {
         } else {
             pp.setText(Math.round(pixelPoints) + "pp");
         }
-        pp.setPosition((screenWidth - pp.getWidth())/2f, ppY);
+        pp.setPosition(PP_LABEL_X, ppY);
 
         // Update customize button
         if(main.getMap().getCurrentArea().getEnemyCount() == 0) {
-            customizeButton.setTouchable(Touchable.enabled);
+            //customizeButton.setTouchable(Touchable.enabled);
             customizeButton.setDisabled(false);
         } else {
-            customizeButton.setTouchable(Touchable.disabled);
+            //customizeButton.setTouchable(Touchable.disabled);
             customizeButton.setDisabled(true);
         }
     }

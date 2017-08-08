@@ -212,7 +212,9 @@ public class Options implements Screen {
     @Override
     public void show() {
         inputMultiplexer.addProcessor(stage);
-        music.play();
+        if(music != null) {
+            music.play();
+        }
     }
 
     @Override
@@ -234,12 +236,16 @@ public class Options implements Screen {
 
     @Override
     public void pause() {
-        music.pause();
+        if(music != null) {
+            music.pause();
+        }
     }
 
     @Override
     public void resume() {
-        music.play();
+        if(music != null) {
+            music.play();
+        }
     }
 
     @Override
@@ -250,5 +256,9 @@ public class Options implements Screen {
     @Override
     public void dispose() {
 
+    }
+
+    public void setMusic(Music music) {
+        this.music = music;
     }
 }

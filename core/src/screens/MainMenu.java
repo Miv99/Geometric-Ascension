@@ -67,7 +67,7 @@ public class MainMenu implements Screen {
 		optionsButton.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-				main.setScreen(new Options(main, assetManager, inputMultiplexer, music));
+				main.loadOptionsScreen(music);
 			}
 		});
 		// Disable input around options button in case of fat fingers

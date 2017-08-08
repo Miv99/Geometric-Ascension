@@ -69,9 +69,8 @@ public class GestureListener implements GestureDetector.GestureListener {
     @Override
     public boolean touchDown(float x, float y, int pointer, int button) {
         if(main.getState() == Main.GameState.MAIN_GAME) {
-            // Prevent movement touches on right side of screen and near map button
-            if(!(x > screenSplitX) && !playerHitbox.isTravelling()
-                    && !(y < SMALL_BUTTON_SIZE + SMALL_BUTTON_PADDING && (x < SMALL_BUTTON_SIZE + SMALL_BUTTON_PADDING || x > screenWidth - SMALL_BUTTON_SIZE - SMALL_BUTTON_PADDING))) {
+            // Prevent movement touches on right side of screen
+            if(!(x > screenSplitX) && !playerHitbox.isTravelling()) {
                 movementDragTouchDownPoint.x = x;
                 movementDragTouchDownPoint.y = y;
                 movementDragCurrentPoint.x = x;
@@ -79,9 +78,9 @@ public class GestureListener implements GestureDetector.GestureListener {
                 movementArrowLength = 0;
                 movementArrowAngle = MathUtils.PI2;
             }
-            // Prevent rotation touches on left side of screen and near customize button
+            // Prevent rotation touches on left side of screen and near buttons
             if(!(x <= screenSplitX) && !playerHitbox.isTravelling()
-                    && !(y < SMALL_BUTTON_SIZE + SMALL_BUTTON_PADDING && (x < SMALL_BUTTON_SIZE + SMALL_BUTTON_PADDING || x > screenWidth - SMALL_BUTTON_SIZE - SMALL_BUTTON_PADDING))) {
+                    && y > SMALL_BUTTON_SIZE + SMALL_BUTTON_PADDING) {
                 shootingDragTouchDownPoint.x = x;
                 shootingDragTouchDownPoint.y = y;
                 shootingDragCurrentPoint.x = x;
