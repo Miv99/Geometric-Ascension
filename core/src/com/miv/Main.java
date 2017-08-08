@@ -9,6 +9,7 @@ import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -47,6 +48,10 @@ public class Main extends Game {
 			"music\\world2.ogg",
 			"music\\world3.wav",
 			"music\\world4.ogg"
+	};
+	public static final String[] POP_SOUND_PATHS = new String[] {
+			"sound_effects\\pop_0.ogg",
+			"sound_effects\\pop_1.ogg"
 	};
 	public static final String MAIN_MENU_MUSIC_1_PATH = "music\\main_menu1.ogg";
 	public static final String MOVEMENT_ARROW_TAIL_PATH = "movement_arrow_tail.png";
@@ -132,6 +137,7 @@ public class Main extends Game {
 		camera.setFocus(player);
 
 		assetManager.finishLoading();
+		movementSystem.loadAssets(assetManager);
 		renderSystem.loadTextures(assetManager);
 		loadMainMenu();
 	}
@@ -210,6 +216,9 @@ public class Main extends Game {
 		assetManager.load(SKIN_PATH, Skin.class);
 		for(String s : WORLD_MUSIC_PATHS) {
 			assetManager.load(s, Music.class);
+		}
+		for(String s : POP_SOUND_PATHS) {
+			assetManager.load(s, Sound.class);
 		}
 		assetManager.load(MAIN_MENU_MUSIC_1_PATH, Music.class);
 		assetManager.load(MOVEMENT_ARROW_TAIL_PATH, Texture.class);

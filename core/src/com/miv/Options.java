@@ -22,7 +22,9 @@ public class Options {
     public static final float GRAVITY_SPEED_CAP = 100f;
     public static final float GRAVITATIONAL_CONSTANT = 2000f;
 
-
+    public static final float BULLET_BUBBLE_POP_VOLUME = 0.5f;
+    public static final float PLAYER_BUBBLE_POP_VOLUME = 1f;
+    public static final float ENEMY_BUBBLE_POP_VOLUME = 0.6f;
 
 
     // Strings used for storing corresponding values inside Preference files

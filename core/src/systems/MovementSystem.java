@@ -7,7 +7,10 @@ import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.utils.Array;
 import com.miv.Camera;
 import com.miv.EntityActions;
 import com.badlogic.gdx.math.Vector2;
@@ -53,6 +56,8 @@ public class MovementSystem extends EntitySystem {
 
     private Entity player;
 
+    private Array<Sound> popSounds;
+
     public MovementSystem(Main main, PooledEngine engine, Map map, Entity player) {
         this.main = main;
         this.engine = engine;
@@ -61,6 +66,15 @@ public class MovementSystem extends EntitySystem {
         collisionCirclesToHandle = new ArrayList<CircleHitbox>();
         collisionEntitiesToHandle = new ArrayList<Entity>();
         entityRemovalQueue = new ArrayList<Entity>();
+        popSounds = new Array<Sound>();
+    }
+
+    public void loadAssets(AssetManager assetManager) {
+        popSounds.clear();
+        for(String s : Main.POP_SOUND_PATHS) {
+            Sound sound = assetManager.get(assetManager.getFileHandleResolver().resolve(s).path());
+            popSounds.add(sound);
+        }
     }
 
     @Override
@@ -137,6 +151,9 @@ public class MovementSystem extends EntitySystem {
 
         // Queue bullet entity removal
         entityRemovalQueue.add(bullet);
+
+        // Play pop sound
+        popSounds.random().play(Options.BULLET_BUBBLE_POP_VOLUME);
     }
 
     private boolean bulletIsOutsideBoundary(Entity e, Point origin, float boundary) {
@@ -393,10 +410,16 @@ public class MovementSystem extends EntitySystem {
 
             // Remove circles in hitbox circle removal queue from array list of circles in the hitbox component
             for(CircleHitbox c : hitbox.getCircleRemovalQueue()) {
-                ArrayList<Entity> subEntitites = hitbox.removeCircle(engine, e, c);
-                if(subEntitites != null) {
-                    map.getCurrentArea().setEnemyCount(map.getCurrentArea().getEnemyCount() + subEntitites.size());
-                    for (Entity sub : subEntitites) {
+                if(Mappers.player.has(e)) {
+                    popSounds.random().play(Options.PLAYER_BUBBLE_POP_VOLUME);
+                } else if(Mappers.enemy.has(e)) {
+                    popSounds.random().play(Options.ENEMY_BUBBLE_POP_VOLUME);
+                }
+
+                ArrayList<Entity> subEntities = hitbox.removeCircle(engine, e, c);
+                if(subEntities != null) {
+                    map.getCurrentArea().setEnemyCount(map.getCurrentArea().getEnemyCount() + subEntities.size());
+                    for (Entity sub : subEntities) {
                         engine.addEntity(sub);
                     }
                 }
