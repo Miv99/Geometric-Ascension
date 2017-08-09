@@ -126,11 +126,6 @@ public class MapArea {
                 engine.removeEntity(e);
             }
         }
-
-        // Remove all bullets
-        if(deleteEntitiesAfterwards) {
-            Map.clearBullets(engine);
-        }
     }
 
     public float getRadius() {

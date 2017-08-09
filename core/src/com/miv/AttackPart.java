@@ -61,7 +61,7 @@ public class AttackPart {
         if(Mappers.player.has(parent)) {
             e.add(engine.createComponent(PlayerBulletComponent.class).setDamage(damage));
             hitboxTextureType = RenderSystem.HitboxTextureType.PLAYER_BULLET;
-        } else if(Mappers.enemy.has(parent)) {
+        } else {
             e.add(engine.createComponent(EnemyBulletComponent.class).setDamage(damage));
             hitboxTextureType = RenderSystem.HitboxTextureType.ENEMY_BULLET;
         }

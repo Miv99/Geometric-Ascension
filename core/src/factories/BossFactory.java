@@ -64,7 +64,7 @@ public class BossFactory {
             // Give subentities higher speed and stalker AI
             HitboxComponent.SubEntityStats subStats = new HitboxComponent.SubEntityStats();
             subStats.maxSpeed = 3.5f;
-            subStats.aiData = new EntityCreationData();
+            subStats.aiData = new EntityCreationData(true);
             Map.randomizeSimpleStalkTargetAI(subStats.aiData);
             e1.setSubEntityStats(subStats);
         } else if(id == 1) {

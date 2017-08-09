@@ -4,7 +4,6 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.core.PooledEngine;
 import com.badlogic.gdx.math.MathUtils;
-import com.miv.AttackPart;
 import com.miv.AttackPattern;
 import com.miv.Main;
 import com.miv.Mappers;
@@ -19,9 +18,6 @@ import ai.SimpleStalkTarget;
 import ai.SimpleWander;
 import components.AIComponent;
 import components.EnemyBulletComponent;
-import components.EnemyComponent;
-import components.HitboxComponent;
-import components.IgnoreRespawnOnAreaResetComponent;
 import components.PlayerBulletComponent;
 import factories.AttackPatternFactory;
 import factories.BossFactory;
@@ -140,10 +136,6 @@ public class Map {
         minEnemiesPerMapArea = MIN_ENEMIES_PER_MAP_AREA + enemyCountIncrease/2f;
         maxEnemiesPerMapArea = MAX_ENEMIES_PER_MAP_AREA + enemyCountIncrease;
 
-        // Clear bullets
-        clearBullets(engine);
-
-        // First MapArea always has stairs leading to the previous floor
         MapArea mapArea = new MapArea(MapArea.MAP_AREA_MIN_SIZE);
         areas.put(new Point(0, 0).toString(), mapArea);
         Mappers.hitbox.get(main.getPlayer()).setOrigin(0, 0);
@@ -198,6 +190,8 @@ public class Map {
         if(oldMapArea != null && !(focus.x == x && focus.y == y)) {
             oldMapArea.storeExistingEnemies(engine, true);
         }
+
+        clearBullets(engine);
 
         newMapArea.spawnEntities(engine, player, clearNewMapAreaEntityCreationDataAfterSpawningEnemies);
 
