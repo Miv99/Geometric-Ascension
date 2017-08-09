@@ -178,6 +178,17 @@ public class Main extends Game {
 	}
 
 	public void loadMainMenu() {
+		// Stop all other music
+		if(hud != null) {
+			hud.stopMusic();
+		}
+		if(mainMenu != null) {
+			mainMenu.stopMusic();
+		}
+		if(options != null) {
+			options.stopMusic();
+		}
+
 		if(mainMenu == null) {
 			mainMenu = new MainMenu(this, assetManager, inputMultiplexer);
 		}

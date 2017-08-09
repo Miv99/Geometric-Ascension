@@ -101,6 +101,10 @@ public class MainMenu implements Screen {
 		stage.addActor(touchToStart);
     }
 
+    public void stopMusic() {
+		music.stop();
+	}
+
 	@Override
 	public void show() {
 		inputMultiplexer.addProcessor(stage);

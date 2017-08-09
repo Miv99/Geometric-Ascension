@@ -170,6 +170,10 @@ public class HUD implements Screen {
         updateActors();
     }
 
+    public void stopMusic() {
+        audioPlayer.stop();
+    }
+
     public void updateActors() {
         // Update pp label
         float pixelPoints = Mappers.player.get(player).getPixelPoints();

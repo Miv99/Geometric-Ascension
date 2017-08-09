@@ -127,7 +127,9 @@ public class MovementSystem extends EntitySystem {
 
             // Victim takes damage
             HitboxComponent victimHitbox = Mappers.hitbox.get(victim);
-            victimCircleHit.setHealth(victimCircleHit.getHealth() - damage);
+            if(!victimHitbox.isIntangible()) {
+                victimCircleHit.setHealth(victimCircleHit.getHealth() - damage);
+            }
 
             if (victimCircleHit.getHealth() <= 0) {
                 //TODO: circle death animation

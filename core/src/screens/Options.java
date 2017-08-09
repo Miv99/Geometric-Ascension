@@ -278,6 +278,15 @@ public class Options implements Screen {
 
     }
 
+    public void stopMusic() {
+        if(music != null) {
+            music.stop();
+        }
+        if(audioPlayer != null) {
+            audioPlayer.stop();
+        }
+    }
+
     public void setMusic(Music music) {
         this.music = music;
     }
