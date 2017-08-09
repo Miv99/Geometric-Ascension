@@ -9,17 +9,9 @@ import com.miv.Mappers;
 
 import java.util.ArrayList;
 
-import ai.AI;
-import ai.SimpleFollowTarget;
-import ai.SimpleStalkTarget;
-import ai.SimpleWander;
-import components.AIComponent;
 import components.BossComponent;
-import components.EnemyBulletComponent;
 import components.EnemyComponent;
 import components.HitboxComponent;
-import components.IgnoreRespawnOnAreaResetComponent;
-import components.PlayerBulletComponent;
 import utils.CircleHitbox;
 
 /**
@@ -105,7 +97,7 @@ public class MapArea {
     public void storeExistingEnemies(PooledEngine engine, boolean deleteEntitiesAfterwards) {
         entityCreationDataArrayList.clear();
 
-        for (Entity e : engine.getEntitiesFor(Family.all(EnemyComponent.class, HitboxComponent.class).exclude(IgnoreRespawnOnAreaResetComponent.class).get())) {
+        for (Entity e : engine.getEntitiesFor(Family.all(EnemyComponent.class, HitboxComponent.class).get())) {
             EntityCreationData ecd = new EntityCreationData();
             ecd.setIsEnemy(true);
             if (Mappers.boss.has(e)) {
