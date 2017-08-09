@@ -229,7 +229,7 @@ public class RenderSystem extends EntitySystem {
 
                 for (CircleHitbox c : hitbox.getCircles()) {
                     float healthBarWidth = c.getHealth() / c.getMaxHealth() * c.radius * 2.5f;
-                    float healthBarRadius = Math.max(2.5f, c.radius / 12f);
+                    float healthBarRadius = Math.min(18f, c.radius / 12f);
                     float x = -healthBarWidth / 2f;
 
                     // Color in health bar

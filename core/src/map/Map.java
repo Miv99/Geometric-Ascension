@@ -11,6 +11,7 @@ import com.miv.Options;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import ai.AI;
 import ai.SimpleFollowTarget;
@@ -124,7 +125,7 @@ public class Map {
         }
     }
 
-    public void enterNewFloor(PooledEngine engine, int floor) {
+    public void enterNewFloor(int floor) {
         this.floor = floor;
         setFocus(0, 0);
         areas.clear();

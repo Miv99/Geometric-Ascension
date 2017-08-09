@@ -164,19 +164,20 @@ public class MovementSystem extends EntitySystem {
         return Math.abs(origin.x) > Math.abs(boundary) || Math.abs(origin.y) > Math.abs(boundary);
     }
 
-    private boolean checkIfOutsideCurrentMapArea(Entity e, Point origin, CircleHitbox c, float boundary) {
+    private boolean checkIfOutsideCurrentMapArea(Entity e, Point origin, float boundary) {
         if(origin.x*origin.x + origin.y*origin.y > boundary*boundary) {
             float angle = MathUtils.atan2(origin.y, origin.x);
             angle = Utils.normalizeAngle(angle);
-            if(angle >= Math.PI/4f && angle <= 3f * Math.PI/4f) {
+            if (angle >= Math.PI / 4f && angle <= 3f * Math.PI / 4f) {
                 EntityActions.playerEnterNewMapArea(e, EntityActions.Direction.UP);
-            } else if(angle >= 3f * Math.PI/4f && angle <= 5f * Math.PI/4f) {
+            } else if (angle >= 3f * Math.PI / 4f && angle <= 5f * Math.PI / 4f) {
                 EntityActions.playerEnterNewMapArea(e, EntityActions.Direction.LEFT);
-            } else if(angle >= 5f * Math.PI/4f && angle <= 7f * Math.PI/4f) {
+            } else if (angle >= 5f * Math.PI / 4f && angle <= 7f * Math.PI / 4f) {
                 EntityActions.playerEnterNewMapArea(e, EntityActions.Direction.DOWN);
             } else {
                 EntityActions.playerEnterNewMapArea(e, EntityActions.Direction.RIGHT);
             }
+            return true;
         }
         return false;
     }
@@ -261,21 +262,13 @@ public class MovementSystem extends EntitySystem {
             if (!hitbox.isIntangible() && !hitbox.isTravelling()) {
                 // If entity is a player, check for collisions against the edges of the MapArea, enemies, enemy bullets
                 if (Mappers.player.has(e)) {
+                    // Check if circle is outside map area radius
+                    if(mapArea != null) {
+                        // Player cannot leave boss area
+                        checkIfOutsideCurrentMapArea(e, origin, mapArea.getRadius());
+                    }
+
                     for (CircleHitbox c : hitbox.getCircles()) {
-                        // Check if circle is outside map area radius
-                        if(mapArea != null) {
-                            checkIfOutsideCurrentMapArea(e, origin, c, mapArea.getRadius());
-                        }
-
-                        // Check against enemies
-                        /**
-                        checkForCollision(hitboxOrigin, c, enemies);
-                        for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
-                            isValidMovement = false;
-                            handleNonBulletCollision(e, collisionEntitiesToHandle.get(i));
-                        }
-                         */
-
                         // Check against enemy bullets
                         checkForCollision(hitboxOrigin, c, enemyBullets);
                         for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
@@ -287,15 +280,6 @@ public class MovementSystem extends EntitySystem {
                 // If entity is an enemy, check for collisions against the edges of the MapArea, players, player bullets
                 else if (Mappers.enemy.has(e)) {
                     for (CircleHitbox c : hitbox.getCircles()) {
-                        /**
-                        // Against players
-                        checkForCollision(hitboxOrigin, c, players);
-                        for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
-                            isValidMovement = false;
-                            handleNonBulletCollision(e, collisionEntitiesToHandle.get(i));
-                        }
-                         */
-
                         // Against player bullets
                         checkForCollision(hitboxOrigin, c, playerBullets);
                         for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
@@ -349,7 +333,12 @@ public class MovementSystem extends EntitySystem {
                 if(!hitbox.isTravellingFlag() && (hitbox.getTravellingTime() > NEW_MAP_AREA_LEAVE_TRAVEL_TIME || mapAreaIsOutOfCameraRange())) {
                     EntityActions.Direction directionOfTravel = hitbox.getTravellingDirection();
 
-                    map.enterNewArea(engine, e, (int)map.getFocus().x + directionOfTravel.getDeltaX(), (int)map.getFocus().y + directionOfTravel.getDeltaY(), false);
+                    if(!map.getCurrentArea().isBossArea()) {
+                        map.enterNewArea(engine, e, (int) map.getFocus().x + directionOfTravel.getDeltaX(), (int) map.getFocus().y + directionOfTravel.getDeltaY(), false);
+                        hitbox.setTravellingFromSameMapArea(false);
+                    } else {
+                        hitbox.setTravellingFromSameMapArea(true);
+                    }
 
                     // Set position of player so that the player will enter the new map area in a certain amount of time
                     final float newMapAreaRadius = map.getCurrentArea().getRadius();
@@ -383,9 +372,11 @@ public class MovementSystem extends EntitySystem {
                     hitbox.setVelocity(0, 0);
 
                     // Save game
-                    main.save();
-                    // Manually clear new map area entityCreationData to avoid saving an empty one to the current map area
-                    map.getCurrentArea().entityCreationDataArrayList.clear();
+                    if(!hitbox.isTravellingFromSameMapArea()) {
+                        main.save();
+                        // Manually clear new map area entityCreationData to avoid saving an empty one to the current map area
+                        map.getCurrentArea().entityCreationDataArrayList.clear();
+                    }
 
                     // Make player no longer invincible
                     hitbox.setIntangible(false);
@@ -395,6 +386,7 @@ public class MovementSystem extends EntitySystem {
 
                     hitbox.setTravellingFlag(false);
                     hitbox.setTravellingTime(0);
+                    hitbox.setTravellingFromSameMapArea(false);
                 } else {
                     hitbox.setTravellingTime(hitbox.getTravellingTime() + deltaTime);
                 }

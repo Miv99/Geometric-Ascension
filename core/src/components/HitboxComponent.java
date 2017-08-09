@@ -70,6 +70,7 @@ public class HitboxComponent implements Component, Pool.Poolable {
     private float travellingTime;
     // Random crap for player travelling to new map areas
     private boolean travellingFlag;
+    private boolean travellingFromSameMapArea;
     private EntityActions.Direction travellingDirection;
     private float travellingSpeed;
     private Point travellingDestination;
@@ -511,5 +512,13 @@ public class HitboxComponent implements Component, Pool.Poolable {
 
     public void setSubEntityStats(SubEntityStats subEntityStats) {
         this.subEntityStats = subEntityStats;
+    }
+
+    public boolean isTravellingFromSameMapArea() {
+        return travellingFromSameMapArea;
+    }
+
+    public void setTravellingFromSameMapArea(boolean travellingFromSameMapArea) {
+        this.travellingFromSameMapArea = travellingFromSameMapArea;
     }
 }

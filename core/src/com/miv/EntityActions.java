@@ -55,7 +55,7 @@ public class EntityActions {
         map.getMain().getHud().fadeToColor(new Color(1f, 1f, 1f, 1f), 3.5f, new Timer.Task() {
             @Override
             public void run() {
-                map.enterNewFloor(engine, newFloor);
+                map.enterNewFloor(newFloor);
 
                 // Make player no longer invincible
                 Mappers.hitbox.get(player).setIntangible(false);
