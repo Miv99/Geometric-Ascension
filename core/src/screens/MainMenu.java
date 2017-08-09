@@ -22,7 +22,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Timer;
-import com.miv.Main;
+import com.miv.*;
+import com.miv.Options;
 
 /**
  * Created by Miv on 5/21/2017.
@@ -68,6 +69,7 @@ public class MainMenu implements Screen {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				main.loadOptionsScreen(music);
+				main.getOptions().setShowMainMenuOnBackButtonClick(true);
 			}
 		});
 		// Disable input around options button in case of fat fingers
@@ -104,6 +106,7 @@ public class MainMenu implements Screen {
 		inputMultiplexer.addProcessor(stage);
 
 		music.play();
+		music.setVolume(com.miv.Options.MASTER_VOLUME * Options.MUSIC_VOLUME);
 		music.setLooping(true);
 	}
 
@@ -137,12 +140,12 @@ public class MainMenu implements Screen {
 	@Override
 	public void resume() {
 		music.play();
+		music.setVolume(com.miv.Options.MASTER_VOLUME * Options.MUSIC_VOLUME);
 	}
 
 	@Override
 	public void hide() {
 		inputMultiplexer.removeProcessor(stage);
-		music.pause();
 	}
 
 	@Override

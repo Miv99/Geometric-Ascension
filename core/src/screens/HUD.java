@@ -70,7 +70,7 @@ public class HUD implements Screen {
     private Label pp;
     private float ppY;
 
-    public HUD(final Main main, final AssetManager assetManager, final InputMultiplexer inputMultiplexer, final GestureListener gestureListener, final Entity player, Map map) {
+    public HUD(final Main main, final AssetManager assetManager, final InputMultiplexer inputMultiplexer, final GestureListener gestureListener, final Entity player, final Map map) {
         this.main = main;
         this.inputMultiplexer = inputMultiplexer;
         this.gestureListener = gestureListener;
@@ -110,6 +110,9 @@ public class HUD implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 main.loadOptionsScreen(null);
+                main.getOptions().setShowMainMenuOnBackButtonClick(false);
+                main.getOptions().setAudioPlayer(audioPlayer);
+                audioPlayer.resume();
             }
         });
         stage.addActor(optionsButton);
@@ -124,7 +127,10 @@ public class HUD implements Screen {
         mapButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                main.loadMapScreen();
+                //TODO: set this back
+                //main.loadMapScreen();
+                map.setFloor(0);
+                map.setChanceOfNextAreaHavingStairs(1f);
             }
         });
         stage.addActor(mapButton);
@@ -145,6 +151,7 @@ public class HUD implements Screen {
                     main.getRenderSystem().addFloatingText(player, "Enemies are still alive!", Color.BLACK);
                 } else {
                     main.loadCustomizeScreen();
+                    audioPlayer.resume();
                 }
             }
         });
@@ -188,7 +195,9 @@ public class HUD implements Screen {
     @Override
     public void show() {
         inputMultiplexer.addProcessor(stage);
-        audioPlayer.playRandomMusic();
+        if(!audioPlayer.isPlaying()) {
+            audioPlayer.playRandomMusic();
+        }
         updateActors();
     }
 
@@ -269,8 +278,8 @@ public class HUD implements Screen {
     @Override
     public void hide() {
         inputMultiplexer.removeProcessor(stage);
-        audioPlayer.stop();
-        audioPlayer.reset();
+        //audioPlayer.stop();
+        //audioPlayer.reset();
     }
 
     @Override

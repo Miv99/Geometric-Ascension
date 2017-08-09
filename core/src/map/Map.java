@@ -69,7 +69,7 @@ public class Map {
     /**
      * How much {@link map.Map#chanceOfNextAreaHavingStairs} increases by each time a new MapArea is discovered
      */
-    private static final float CHANCE_OF_STAIRS_AREA_INCREMENT = 1f;
+    private static final float CHANCE_OF_STAIRS_AREA_INCREMENT = 0.01f;
 
     public static final float INITIAL_MAP_AREA_PIXEL_POINTS = 20f;
     /**
@@ -255,8 +255,8 @@ public class Map {
             // Max speed is a random number between 1f and 5f
             ecd.setMaxSpeed(MathUtils.random(1f, 3f));
 
-            // Max health is 500% to 2000% of total pp
-            ecd.setMaxHealth(ppPerEnemy * MathUtils.random(5f, 20f));
+            // Max health is 250% to 1000% of total pp
+            ecd.setMaxHealth(ppPerEnemy * MathUtils.random(2.5f, 10f));
 
             ArrayList<CircleHitbox> circles = ecd.getCircleHitboxes();
 
@@ -467,5 +467,9 @@ public class Map {
 
     public float getMaxEnemiesPerMapArea() {
         return maxEnemiesPerMapArea;
+    }
+
+    public void setChanceOfNextAreaHavingStairs(float chanceOfNextAreaHavingStairs) {
+        this.chanceOfNextAreaHavingStairs = chanceOfNextAreaHavingStairs;
     }
 }

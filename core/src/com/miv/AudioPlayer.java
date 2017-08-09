@@ -13,6 +13,7 @@ public class AudioPlayer {
     private int lastPlayed;
     private Music[] songs;
     private boolean[] played;
+    private boolean isPlaying;
 
     public AudioPlayer(AssetManager assetManager, String[] songPaths) {
         songs = new Music[songPaths.length];
@@ -26,14 +27,17 @@ public class AudioPlayer {
 
     public void pause() {
         songs[lastPlayed].pause();
+        isPlaying = false;
     }
 
     public void resume() {
         songs[lastPlayed].play();
+        isPlaying = true;
     }
 
     public void stop() {
         songs[lastPlayed].stop();
+        isPlaying = false;
     }
 
     public void reset() {
@@ -41,6 +45,7 @@ public class AudioPlayer {
         for(int i = 0; i < played.length; i++) {
             played[i] = false;
         }
+        isPlaying = false;
     }
 
     public void playRandomMusic() {
@@ -51,6 +56,7 @@ public class AudioPlayer {
         songs[lastPlayed].stop();
         lastPlayed = songIndex;
         songs[songIndex].play();
+        isPlaying = true;
         played[songIndex] = true;
 
         songs[songIndex].setOnCompletionListener(new Music.OnCompletionListener() {
@@ -75,5 +81,9 @@ public class AudioPlayer {
         for(Music m : songs) {
             m.setVolume(Options.MASTER_VOLUME * Options.MUSIC_VOLUME);
         }
+    }
+
+    public boolean isPlaying() {
+        return isPlaying;
     }
 }

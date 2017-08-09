@@ -23,6 +23,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
+import com.miv.AudioPlayer;
 import com.miv.Main;
 import com.miv.Mappers;
 import com.miv.Save;
@@ -35,7 +36,9 @@ import components.HitboxComponent;
 public class Options implements Screen {
     private Stage stage;
     private Music music;
+    private AudioPlayer audioPlayer;
     private InputMultiplexer inputMultiplexer;
+    private boolean showMainMenuOnBackButtonClick;
 
     public Options(final Main main, AssetManager assetManager, InputMultiplexer inputMultiplexer, final Music music) {
         stage = new Stage();
@@ -70,7 +73,12 @@ public class Options implements Screen {
         backButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                main.loadMainMenu();
+                main.savePreferences();
+                if(showMainMenuOnBackButtonClick) {
+                    main.loadMainMenu();
+                } else {
+                    main.loadHUD();
+                }
             }
         });
         stage.addActor(backButton);
@@ -91,7 +99,12 @@ public class Options implements Screen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 com.miv.Options.MASTER_VOLUME = masterVolume.getValue()/100f;
-                music.setVolume(com.miv.Options.MASTER_VOLUME * com.miv.Options.MUSIC_VOLUME);
+                if(Options.this.music != null) {
+                    Options.this.music.setVolume(com.miv.Options.MASTER_VOLUME * com.miv.Options.MUSIC_VOLUME);
+                }
+                if(audioPlayer != null) {
+                    audioPlayer.onVolumeChange();
+                }
                 masterVolumeLabel.setText("Master volume: " + (int)(com.miv.Options.MASTER_VOLUME*100) + "%");
             }
         });
@@ -113,7 +126,12 @@ public class Options implements Screen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 com.miv.Options.MUSIC_VOLUME = musicVolume.getValue()/100f;
-                music.setVolume(com.miv.Options.MASTER_VOLUME * com.miv.Options.MUSIC_VOLUME);
+                if(Options.this.music != null) {
+                    Options.this.music.setVolume(com.miv.Options.MASTER_VOLUME * com.miv.Options.MUSIC_VOLUME);
+                }
+                if(audioPlayer != null) {
+                    audioPlayer.onVolumeChange();
+                }
                 musicVolumeLabel.setText("Music volume: " + (int)(com.miv.Options.MUSIC_VOLUME*100) + "%");
             }
         });
@@ -214,6 +232,7 @@ public class Options implements Screen {
         inputMultiplexer.addProcessor(stage);
         if(music != null) {
             music.play();
+            music.setVolume(com.miv.Options.MASTER_VOLUME * com.miv.Options.MUSIC_VOLUME);
         }
     }
 
@@ -245,6 +264,7 @@ public class Options implements Screen {
     public void resume() {
         if(music != null) {
             music.play();
+            music.setVolume(com.miv.Options.MASTER_VOLUME * com.miv.Options.MUSIC_VOLUME);
         }
     }
 
@@ -260,5 +280,13 @@ public class Options implements Screen {
 
     public void setMusic(Music music) {
         this.music = music;
+    }
+
+    public void setShowMainMenuOnBackButtonClick(boolean showMainMenuOnBackButtonClick) {
+        this.showMainMenuOnBackButtonClick = showMainMenuOnBackButtonClick;
+    }
+
+    public void setAudioPlayer(AudioPlayer audioPlayer) {
+        this.audioPlayer = audioPlayer;
     }
 }

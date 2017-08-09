@@ -36,7 +36,8 @@ public class Main extends Game {
 		MAIN_MENU,
 		MAIN_GAME,
 		MAP,
-		CUSTOMIZE
+		CUSTOMIZE,
+		OPTIONS
 	}
 
 	public static final int SCREEN_WIDTH = 1600;
@@ -116,7 +117,9 @@ public class Main extends Game {
 		inputMultiplexer.addProcessor(new GestureDetector(gestureListener));
 		Gdx.input.setInputProcessor(inputMultiplexer);
 
+		preferences = Gdx.app.getPreferences("Geometric Ascension");
 		loadPreferences();
+		savePreferences();
 		loadAssets();
 
 		renderSystem = new RenderSystem(this);
@@ -161,6 +164,7 @@ public class Main extends Game {
 			options.setMusic(musicToBeContinuedPlaying);
 		}
 		setScreen(options);
+		state = GameState.OPTIONS;
 	}
 
 	public void loadMainMenuMapPreview() {
@@ -253,15 +257,25 @@ public class Main extends Game {
 		assetManager.load(BUBBLE_DEFAULT_PATH, Texture.class);
 	}
 
+	public void savePreferences() {
+		preferences.putFloat(Options.MUSIC_VOLUME_STRING, Options.MUSIC_VOLUME);
+		preferences.putFloat(Options.SOUND_VOLUME_STRING, Options.SOUND_VOLUME);
+		preferences.putFloat(Options.MASTER_VOLUME_STRING, Options.MASTER_VOLUME);
+		preferences.putFloat(Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE_STRING, Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE);
+		preferences.putBoolean(Options.SHOW_ENEMY_HEALTH_BARS_STRING, Options.SHOW_ENEMY_HEALTH_BARS);
+		preferences.putBoolean(Options.SHOW_PLAYER_HEALTH_BARS_STRING, Options.SHOW_PLAYER_HEALTH_BARS);
+		preferences.putBoolean(Options.SHOW_PP_GAIN_FLOATING_TEXT_STRING, Options.SHOW_PP_GAIN_FLOATING_TEXT);
+		preferences.flush();
+	}
+
 	public void loadPreferences() {
-		preferences = Gdx.app.getPreferences("Geometric Ascension");
-		preferences.putFloat(Options.MUSIC_VOLUME_STRING, preferences.getFloat(Options.MUSIC_VOLUME_STRING, Options.MUSIC_VOLUME));
-		preferences.putFloat(Options.SOUND_VOLUME_STRING, preferences.getFloat(Options.SOUND_VOLUME_STRING, Options.SOUND_VOLUME));
-		preferences.putFloat(Options.MASTER_VOLUME_STRING, preferences.getFloat(Options.MASTER_VOLUME_STRING, Options.MASTER_VOLUME));
-		preferences.putFloat(Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE_STRING, preferences.getFloat(Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE_STRING, Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE));
-		preferences.putBoolean(Options.SHOW_ENEMY_HEALTH_BARS_STRING, preferences.getBoolean(Options.SHOW_ENEMY_HEALTH_BARS_STRING, Options.SHOW_ENEMY_HEALTH_BARS));
-		preferences.putBoolean(Options.SHOW_PLAYER_HEALTH_BARS_STRING, preferences.getBoolean(Options.SHOW_PLAYER_HEALTH_BARS_STRING, Options.SHOW_PLAYER_HEALTH_BARS));
-		preferences.putBoolean(Options.SHOW_PP_GAIN_FLOATING_TEXT_STRING , preferences.getBoolean(Options.SHOW_PP_GAIN_FLOATING_TEXT_STRING, Options.SHOW_PP_GAIN_FLOATING_TEXT));
+		Options.MUSIC_VOLUME = preferences.getFloat(Options.MUSIC_VOLUME_STRING, Options.MUSIC_VOLUME);
+		Options.SOUND_VOLUME = preferences.getFloat(Options.SOUND_VOLUME_STRING, Options.SOUND_VOLUME);
+		Options.MASTER_VOLUME = preferences.getFloat(Options.MASTER_VOLUME_STRING, Options.MASTER_VOLUME);
+		Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE = preferences.getFloat(Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE_STRING, Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE);
+		Options.SHOW_ENEMY_HEALTH_BARS = preferences.getBoolean(Options.SHOW_ENEMY_HEALTH_BARS_STRING, Options.SHOW_ENEMY_HEALTH_BARS);
+		Options.SHOW_PLAYER_HEALTH_BARS = preferences.getBoolean(Options.SHOW_PLAYER_HEALTH_BARS_STRING, Options.SHOW_PLAYER_HEALTH_BARS);
+		Options.SHOW_PP_GAIN_FLOATING_TEXT = preferences.getBoolean(Options.SHOW_PP_GAIN_FLOATING_TEXT_STRING, Options.SHOW_PP_GAIN_FLOATING_TEXT);
 	}
 
 	public void updateScreenActors() {
@@ -413,5 +427,9 @@ public class Main extends Game {
 
 	public RenderSystem getRenderSystem() {
 		return renderSystem;
+	}
+
+	public screens.Options getOptions() {
+		return options;
 	}
 }

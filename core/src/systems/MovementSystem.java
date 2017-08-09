@@ -117,43 +117,45 @@ public class MovementSystem extends EntitySystem {
     }
 
     private void handleBulletCollision(Entity victim, CircleHitbox victimCircleHit, Entity bullet) {
-        float damage = 0;
-        if(Mappers.enemyBullet.has(bullet)) {
-            damage = Mappers.enemyBullet.get(bullet).getDamage();
-        } else if(Mappers.playerBullet.has(bullet)) {
-            damage = Mappers.playerBullet.get(bullet).getDamage();
-        }
+        if(!entityRemovalQueue.contains(bullet)) {
+            float damage = 0;
+            if (Mappers.enemyBullet.has(bullet)) {
+                damage = Mappers.enemyBullet.get(bullet).getDamage();
+            } else if (Mappers.playerBullet.has(bullet)) {
+                damage = Mappers.playerBullet.get(bullet).getDamage();
+            }
 
-        // Victim takes damage
-        HitboxComponent victimHitbox = Mappers.hitbox.get(victim);
-        victimCircleHit.setHealth(victimCircleHit.getHealth() - damage);
+            // Victim takes damage
+            HitboxComponent victimHitbox = Mappers.hitbox.get(victim);
+            victimCircleHit.setHealth(victimCircleHit.getHealth() - damage);
 
-        if(victimCircleHit.getHealth() <= 0) {
-            //TODO: circle death animation
-            victimHitbox.queueCircleRemoval(victimCircleHit);
+            if (victimCircleHit.getHealth() <= 0) {
+                //TODO: circle death animation
+                victimHitbox.queueCircleRemoval(victimCircleHit);
 
-            if(Mappers.enemy.has(victim)) {
-                Mappers.player.get(player).addPixelPoints(main, victimCircleHit.getPpGain());
+                if (Mappers.enemy.has(victim)) {
+                    Mappers.player.get(player).addPixelPoints(main, victimCircleHit.getPpGain());
 
-                // TODO: remove this
-                if(victimCircleHit.getPpGain() <= 0) {
-                    System.out.println("you messed up; a circle has no pp gain for some reason 1374dskjfsd9");
+                    // TODO: remove this
+                    if (victimCircleHit.getPpGain() <= 0) {
+                        System.out.println("you messed up; a circle has no pp gain for some reason 1374dskjfsd9");
+                    }
+                }
+
+                // All hit circles considered dead when number of circles is 1 because size() is not updated until
+                // the circle removal queue is fired.
+                if (victimHitbox.getCircles().size() == 1) {
+                    // Queue entity removal from engine
+                    entityRemovalQueue.add(victim);
                 }
             }
 
-            // All hit circles considered dead when number of circles is 1 because size() is not updated until
-            // the circle removal queue is fired.
-            if(victimHitbox.getCircles().size() == 1) {
-                // Queue entity removal from engine
-                entityRemovalQueue.add(victim);
-            }
+            // Queue bullet entity removal
+            entityRemovalQueue.add(bullet);
+
+            // Play pop sound
+            popSounds.random().play(Options.BULLET_BUBBLE_POP_VOLUME);
         }
-
-        // Queue bullet entity removal
-        entityRemovalQueue.add(bullet);
-
-        // Play pop sound
-        popSounds.random().play(Options.BULLET_BUBBLE_POP_VOLUME);
     }
 
     private boolean bulletIsOutsideBoundary(Entity e, Point origin, float boundary) {

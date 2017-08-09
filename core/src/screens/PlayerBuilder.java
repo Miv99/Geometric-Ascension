@@ -60,6 +60,7 @@ public class PlayerBuilder implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 main.loadHUD();
+                Save.save(main);
             }
         });
         stage.addActor(backButton);
