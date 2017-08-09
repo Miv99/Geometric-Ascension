@@ -22,6 +22,9 @@ import static map.MapArea.BOSS_MAP_AREA_SIZE;
  */
 
 public class BossFactory {
+    /**
+     * MAKE SURE EVERY NEW ECD CREATED IS DONE USING  new EntityCreationData(true); AND NOT  new EntityCreationData();
+     */
     public static ArrayList<EntityCreationData> getBossById(int id, float mapAreaRadius, float pp) {
         ArrayList<EntityCreationData> ecds = new ArrayList<EntityCreationData>();
 

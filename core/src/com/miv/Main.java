@@ -319,7 +319,17 @@ public class Main extends Game {
 
 	@Override
 	public void pause() {
+		// Save when game is paused instead of in dispose() because user may kill app incorrectly (not using the back button)
 
+		savePreferences();
+
+		// Save game if not in boss area
+		if(!map.getCurrentArea().isBossArea()) {
+			// Store enemies into ECDs
+			map.getCurrentArea().storeExistingEnemies(engine, false);
+
+			Save.save(this);
+		}
 	}
 
 	@Override

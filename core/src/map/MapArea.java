@@ -169,4 +169,8 @@ public class MapArea {
     public void setOriginalEnemyCount(int originalEnemyCount) {
         this.originalEnemyCount = originalEnemyCount;
     }
+
+    public boolean isBossArea() {
+        return stairsDestination != -1;
+    }
 }
