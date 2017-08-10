@@ -62,6 +62,18 @@ public class AttackPattern {
         }
     }
 
+    public AttackPattern clone() {
+        AttackPattern ap = new AttackPattern();
+        ap.attackParts = new ArrayList<AttackPart>();
+        for(AttackPart a : attackParts) {
+            ap.attackParts.add(a.clone());
+        }
+        ap.duration = duration;
+        ap.totalDamage = totalDamage;
+        ap.totalRadius = totalRadius;
+        return ap;
+    }
+
     public float getDuration() {
         return duration;
     }

@@ -109,6 +109,22 @@ public class AttackPart {
         return this;
     }
 
+    public AttackPart clone() {
+        AttackPart ap = new AttackPart();
+        ap.delay = delay;
+        ap.originX = originX;
+        ap.originY = originY;
+        ap.speed = speed;
+        ap.radius = radius;
+        ap.damage = damage;
+        ap.randomizeAngle = randomizeAngle;
+        ap.minAngleInRadians = minAngleInRadians;
+        ap.maxAngleInRadians = maxAngleInRadians;
+        ap.attackPartAngleDeterminant = attackPartAngleDeterminant;
+        ap.angleInRadians = angleInRadians;
+        return ap;
+    }
+
     public float getDelay() {
         return delay;
     }
