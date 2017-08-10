@@ -35,12 +35,14 @@ public class AttackPattern {
     private float totalDamage;
     private float totalRadius;
 
+    private float totalPpInStatModifiers;
+
     public AttackPattern() {
         attackParts = new ArrayList<AttackPart>();
     }
 
     // Randomly distribute pixel points to various aspects of attack pattern bullets
-    public float[] getAttackPatternStatModifiers(float pp) {
+    private float[] getAttackPatternStatModifiers(float pp) {
         float speedMultiplier = pp/MathUtils.random(MIN_BULLET_SPEED_CONSTANT, MAX_BULLET_SPEED_CONSTANT);
         float fireRateMultiplier = pp/MathUtils.random(MIN_FIRE_RATE_CONSTANT, MAX_FIRE_RATE_CONSTANT);
         float bulletDamageMultiplier = pp/MathUtils.random(MIN_BULLET_DAMAGE_CONSTANT, MAX_BULLET_DAMAGE_CONSTANT);
@@ -49,16 +51,23 @@ public class AttackPattern {
         return new float[] {speedMultiplier, fireRateMultiplier, bulletDamageMultiplier, bulletRadiusMultiplier};
     }
 
+    public void addRandomAttackPatternStatModifiers(float pp) {
+        totalPpInStatModifiers += pp;
+
+        float[] sm = getAttackPatternStatModifiers(totalPpInStatModifiers);
+        modify(sm[0], sm[1], sm[2], sm[3]);
+    }
+
     /**
      * @see {@link AttackPattern#getAttackPatternStatModifiers(float)}
      */
-    public void modify(float speedMultiplier, float fireRateMultiplier, float bulletDamageMultiplier, float bulletRadiusMultiplier) {
+    private void modify(float speedMultiplier, float fireRateMultiplier, float bulletDamageMultiplier, float bulletRadiusMultiplier) {
         // Modify the attack pattern according to pp distribution
         for(AttackPart a : attackParts) {
-            a.setSpeed(a.getSpeed() * speedMultiplier);
-            a.setDelay(a.getDelay() * fireRateMultiplier);
-            a.setDamage(a.getDamage() * bulletDamageMultiplier);
-            a.setRadius(a.getRadius() * bulletRadiusMultiplier);
+            a.setSpeed(a.getOriginalSpeed() * speedMultiplier);
+            a.setDelay(a.getOriginalDelay() * fireRateMultiplier);
+            a.setDamage(a.getOriginalDamage() * bulletDamageMultiplier);
+            a.setRadius(a.getOriginalRadius() * bulletRadiusMultiplier);
         }
     }
 
@@ -105,5 +114,9 @@ public class AttackPattern {
 
     public float getTotalRadius() {
         return totalRadius;
+    }
+
+    public float getTotalPpInStatModifiers() {
+        return totalPpInStatModifiers;
     }
 }

@@ -2,7 +2,9 @@ package components;
 
 import com.badlogic.ashley.core.Component;
 import com.badlogic.ashley.core.Entity;
+import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.core.PooledEngine;
+import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -422,7 +424,7 @@ public class HitboxComponent implements Component, Pool.Poolable {
         circleRemovalQueue.clear();
     }
 
-    public ArrayList<Entity> removeCircle(PooledEngine engine, Entity self, CircleHitbox c) {
+    public ArrayList<Entity> removeCircle(PooledEngine engine, Entity self, CircleHitbox c, boolean transferPpToBosses) {
         circles.remove(c);
 
         if(circles.size() > 0) {
@@ -435,6 +437,31 @@ public class HitboxComponent implements Component, Pool.Poolable {
             }
             recenterCircles();
             recenterOriginalCirclePositions();
+
+            // Transfer part of pp to all other boss entities' circles' attack patterns evenly
+            if(transferPpToBosses && c.getAttackPattern() != null) {
+                float pp = c.getAttackPattern().getTotalPpInStatModifiers();
+
+                ImmutableArray<Entity> bosses = engine.getEntitiesFor(Family.all(BossComponent.class).get());
+                int circlesWithAttackPatternCount = 0;
+                for(Entity e : bosses) {
+                    ArrayList<CircleHitbox> circles = Mappers.hitbox.get(e).circles;
+                    for(CircleHitbox circle : circles) {
+                        if(circle.getAttackPattern() != null) {
+                            circlesWithAttackPatternCount++;
+                        }
+                    }
+                }
+
+                for(Entity e : bosses) {
+                    ArrayList<CircleHitbox> circles = Mappers.hitbox.get(e).circles;
+                    for(CircleHitbox circle : circles) {
+                        if(circle.getAttackPattern() != null) {
+                            circle.getAttackPattern().addRandomAttackPatternStatModifiers(pp/circlesWithAttackPatternCount * Options.BOSS_PP_TRANSFER_PERCENT);
+                        }
+                    }
+                }
+            }
 
             return subEntities;
         }

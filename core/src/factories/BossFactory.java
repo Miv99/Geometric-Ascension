@@ -100,7 +100,18 @@ public class BossFactory {
             e1.setSpawnPosition(0, 0);
             Map.randomizeSimpleWanderAI(e1, mapAreaRadius);
             e1.setMaxSpeed(1.5f);
-        } else {
+        }
+        else if(id == 2) {
+            float radius = 50f;
+            int squareLength = 7;
+
+            EntityCreationData e1 = new EntityCreationData(true);
+            ecds.add(e1);
+
+            ArrayList<CircleHitbox> ca1 = new ArrayList<CircleHitbox>();
+            e1.setCircleHitboxes(ca1);
+        }
+        else {
             return getBossById(0, mapAreaRadius, pp);
         }
 

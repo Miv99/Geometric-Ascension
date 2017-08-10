@@ -412,7 +412,7 @@ public class MovementSystem extends EntitySystem {
                     popSounds.random().play(Options.ENEMY_BUBBLE_POP_VOLUME);
                 }
 
-                ArrayList<Entity> subEntities = hitbox.removeCircle(engine, e, c);
+                ArrayList<Entity> subEntities = hitbox.removeCircle(engine, e, c, (map.getCurrentArea().isBossArea() && Mappers.boss.has(e)));
                 if(subEntities != null) {
                     map.getCurrentArea().setEnemyCount(map.getCurrentArea().getEnemyCount() + subEntities.size());
                     for (Entity sub : subEntities) {

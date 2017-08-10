@@ -10,7 +10,8 @@ public class Options {
     // Affects bonus pp gain from clearing a map area
     public static final float BONUS_PP_MULTIPLIER = 0.3f;
     public static final float GLOBAL_MOVEMENT_SPEED_MULTIPLIER = 30f;
-
+    // How much a boss attack pattern's pp in stat modifiers is split evenly among other bosses' attack pattern's stat modifiers upon circle death
+    public static final float BOSS_PP_TRANSFER_PERCENT = 0.35f;
     /**
      * The minimum distance from an entity's origin to another's hitbox's {@link components.HitboxComponent#gravitationalRadius} and/or map area border that the repelling force begins to take effect.
      * The repelling force works in {@link systems.MovementSystem} by adding to each hitbox's velocity, with the amount added increasing

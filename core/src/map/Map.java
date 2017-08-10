@@ -256,8 +256,7 @@ public class Map {
             ArrayList<CircleHitbox> circles = ecd.getCircleHitboxes();
 
             AttackPattern attackPattern = AttackPatternFactory.getRandomAttackPatternByFloor(floor);
-            float[] attackPatternStats = attackPattern.getAttackPatternStatModifiers(ppPerEnemy);
-            attackPattern.modify(attackPatternStats[0], attackPatternStats[1], attackPatternStats[2], attackPatternStats[3]);
+            attackPattern.addRandomAttackPatternStatModifiers(ppPerEnemy);
 
             CircleHitbox c1 = new CircleHitbox();
 

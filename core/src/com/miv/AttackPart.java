@@ -41,6 +41,11 @@ public class AttackPart {
     private float radius;
     private float damage;
 
+    private float originalDelay;
+    private float originalSpeed;
+    private float originalRadius;
+    private float originalDamage;
+
     private boolean randomizeAngle;
     private float minAngleInRadians;
     private float maxAngleInRadians;
@@ -111,12 +116,12 @@ public class AttackPart {
 
     public AttackPart clone() {
         AttackPart ap = new AttackPart();
-        ap.delay = delay;
-        ap.originX = originX;
-        ap.originY = originY;
-        ap.speed = speed;
-        ap.radius = radius;
-        ap.damage = damage;
+        ap.setDelay(delay);
+        ap.setOriginX(originX);
+        ap.setOriginY(originY);
+        ap.setSpeed(speed);
+        ap.setRadius(radius);
+        ap.setDamage(damage);
         ap.randomizeAngle = randomizeAngle;
         ap.minAngleInRadians = minAngleInRadians;
         ap.maxAngleInRadians = maxAngleInRadians;
@@ -131,6 +136,15 @@ public class AttackPart {
 
     public AttackPart setDelay(float delay) {
         this.delay = delay;
+        originalDelay = delay;
+        return this;
+    }
+
+    public AttackPart setDelay(float delay, boolean setOriginal) {
+        this.delay = delay;
+        if(setOriginal) {
+            originalDelay = delay;
+        }
         return this;
     }
 
@@ -195,6 +209,15 @@ public class AttackPart {
 
     public AttackPart setSpeed(float speed) {
         this.speed = speed;
+        originalSpeed = speed;
+        return this;
+    }
+
+    public AttackPart setSpeed(float speed, boolean setOriginal) {
+        this.speed = speed;
+        if(setOriginal) {
+            originalSpeed = speed;
+        }
         return this;
     }
 
@@ -204,6 +227,15 @@ public class AttackPart {
 
     public AttackPart setRadius(float radius) {
         this.radius = radius;
+        originalRadius = radius;
+        return this;
+    }
+
+    public AttackPart setRadius(float radius, boolean setOriginal) {
+        this.radius = radius;
+        if(setOriginal) {
+            originalRadius = radius;
+        }
         return this;
     }
 
@@ -213,6 +245,15 @@ public class AttackPart {
 
     public AttackPart setDamage(float damage) {
         this.damage = damage;
+        originalDamage = damage;
+        return this;
+    }
+
+    public AttackPart setDamage(float damage, boolean setOriginal) {
+        this.damage = damage;
+        if(setOriginal) {
+            originalDamage = damage;
+        }
         return this;
     }
 
@@ -226,5 +267,37 @@ public class AttackPart {
 
     public float getMaxAngleInRadians() {
         return maxAngleInRadians;
+    }
+
+    public float getOriginalDelay() {
+        return originalDelay;
+    }
+
+    public void setOriginalDelay(float originalDelay) {
+        this.originalDelay = originalDelay;
+    }
+
+    public float getOriginalSpeed() {
+        return originalSpeed;
+    }
+
+    public void setOriginalSpeed(float originalSpeed) {
+        this.originalSpeed = originalSpeed;
+    }
+
+    public float getOriginalRadius() {
+        return originalRadius;
+    }
+
+    public void setOriginalRadius(float originalRadius) {
+        this.originalRadius = originalRadius;
+    }
+
+    public float getOriginalDamage() {
+        return originalDamage;
+    }
+
+    public void setOriginalDamage(float originalDamage) {
+        this.originalDamage = originalDamage;
     }
 }
