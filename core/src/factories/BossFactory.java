@@ -6,6 +6,8 @@ import com.miv.Options;
 
 import java.util.ArrayList;
 
+import javax.swing.text.html.Option;
+
 import ai.AI;
 import ai.SimpleStalkTarget;
 import components.HitboxComponent;
@@ -31,38 +33,39 @@ public class BossFactory {
         // Make boss 10x harder than a normal enemy
         float scaledPP = pp * 10f;
 
+        // Big circle surrounded by smaller circles
         if(id == 0) {
-            EntityCreationData e1 = new EntityCreationData(true);
-            ecds.add(e1);
-
             float mainRadius = 450f;
             float subRadius = 50f;
 
+            EntityCreationData e1 = new EntityCreationData(true);
+            ecds.add(e1);
+
             ArrayList<CircleHitbox> ca1 = new ArrayList<CircleHitbox>();
-            CircleHitbox c1 = new CircleHitbox(true);
-            ca1.add(c1);
-            c1.setPosition(0, 0);
-            c1.setAttackPattern(AttackPatternFactory.getAttackPattern("BOSS_1_1"));
-            c1.setHealth(scaledPP * 15f);
-            c1.setMaxHealth(scaledPP * 15f);
-            c1.setPpGain(pp * Options.PP_GAIN_MULTIPLIER * 10f);
-            c1.setRadius(mainRadius);
+            e1.setCircleHitboxes(ca1);
+            ca1.add(new CircleHitbox(
+                    RenderSystem.HitboxTextureType.ENEMY,
+                    AttackPatternFactory.getAttackPattern("BOSS_1_1"),
+                    0, 0,
+                    mainRadius,
+                    scaledPP * 15f,
+                    pp * 10f * Options.PP_GAIN_MULTIPLIER
+            ));
             for(int i = 0; i < 16; i++) {
-                CircleHitbox c = new CircleHitbox(true);
-                ca1.add(c);
                 float angle = i * MathUtils.degreesToRadians * (360/16f);
-                c.setPosition((mainRadius + subRadius) * MathUtils.cos(angle), (mainRadius + subRadius) * MathUtils.sin(angle));
-                c.setAttackPattern(AttackPatternFactory.getAttackPattern("BOSS_1_2"));
-                c.setHealth(scaledPP);
-                c.setMaxHealth(scaledPP);
-                c.setPpGain(pp * Options.PP_GAIN_MULTIPLIER);
-                c.setRadius(subRadius);
+                ca1.add(new CircleHitbox(
+                        RenderSystem.HitboxTextureType.ENEMY,
+                        AttackPatternFactory.getAttackPattern("BOSS_1_1"),
+                        (mainRadius + subRadius) * MathUtils.cos(angle), (mainRadius + subRadius) * MathUtils.sin(angle),
+                        subRadius,
+                        scaledPP,
+                        pp * Options.PP_GAIN_MULTIPLIER
+                ));
             }
 
             e1.setSpawnPosition(0, 0);
             Map.randomizeSimpleWanderAI(e1, mapAreaRadius);
             e1.setMaxSpeed(2f);
-            e1.setCircleHitboxes(ca1);
 
             // Give subentities higher speed and stalker AI
             HitboxComponent.SubEntityStats subStats = new HitboxComponent.SubEntityStats();
@@ -70,8 +73,33 @@ public class BossFactory {
             subStats.aiData = new EntityCreationData(true);
             Map.randomizeSimpleStalkTargetAI(subStats.aiData);
             e1.setSubEntityStats(subStats);
-        } else if(id == 1) {
+        }
+        // Square made of circles
+        else if(id == 1) {
+            float radius = 50f;
+            int squareLength = 7;
 
+            EntityCreationData e1 = new EntityCreationData(true);
+            ecds.add(e1);
+
+            ArrayList<CircleHitbox> ca1 = new ArrayList<CircleHitbox>();
+            e1.setCircleHitboxes(ca1);
+            for(int x = 0; x < squareLength; x++) {
+                for(int y = 0; y < squareLength; y++) {
+                    ca1.add(new CircleHitbox(
+                            RenderSystem.HitboxTextureType.ENEMY,
+                            AttackPatternFactory.getAttackPattern("BOSS_2_1"),
+                            x * radius*2f, y * radius*2f,
+                            radius,
+                            scaledPP,
+                            pp * Options.PP_GAIN_MULTIPLIER
+                    ));
+                }
+            }
+
+            e1.setSpawnPosition(0, 0);
+            Map.randomizeSimpleWanderAI(e1, mapAreaRadius);
+            e1.setMaxSpeed(1.5f);
         } else {
             return getBossById(0, mapAreaRadius, pp);
         }
