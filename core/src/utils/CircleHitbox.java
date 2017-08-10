@@ -24,6 +24,7 @@ public class CircleHitbox extends Circle {
     // Original circle position with the hitbox facing angle 0
     // Used to prevent inaccuracies when rotating hitbox multiple times
     // Must be in the same order as circles
+    // Set by HitboxComponent
     private float originalPosX;
     private float originalPosY;
 
@@ -32,10 +33,14 @@ public class CircleHitbox extends Circle {
 
     public CircleHitbox() {}
 
-    public CircleHitbox(boolean isEnemy) {
-        if(isEnemy) {
-            setHitboxTextureType(RenderSystem.HitboxTextureType.ENEMY);
-        }
+    public CircleHitbox(RenderSystem.HitboxTextureType textureType, AttackPattern attackPattern, float x, float y, float radius, float health, float ppGain) {
+        setHitboxTextureType(textureType);
+        setAttackPattern(attackPattern);
+        setPosition(x, y);
+        setRadius(radius);
+        setHealth(health);
+        setMaxHealth(health);
+        setPpGain(ppGain);
     }
 
     /**
@@ -63,6 +68,18 @@ public class CircleHitbox extends Circle {
         }
 
         time = 0;
+    }
+
+    public CircleHitbox clone() {
+        CircleHitbox c = new CircleHitbox();
+        c.setMaxHealth(maxHealth);
+        c.setHealth(health);
+        c.setAttackPattern(attackPattern.clone());
+        c.setTime(time);
+        c.setOriginalPosX(originalPosX);
+        c.setOriginalPosY(originalPosY);
+        c.setPpGain(ppGain);
+        return c;
     }
 
     public RenderSystem.HitboxTextureType getHitboxTextureType() {
