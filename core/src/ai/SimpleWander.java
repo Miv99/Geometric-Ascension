@@ -25,8 +25,8 @@ public class SimpleWander extends AI {
 
     private float time;
 
-    public SimpleWander(Entity self, float wanderRadius, float minInterval, float maxInterval, float minAcceleration, float maxAcceleration) {
-        super(self, self);
+    public SimpleWander(Entity self, RotationBehaviorParams rotationBehaviorParams, float wanderRadius, float minInterval, float maxInterval, float minAcceleration, float maxAcceleration) {
+        super(self, self, rotationBehaviorParams);
         this.wanderRadius = wanderRadius;
         this.minInterval = minInterval;
         this.maxInterval = maxInterval;
@@ -40,8 +40,6 @@ public class SimpleWander extends AI {
     @Override
     public void update(float deltaTime) {
         if(waitingForReset) {
-            Point selfPos = selfHitbox.getOrigin();
-
             // Calculate angle of travel
             float angle;
             // If hitbox origin is outside the wander radius from initial position, min/max angles are bounded by the tangent lines
@@ -59,14 +57,14 @@ public class SimpleWander extends AI {
 
             float accelerationMagnitude = MathUtils.random(minAcceleration, maxAcceleration);
 
-            // Face player
-            selfHitbox.setLastFacedAngle(MathUtils.atan2(targetPos.y - selfPos.y, targetPos.x - selfPos.x));
-
             selfHitbox.setAcceleration(accelerationMagnitude * MathUtils.cos(angle), accelerationMagnitude * MathUtils.sin(angle));
 
             interval = MathUtils.random(minInterval, maxInterval);
             waitingForReset = false;
         }
+
+        // Face player
+        rotationBehavior.update(deltaTime);
 
         if(time > interval) {
             waitingForReset = true;
@@ -77,7 +75,7 @@ public class SimpleWander extends AI {
 
     @Override
     public AI clone(Entity newSelf) {
-        return new SimpleWander(newSelf, wanderRadius, minInterval, maxInterval, minAcceleration, maxAcceleration);
+        return new SimpleWander(newSelf, rotationBehaviorParams, wanderRadius, minInterval, maxInterval, minAcceleration, maxAcceleration);
     }
 
     @Override

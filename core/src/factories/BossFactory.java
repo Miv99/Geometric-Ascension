@@ -30,9 +30,6 @@ public class BossFactory {
     public static ArrayList<EntityCreationData> getBossById(int id, float mapAreaRadius, float pp) {
         ArrayList<EntityCreationData> ecds = new ArrayList<EntityCreationData>();
 
-        // Make boss 10x harder than a normal enemy
-        float scaledPP = pp * 10f;
-
         // Big circle surrounded by smaller circles
         if(id == 0) {
             float mainRadius = 450f;
@@ -45,20 +42,20 @@ public class BossFactory {
             e1.setCircleHitboxes(ca1);
             ca1.add(new CircleHitbox(
                     RenderSystem.HitboxTextureType.ENEMY,
-                    AttackPatternFactory.getAttackPattern("BOSS_1_1"),
+                    AttackPatternFactory.getAttackPattern("BOSS_1_1").addRandomAttackPatternStatModifiers(pp),
                     0, 0,
                     mainRadius,
-                    scaledPP * 15f,
+                    pp * 150f,
                     pp * 10f * Options.PP_GAIN_MULTIPLIER
             ));
             for(int i = 0; i < 16; i++) {
                 float angle = i * MathUtils.degreesToRadians * (360/16f);
                 ca1.add(new CircleHitbox(
                         RenderSystem.HitboxTextureType.ENEMY,
-                        AttackPatternFactory.getAttackPattern("BOSS_1_1"),
+                        AttackPatternFactory.getAttackPattern("BOSS_1_1").addRandomAttackPatternStatModifiers(pp),
                         (mainRadius + subRadius) * MathUtils.cos(angle), (mainRadius + subRadius) * MathUtils.sin(angle),
                         subRadius,
-                        scaledPP,
+                        pp * 10f,
                         pp * Options.PP_GAIN_MULTIPLIER
                 ));
             }
@@ -77,7 +74,7 @@ public class BossFactory {
         // Square made of circles
         else if(id == 1) {
             float radius = 50f;
-            int squareLength = 7;
+            int squareLength = 5;
 
             EntityCreationData e1 = new EntityCreationData(true);
             ecds.add(e1);
@@ -88,17 +85,18 @@ public class BossFactory {
                 for(int y = 0; y < squareLength; y++) {
                     ca1.add(new CircleHitbox(
                             RenderSystem.HitboxTextureType.ENEMY,
-                            AttackPatternFactory.getAttackPattern("BOSS_2_1"),
+                            AttackPatternFactory.getAttackPattern("BOSS_2_1").addRandomAttackPatternStatModifiers(pp),
                             x * radius*2f, y * radius*2f,
                             radius,
-                            scaledPP,
+                            //pp * 10f,
+                            pp,
                             pp * Options.PP_GAIN_MULTIPLIER
                     ));
                 }
             }
 
             e1.setSpawnPosition(0, 0);
-            Map.randomizeSimpleWanderAI(e1, mapAreaRadius);
+            Map.randomizeSimpleStalkTargetAI(e1);
             e1.setMaxSpeed(1.5f);
         }
         else if(id == 2) {

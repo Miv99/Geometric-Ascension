@@ -40,7 +40,7 @@ public class HitboxComponent implements Component, Pool.Poolable {
     }
 
     // How much health is healed per pp spent
-    public static float HEALTH_PER_PP_HEALING_COST_RATIO = 10;
+    public static final float HEALTH_PER_PP_HEALING_COST_RATIO = 10;
 
     // Position of hitbox
     private Point origin;
@@ -137,40 +137,6 @@ public class HitboxComponent implements Component, Pool.Poolable {
         }
     }
 
-    public void recenterCircles() {
-        // Find left/top/right/bottom bounds of the group of circles
-        CircleHitbox c1 = circles.get(0);
-
-        float left = c1.x - c1.radius, right = c1.x + c1.radius, top = c1.y + c1.radius, bottom = c1.y - c1.radius;
-        for(int i = 1; i < circles.size(); i++) {
-            CircleHitbox c = circles.get(i);
-            if(c.x - c.radius < left) {
-                left = c.x - c.radius;
-            }
-            if(c.x + c.radius > right) {
-                right = c.x + c.radius;
-            }
-            if(c.y - c.radius < bottom) {
-                bottom = c.y - c.radius;
-            }
-            if(c.y + c.radius > top) {
-                top = c.y + c.radius;
-            }
-        }
-
-        // Shift all circles by center of bounds
-        float deltaX = (left + right)/2f;
-        float deltaY = (bottom + top)/2f;
-        for(CircleHitbox c : circles) {
-            c.x -= deltaX;
-            c.y -= deltaY;
-        }
-
-        // Shift origin in opposite direction to retain world position of circles
-        origin.x += deltaX;
-        origin.y += deltaY;
-    }
-
     public void recenterOriginalCirclePositions() {
         // Find left/top/right/bottom bounds of the group of circles
         CircleHitbox c1 = circles.get(0);
@@ -193,12 +159,48 @@ public class HitboxComponent implements Component, Pool.Poolable {
             }
         }
 
+        //TODO: bug: bounds change --> entity teleports for some reason
+
         // Shift all circles by center of bounds
         float deltaX = (left + right)/2f;
         float deltaY = (bottom + top)/2f;
         for(CircleHitbox c : circles) {
             c.setOriginalPosX(c.getOriginalPosX() - deltaX);
             c.setOriginalPosY(c.getOriginalPosY() - deltaY);
+        }
+
+        float c1XBeforeRotation = c1.x;
+        float c1YBeforeRotation = c1.y;
+
+        setLastFacedAngle(lastFacedAngle);
+
+        // Shift origin by the change in the circles' positions to maintain the same world position
+        origin.x -= c1.x - c1XBeforeRotation;
+        origin.y -= c1.y - c1YBeforeRotation;
+
+        gravitationalRadius = Math.max((Math.abs(left) + Math.abs(right))/2f, (Math.abs(top) + Math.abs(bottom))/2f) + Options.GRAVITATIONAL_RADIUS_PADDING;
+    }
+
+    public void calculateGravitationalRadius() {
+        // Find left/top/right/bottom bounds of the group of circles
+        CircleHitbox c1 = circles.get(0);
+
+        float left = c1.getOriginalPosX() - c1.radius, right = c1.getOriginalPosX() + c1.radius,
+                top = c1.getOriginalPosY() + c1.radius, bottom = c1.getOriginalPosY() - c1.radius;
+        for(int i = 1; i < circles.size(); i++) {
+            CircleHitbox c = circles.get(i);
+            if(c.getOriginalPosX() - c.radius < left) {
+                left = c.getOriginalPosX() - c.radius;
+            }
+            if(c.getOriginalPosX() + c.radius > right) {
+                right = c.getOriginalPosX() + c.radius;
+            }
+            if(c.getOriginalPosY() - c.radius < bottom) {
+                bottom = c.getOriginalPosY() - c.radius;
+            }
+            if(c.getOriginalPosY() + c.radius > top) {
+                top = c.getOriginalPosY() + c.radius;
+            }
         }
 
         gravitationalRadius = Math.max((Math.abs(left) + Math.abs(right))/2f, (Math.abs(top) + Math.abs(bottom))/2f) + Options.GRAVITATIONAL_RADIUS_PADDING;
@@ -216,7 +218,7 @@ public class HitboxComponent implements Component, Pool.Poolable {
             float totalRadius1 = 0f;
             float totalRadius2 = 0f;
 
-            // TUrn set of smaller circles into subentity
+            // Turn set of smaller circles into subentity
             for(CircleHitbox c : circles) {
                 if(!cSet.contains(c)) {
                     totalRadius1 += c.radius;
@@ -244,13 +246,14 @@ public class HitboxComponent implements Component, Pool.Poolable {
             }
 
             //TODO: add to this as more fields added to subentity stats
-            Entity e = Utils.cloneEnemy(engine, self, subEntityCircles, false);
+            Entity e = Utils.cloneEnemy(engine, self, subEntityCircles, (subEntityStats == null || subEntityStats.aiData == null));
             if(subEntityStats != null) {
                 Mappers.hitbox.get(e).setMaxSpeed(subEntityStats.maxSpeed);
                 if(subEntityStats.aiData != null) {
                     e.add(Map.createAIComponent(engine, e, subEntityStats.aiData, Mappers.ai.get(self).getAi().getTarget()));
                 }
             }
+            Mappers.hitbox.get(e).recenterOriginalCirclePositions();
             return e;
         } else {
             return null;
@@ -261,10 +264,10 @@ public class HitboxComponent implements Component, Pool.Poolable {
         if(cIndex < circles.size()) {
             CircleHitbox c = circles.get(cIndex);
             set.add(c);
-            for (int a = cIndex + 1; a < circles.size(); a++) {
+            for (int a = 0; a < circles.size(); a++) {
                 CircleHitbox c2 = circles.get(a);
                 // Add 1f to distance check to account for inaccuracies
-                if (!set.contains(c2) && Utils.getDistance(c.x, c.y, c2.x, c2.y) < c.radius + c2.radius + 1f) {
+                if (!set.contains(c2) && !c.equals(c2) && Utils.getDistance(c.x, c.y, c2.x, c2.y) < c.radius + c2.radius + 1f) {
                     set.add(c2);
                     addConnectedCircles(a, set);
                 }
@@ -383,8 +386,8 @@ public class HitboxComponent implements Component, Pool.Poolable {
         // Revolve all circles around (0, 0)
         for(int i = 0; i < circles.size(); i++) {
             CircleHitbox c = circles.get(i);
-            c.setPosition(c.getOriginalPosX() * MathUtils.cos(-lastFacedAngle) - c.getOriginalPosY() * MathUtils.sin(-lastFacedAngle),
-                    c.getOriginalPosX() * MathUtils.sin(-lastFacedAngle) + c.getOriginalPosY() * MathUtils.cos(-lastFacedAngle));
+            c.setPosition(c.getOriginalPosX() * MathUtils.cos(lastFacedAngle) - c.getOriginalPosY() * MathUtils.sin(lastFacedAngle),
+                    c.getOriginalPosX() * MathUtils.sin(lastFacedAngle) + c.getOriginalPosY() * MathUtils.cos(lastFacedAngle));
         }
     }
 
@@ -406,10 +409,12 @@ public class HitboxComponent implements Component, Pool.Poolable {
         return circles;
     }
 
-    public void addCircle(CircleHitbox circle) {
+    public void addCircle(CircleHitbox circle, boolean setOriginal) {
         circles.add(circle);
-        circle.setOriginalPosX(circle.x);
-        circle.setOriginalPosY(circle.y);
+        if(setOriginal) {
+            circle.setOriginalPosX(circle.x);
+            circle.setOriginalPosY(circle.y);
+        }
     }
 
     public void queueCircleRemoval(CircleHitbox circle) {
@@ -435,7 +440,6 @@ public class HitboxComponent implements Component, Pool.Poolable {
                 subEntities.add(subEntity);
                 subEntity = splitIntoSubEntities(engine, self);
             }
-            recenterCircles();
             recenterOriginalCirclePositions();
 
             // Transfer part of pp to all other boss entities' circles' attack patterns evenly

@@ -60,7 +60,7 @@ public class Save {
                 Entity player = engine.createEntity();
                 HitboxComponent hitbox = engine.createComponent(HitboxComponent.class);
                 for (CircleHitbox c : data.playerCircles) {
-                    hitbox.addCircle(c);
+                    hitbox.addCircle(c, true);
                 }
                 hitbox.recenterOriginalCirclePositions();
                 hitbox.setMaxSpeed(data.playerMaxSpeed);
@@ -92,7 +92,7 @@ public class Save {
         c.setMaxHealth(500f);
         c.setHealth(500f);
         c.setAttackPattern(AttackPatternFactory.getAttackPattern("PLAYER_STARTING"));
-        hitboxComponent.addCircle(c);
+        hitboxComponent.addCircle(c, true);
         hitboxComponent.recenterOriginalCirclePositions();
         player.add(hitboxComponent);
         player.add(engine.createComponent(PlayerComponent.class));

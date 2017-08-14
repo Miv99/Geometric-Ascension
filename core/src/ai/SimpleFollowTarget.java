@@ -11,8 +11,8 @@ import utils.Point;
  * Created by Miv on 6/20/2017.
  */
 public class SimpleFollowTarget extends AI {
-    public SimpleFollowTarget(Entity self, Entity player) {
-        super(self, player);
+    public SimpleFollowTarget(Entity self, Entity player, RotationBehaviorParams rotationBehaviorParams) {
+        super(self, player, rotationBehaviorParams);
     }
 
     @Override
@@ -24,12 +24,12 @@ public class SimpleFollowTarget extends AI {
         float velocityY = selfHitbox.getMaxSpeed() * MathUtils.sin(angle);
 
         selfHitbox.setVelocity(velocityX, velocityY);
-        selfHitbox.setLastFacedAngle(angle);
+        rotationBehavior.update(deltaTime, angle);
     }
 
     @Override
     public AI clone(Entity newSelf) {
-        return new SimpleFollowTarget(newSelf, target);
+        return new SimpleFollowTarget(newSelf, target, rotationBehaviorParams);
     }
 
     @Override

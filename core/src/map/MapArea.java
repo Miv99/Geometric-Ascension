@@ -9,6 +9,7 @@ import com.miv.Mappers;
 
 import java.util.ArrayList;
 
+import components.AIComponent;
 import components.BossComponent;
 import components.EnemyComponent;
 import components.HitboxComponent;
@@ -71,7 +72,7 @@ public class MapArea {
             HitboxComponent hitbox = engine.createComponent(HitboxComponent.class);
             for(CircleHitbox c : ecd.getCircleHitboxes()) {
                 c.randomizeAttackPatternTime();
-                hitbox.addCircle(c);
+                hitbox.addCircle(c, true);
             }
             hitbox.recenterOriginalCirclePositions();
             hitbox.setOrigin(ecd.getSpawnX(), ecd.getSpawnY());
@@ -84,7 +85,10 @@ public class MapArea {
                 hitbox.setSubEntityStats(ecd.getSubEntityStats());
             }
 
-            e.add(Map.createAIComponent(engine, e, ecd, player));
+            AIComponent aiComponent = Map.createAIComponent(engine, e, ecd, player);
+            if(aiComponent != null) {
+                e.add(aiComponent);
+            }
 
             engine.addEntity(e);
         }

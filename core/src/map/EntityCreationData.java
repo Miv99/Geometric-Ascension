@@ -38,6 +38,8 @@ public class EntityCreationData {
     private float simpleWanderMinAcceleration;
     private float simpleWanderMaxAcceleration;
 
+    private AI.RotationBehaviorParams rotationBehaviorParams;
+
     private HitboxComponent.SubEntityStats subEntityStats;
 
     public EntityCreationData() {
@@ -176,5 +178,13 @@ public class EntityCreationData {
 
     public void setSubEntityStats(HitboxComponent.SubEntityStats subEntityStats) {
         this.subEntityStats = subEntityStats;
+    }
+
+    public AI.RotationBehaviorParams getRotationBehaviorParams() {
+        return rotationBehaviorParams;
+    }
+
+    public void setRotationBehaviorParams(AI.RotationBehaviorParams rotationBehaviorParams) {
+        this.rotationBehaviorParams = rotationBehaviorParams;
     }
 }

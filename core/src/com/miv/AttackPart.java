@@ -100,7 +100,7 @@ public class AttackPart {
         CircleHitbox circleHitbox = new CircleHitbox();
         circleHitbox.setHitboxTextureType(hitboxTextureType);
         circleHitbox.setRadius(radius);
-        hitbox.addCircle(circleHitbox);
+        hitbox.addCircle(circleHitbox, true);
         e.add(hitbox);
 
         engine.addEntity(e);
@@ -116,17 +116,21 @@ public class AttackPart {
 
     public AttackPart clone() {
         AttackPart ap = new AttackPart();
-        ap.setDelay(delay);
         ap.setOriginX(originX);
         ap.setOriginY(originY);
-        ap.setSpeed(speed);
-        ap.setRadius(radius);
-        ap.setDamage(damage);
+        ap.setDelay(delay, false);
+        ap.setSpeed(speed, false);
+        ap.setRadius(radius, false);
+        ap.setDamage(damage, false);
         ap.randomizeAngle = randomizeAngle;
         ap.minAngleInRadians = minAngleInRadians;
         ap.maxAngleInRadians = maxAngleInRadians;
         ap.attackPartAngleDeterminant = attackPartAngleDeterminant;
         ap.angleInRadians = angleInRadians;
+        ap.originalDamage = originalDamage;
+        ap.originalDelay = originalDelay;
+        ap.originalRadius = originalRadius;
+        ap.originalSpeed = originalSpeed;
         return ap;
     }
 

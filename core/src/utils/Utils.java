@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import ai.AI;
 import ai.SimpleFollowTarget;
 import components.AIComponent;
+import components.BossComponent;
 import components.EnemyComponent;
 import components.HitboxComponent;
 
@@ -60,21 +61,23 @@ public class Utils {
         hitbox.setMaxSpeed(originalHitbox.getMaxSpeed());
         hitbox.setOrigin(originalHitbox.getOrigin().x, originalHitbox.getOrigin().y);
         hitbox.setIsShooting(true);
-        hitbox.setLastFacedAngle(originalHitbox.getLastFacedAngle());
         hitbox.setVelocity(originalHitbox.getVelocity().x, originalHitbox.getVelocity().y);
         hitbox.setAcceleration(originalHitbox.getAcceleration().x, originalHitbox.getAcceleration().y);
         for(CircleHitbox c : circles) {
-            hitbox.addCircle(c);
+            hitbox.addCircle(c, false);
         }
-        hitbox.recenterCircles();
-        hitbox.recenterOriginalCirclePositions();
+        hitbox.setLastFacedAngle(originalHitbox.getLastFacedAngle());
         e.add(hitbox);
 
-        if(cloneAI) {
+        if(cloneAI && Mappers.ai.has(original)) {
             e.add(engine.createComponent(AIComponent.class).setAi(Mappers.ai.get(original).getAi().getSubEntityAI().clone(e)));
         }
 
         e.add(engine.createComponent(EnemyComponent.class));
+
+        if(Mappers.boss.has(e)) {
+            e.add(engine.createComponent(BossComponent.class));
+        }
 
         return e;
     }

@@ -362,12 +362,14 @@ public class Map {
     }
 
     public static void randomizeSimpleStalkTargetAI(EntityCreationData ecd) {
+        ecd.setRotationBehaviorParams(new AI.RotationBehaviorParams(true));
         ecd.setAiType(AI.AIType.SIMPLE_STALK_TARGET);
         ecd.setSimpleStalkMinSpeedDistance(MathUtils.random(100f, 250f));
         ecd.setSimpleStalkMaxSpeedDistance(MathUtils.random(330f, 450f));
     }
 
     public static void randomizeSimpleWanderAI(EntityCreationData ecd, float mapAreaRadius) {
+        ecd.setRotationBehaviorParams(new AI.RotationBehaviorParams(true));
         ecd.setAiType(AI.AIType.SIMPLE_WANDER);
         ecd.setSimpleWanderRadius(MathUtils.random(0.2f * mapAreaRadius, 0.4f * mapAreaRadius));
         ecd.setSimpleWanderMinInterval(0.5f);
@@ -379,11 +381,11 @@ public class Map {
     //TODO: add to this as more AI types are added
     public static AIComponent createAIComponent(PooledEngine engine, Entity e, EntityCreationData ecd, Entity player) {
         if(ecd.getAiType() == AI.AIType.SIMPLE_FOLLOW_TARGET) {
-           return engine.createComponent(AIComponent.class).setAi(new SimpleFollowTarget(e, player));
+           return engine.createComponent(AIComponent.class).setAi(new SimpleFollowTarget(e, player, ecd.getRotationBehaviorParams()));
         } else if(ecd.getAiType() == AI.AIType.SIMPLE_STALK_TARGET) {
-            return engine.createComponent(AIComponent.class).setAi(new SimpleStalkTarget(e, player, ecd.getSimpleStalkMinSpeedDistance(), ecd.getSimpleStalkMaxSpeedDistance(), 0));
+            return engine.createComponent(AIComponent.class).setAi(new SimpleStalkTarget(e, player, ecd.getRotationBehaviorParams(), ecd.getSimpleStalkMinSpeedDistance(), ecd.getSimpleStalkMaxSpeedDistance(), 0));
         } else if(ecd.getAiType() == AI.AIType.SIMPLE_WANDER) {
-            return engine.createComponent(AIComponent.class).setAi(new SimpleWander(e, ecd.getSimpleWanderRadius(), ecd.getSimpleWanderMinInterval(), ecd.getSimpleWanderMaxInterval(), ecd.getSimpleWanderMinAcceleration(), ecd.getSimpleWanderMaxAcceleration()));
+            return engine.createComponent(AIComponent.class).setAi(new SimpleWander(e, ecd.getRotationBehaviorParams(), ecd.getSimpleWanderRadius(), ecd.getSimpleWanderMinInterval(), ecd.getSimpleWanderMaxInterval(), ecd.getSimpleWanderMinAcceleration(), ecd.getSimpleWanderMaxAcceleration()));
         } else {
             System.out.println("347SJDFIODS CREATING AI COMPONENT FROM NULL AITYPE ???");
         }

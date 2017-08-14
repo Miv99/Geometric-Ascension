@@ -129,7 +129,7 @@ public class HUD implements Screen {
             public void clicked(InputEvent event, float x, float y) {
                 //TODO: set this back
                 //main.loadMapScreen();
-                map.setFloor(0);
+                map.setFloor(1);
                 map.setChanceOfNextAreaHavingStairs(1f);
             }
         });

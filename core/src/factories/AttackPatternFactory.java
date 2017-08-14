@@ -95,7 +95,6 @@ public class AttackPatternFactory {
                             .setRadius(15f));
             return ap;
         }
-        // Shoots two bullets on either side of the player
         else if(name.equalsIgnoreCase("BOSS_1_1")) {
             AttackPattern ap = new AttackPattern();
             ap.setDuration(1f);
@@ -109,7 +108,6 @@ public class AttackPatternFactory {
                     .setRadius(60f));
             return ap;
         }
-        // Shoots a single bullet at the player
         else if(name.equalsIgnoreCase("BOSS_1_2")) {
             AttackPattern ap = new AttackPattern();
             ap.setDuration(4f);
@@ -121,6 +119,20 @@ public class AttackPatternFactory {
                     .setSpeed(4.5f)
                     .setDamage(5f)
                     .setRadius(17f));
+            return ap;
+        }
+        // Shoots a single bullet near the player
+        else if(name.equalsIgnoreCase("BOSS_2_1")) {
+            AttackPattern ap = new AttackPattern();
+            ap.setDuration(5f);
+            ap.addAttackPart(new AttackPart()
+                    .setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.NONE)
+                    .setRandomAngleInDegrees(0f, 360f)
+                    .setOriginX(0).setOriginY(0)
+                    .setDelay(0)
+                    .setSpeed(3f)
+                    .setDamage(5f)
+                    .setRadius(20f));
             return ap;
         }
         return null;

@@ -36,38 +36,44 @@ public class AttackPattern {
     private float totalRadius;
 
     private float totalPpInStatModifiers;
+    private float speedPpDivisor;
+    private float fireRatePpDivisor;
+    private float bulletDamagePpDivisor;
+    private float bulletRadiusPpDivisor;
 
     public AttackPattern() {
         attackParts = new ArrayList<AttackPart>();
     }
 
-    // Randomly distribute pixel points to various aspects of attack pattern bullets
-    private float[] getAttackPatternStatModifiers(float pp) {
-        float speedMultiplier = pp/MathUtils.random(MIN_BULLET_SPEED_CONSTANT, MAX_BULLET_SPEED_CONSTANT);
-        float fireRateMultiplier = pp/MathUtils.random(MIN_FIRE_RATE_CONSTANT, MAX_FIRE_RATE_CONSTANT);
-        float bulletDamageMultiplier = pp/MathUtils.random(MIN_BULLET_DAMAGE_CONSTANT, MAX_BULLET_DAMAGE_CONSTANT);
-        float bulletRadiusMultiplier = pp/MathUtils.random(MIN_BULLET_RADIUS_CONSTANT, MAX_BULLET_RADIUS_CONSTANT);
-
-        return new float[] {speedMultiplier, fireRateMultiplier, bulletDamageMultiplier, bulletRadiusMultiplier};
-    }
-
-    public void addRandomAttackPatternStatModifiers(float pp) {
+    public AttackPattern addRandomAttackPatternStatModifiers(float pp) {
         totalPpInStatModifiers += pp;
 
-        float[] sm = getAttackPatternStatModifiers(totalPpInStatModifiers);
-        modify(sm[0], sm[1], sm[2], sm[3]);
+        // First time stat modifiers are retrieved, generate random values for divisors
+        // Any other time they are retrieved, use old random values but with added pp
+        if(speedPpDivisor == 0) {
+            speedPpDivisor = MathUtils.random(MIN_BULLET_SPEED_CONSTANT, MAX_BULLET_SPEED_CONSTANT);
+            fireRatePpDivisor = MathUtils.random(MIN_FIRE_RATE_CONSTANT, MAX_FIRE_RATE_CONSTANT);
+            bulletDamagePpDivisor = MathUtils.random(MIN_BULLET_DAMAGE_CONSTANT, MAX_BULLET_DAMAGE_CONSTANT);
+            bulletRadiusPpDivisor = MathUtils.random(MIN_BULLET_RADIUS_CONSTANT, MAX_BULLET_RADIUS_CONSTANT);
+        }
+        float speedMultiplier = totalPpInStatModifiers / speedPpDivisor;
+        float fireRateMultiplier = totalPpInStatModifiers / fireRatePpDivisor;
+        float bulletDamageMultiplier = totalPpInStatModifiers / bulletDamagePpDivisor;
+        // Bullet radius not scaled to pp
+        float bulletRadiusMultiplier = (MIN_BULLET_RADIUS_CONSTANT + MAX_BULLET_RADIUS_CONSTANT) / (2f * bulletRadiusPpDivisor);
+
+        modify(speedMultiplier, fireRateMultiplier, bulletDamageMultiplier, bulletRadiusMultiplier);
+
+        return this;
     }
 
-    /**
-     * @see {@link AttackPattern#getAttackPatternStatModifiers(float)}
-     */
     private void modify(float speedMultiplier, float fireRateMultiplier, float bulletDamageMultiplier, float bulletRadiusMultiplier) {
         // Modify the attack pattern according to pp distribution
         for(AttackPart a : attackParts) {
-            a.setSpeed(a.getOriginalSpeed() * speedMultiplier);
-            a.setDelay(a.getOriginalDelay() * fireRateMultiplier);
-            a.setDamage(a.getOriginalDamage() * bulletDamageMultiplier);
-            a.setRadius(a.getOriginalRadius() * bulletRadiusMultiplier);
+            a.setSpeed(a.getOriginalSpeed() * speedMultiplier, false);
+            a.setDelay(a.getOriginalDelay() * fireRateMultiplier, false);
+            a.setDamage(a.getOriginalDamage() * bulletDamageMultiplier, false);
+            a.setRadius(a.getOriginalRadius() * bulletRadiusMultiplier, false);
         }
     }
 
@@ -80,6 +86,11 @@ public class AttackPattern {
         ap.duration = duration;
         ap.totalDamage = totalDamage;
         ap.totalRadius = totalRadius;
+        ap.speedPpDivisor = speedPpDivisor;
+        ap.bulletDamagePpDivisor = bulletDamagePpDivisor;
+        ap.bulletRadiusPpDivisor = bulletRadiusPpDivisor;
+        ap.fireRatePpDivisor = fireRatePpDivisor;
+        ap.totalPpInStatModifiers = totalPpInStatModifiers;
         return ap;
     }
 

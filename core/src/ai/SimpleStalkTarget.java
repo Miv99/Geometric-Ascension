@@ -20,8 +20,8 @@ public class SimpleStalkTarget extends AI {
      * @param minSpeedDistance - distance from target at which the entity's speed reaches its minimum
      * @param maxSpeedDistance - minimum distance from target at which the entity achieves maximum speed
      */
-    public SimpleStalkTarget(Entity self, Entity target, float minSpeedDistance, float maxSpeedDistance, float minSpeed) {
-        super(self, target);
+    public SimpleStalkTarget(Entity self, Entity target, RotationBehaviorParams rotationBehaviorParams, float minSpeedDistance, float maxSpeedDistance, float minSpeed) {
+        super(self, target, rotationBehaviorParams);
         this.minSpeedDistance = minSpeedDistance;
         this.maxSpeedDistance = maxSpeedDistance;
         this.minSpeed = minSpeed;
@@ -45,12 +45,12 @@ public class SimpleStalkTarget extends AI {
         float velocityY = speed * MathUtils.sin(angle);
 
         selfHitbox.setVelocity(velocityX, velocityY);
-        selfHitbox.setLastFacedAngle(angle);
+        rotationBehavior.update(deltaTime, angle);
     }
 
     @Override
     public AI clone(Entity newSelf) {
-        return new SimpleStalkTarget(newSelf, target, minSpeedDistance, maxSpeedDistance, minSpeed);
+        return new SimpleStalkTarget(newSelf, target, rotationBehaviorParams, minSpeedDistance, maxSpeedDistance, minSpeed);
     }
 
     @Override
