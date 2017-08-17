@@ -59,6 +59,7 @@ public class HUD implements Screen {
     private TextureRegion movementArrowHead;
 
     private ImageButton customizeButton;
+    private ImageButton mapButton;
 
     private ShapeRenderer shapeRenderer;
     private Color screenOverlayColor;
@@ -121,16 +122,17 @@ public class HUD implements Screen {
         Texture mapButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.MAP_BUTTON_UP_PATH).path());
         Texture mapButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.MAP_BUTTON_DOWN_PATH).path());
         ImageButton.ImageButtonStyle mapButtonStyle = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(mapButtonUp)), new TextureRegionDrawable(new TextureRegion(mapButtonDown)), null, null, null, null);
-        ImageButton mapButton = new ImageButton(mapButtonStyle);
+        mapButton = new ImageButton(mapButtonStyle);
         mapButton.setSize(SMALL_BUTTON_SIZE, SMALL_BUTTON_SIZE);
         mapButton.setPosition(optionsButton.getX() - mapButton.getWidth() - SMALL_BUTTON_PADDING, optionsButton.getY());
         mapButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                //TODO: set this back
-                //main.loadMapScreen();
-                map.setFloor(1);
-                map.setChanceOfNextAreaHavingStairs(1f);
+                if(!Mappers.hitbox.get(player).isTravelling()) {
+                    main.loadMapScreen();
+                }
+                //map.setFloor(1);
+                //map.setChanceOfNextAreaHavingStairs(1f);
             }
         });
         stage.addActor(mapButton);
@@ -188,11 +190,13 @@ public class HUD implements Screen {
 
         // Update customize button
         if(main.getMap().getCurrentArea().getEnemyCount() == 0) {
-            //customizeButton.setTouchable(Touchable.enabled);
             customizeButton.setDisabled(false);
+            mapButton.setDisabled(false);
         } else {
-            //customizeButton.setTouchable(Touchable.disabled);
             customizeButton.setDisabled(true);
+            if(main.getMap().getCurrentArea().getStairsDestination() != -1) {
+                mapButton.setDisabled(true);
+            }
         }
     }
 
@@ -214,10 +218,9 @@ public class HUD implements Screen {
             stage.getBatch().draw(movementArrowTail, movementDragTouchDownPoint.x - movementArrowTail.getRegionWidth() / 2, screenHeight - (movementDragTouchDownPoint.y + movementArrowTail.getRegionHeight() / 2));
 
             // Draw stretched arrow body
-            float bodyThickness = 10f;
             stage.getBatch().draw(movementArrowBody, movementDragTouchDownPoint.x,
-                    screenHeight - (movementDragTouchDownPoint.y + (bodyThickness / 2) + MathUtils.sin(gestureListener.getMovementArrowAngle())),
-                    0, bodyThickness/2f, gestureListener.getMovementArrowLength(), bodyThickness, 1, 1, -MathUtils.radiansToDegrees * gestureListener.getMovementArrowAngle());
+                    screenHeight - (movementDragTouchDownPoint.y + 5 + MathUtils.sin(gestureListener.getMovementArrowAngle())),
+                    0, 5, gestureListener.getMovementArrowLength(), 10, 1, 1, -MathUtils.radiansToDegrees * gestureListener.getMovementArrowAngle());
 
             // Draw arrow head
             stage.getBatch().draw(movementArrowHead, movementDragTouchDownPoint.x + MathUtils.cos(gestureListener.getMovementArrowAngle()) * gestureListener.getMovementArrowLength(),

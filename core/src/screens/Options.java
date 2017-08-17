@@ -64,8 +64,8 @@ public class Options implements Screen {
         final float CHECKBOX_HEIGHT = 60f;
 
         // Back button
-        Texture backButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.HOME_BUTTON_UP_PATH).path());
-        Texture backButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.HOME_BUTTON_DOWN_PATH).path());
+        Texture backButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.BACK_BUTTON_UP_PATH).path());
+        Texture backButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.BACK_BUTTON_DOWN_PATH).path());
         ImageButton.ImageButtonStyle backButtonStyle = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(backButtonUp)), new TextureRegionDrawable(new TextureRegion(backButtonDown)), null, null, null, null);
         ImageButton backButton = new ImageButton(backButtonStyle);
         backButton.setSize(70f, 70f);

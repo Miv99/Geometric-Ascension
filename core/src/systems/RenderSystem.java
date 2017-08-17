@@ -59,7 +59,7 @@ public class RenderSystem extends EntitySystem {
 
     public static enum HitboxTextureType {
         // ID must be in ascending order starting from 0
-        PLAYER(0, new Color(Color.CYAN.r, Color.CYAN.g, Color.CYAN.b, 0.3f),new Color(0f, 163/255f, 33/255f, 1f)),
+        PLAYER(0, new Color(Color.CYAN.r, Color.CYAN.g, Color.CYAN.b, 0.3f), new Color(0f, 163/255f, 33/255f, 1f)),
         ENEMY(1, new Color(Color.ORANGE.r, Color.ORANGE.g, Color.ORANGE.b, 0.3f), new Color(196/255f, 0f, 0f, 1f)),
         ENEMY_BULLET(2, new Color(Color.RED.r, Color.RED.g, Color.RED.b, 0.3f), new Color(Color.RED)),
         PLAYER_BULLET(3, new Color(Color.GREEN.r, Color.GREEN.g, Color.GREEN.b, 0.3f), new Color(Color.RED));
@@ -82,10 +82,10 @@ public class RenderSystem extends EntitySystem {
 
     // Health bar y-axis offset from center of circle
     private static final float HEALTH_BAR_Y = -20f;
-    private static final Color NORMAL_MAP_AREA_BACKGROUND_COLOR = new Color(224/255f, 1f, 1f, 1f);
-    private static final Color STAIRS_MAP_AREA_BACKGROUND_COLOR = new Color(1f, 237/255f, 147/255f, 1f);
-    private static final Color NORMAL_MAP_AREA_BORDER_COLOR = new Color(NORMAL_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.5f);
-    private static final Color STAIRS_MAP_AREA_BORDER_COLOR = new Color(STAIRS_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.5f);
+    public static final Color NORMAL_MAP_AREA_BACKGROUND_COLOR = new Color(224/255f, 1f, 1f, 1f);
+    public static final Color STAIRS_MAP_AREA_BACKGROUND_COLOR = new Color(1f, 237/255f, 147/255f, 1f);
+    public static final Color NORMAL_MAP_AREA_BORDER_COLOR = new Color(NORMAL_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.5f);
+    public static final Color STAIRS_MAP_AREA_BORDER_COLOR = new Color(STAIRS_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.5f);
     private static final Color NORMAL_MAP_AREA_GRID_LINE_COLOR = new Color(NORMAL_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.2f);
     private static final Color STAIRS_MAP_AREA_GRID_LINE_COLOR = new Color(STAIRS_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.2f);
 

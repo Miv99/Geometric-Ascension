@@ -50,19 +50,21 @@ public abstract class AI {
         }
 
         public void update(float deltaTime, float angleToTarget) {
-            float currentRotationAngle = hitboxComponent.getLastFacedAngle();
+            if(params != null) {
+                float currentRotationAngle = hitboxComponent.getLastFacedAngle();
 
-            if(params.faceTarget) {
-                // Lerp rotation to target angle
-                if(angleToTarget - currentRotationAngle > MathUtils.PI) {
-                    angleToTarget -= MathUtils.PI2;
-                } else if(angleToTarget - currentRotationAngle < -MathUtils.PI) {
-                    angleToTarget += MathUtils.PI2;
+                if (params.faceTarget) {
+                    // Lerp rotation to target angle
+                    if (angleToTarget - currentRotationAngle > MathUtils.PI) {
+                        angleToTarget -= MathUtils.PI2;
+                    } else if (angleToTarget - currentRotationAngle < -MathUtils.PI) {
+                        angleToTarget += MathUtils.PI2;
+                    }
+                    currentRotationAngle += (angleToTarget - currentRotationAngle) * 0.6f * deltaTime;
+                    hitboxComponent.setLastFacedAngle(currentRotationAngle);
+                } else if (params.constantRotationVelocity != 0) {
+                    hitboxComponent.setLastFacedAngle(currentRotationAngle + params.constantRotationVelocity * deltaTime);
                 }
-                currentRotationAngle += (angleToTarget - currentRotationAngle) * 0.6f * deltaTime;
-                hitboxComponent.setLastFacedAngle(currentRotationAngle);
-            } else if(params.constantRotationVelocity != 0) {
-                hitboxComponent.setLastFacedAngle(currentRotationAngle + params.constantRotationVelocity * deltaTime);
             }
         }
 

@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.Timer;
 
 import map.Map;
+import utils.Point;
 
 /**
  * Created by Miv on 5/23/2017.
@@ -33,7 +34,19 @@ public class EntityActions {
         }
     }
 
-    public static void playerEnterNewMapArea(Entity player, Direction directionOfTravel) {
+    /**
+     * @param destination Map area coordinate that the player will appear in
+     */
+    public static void playerEnterNewMapArea(Entity player, Direction directionOfTravel, Point destination) {
+        playerEnterNewMapArea(player, directionOfTravel.deltaX, directionOfTravel.deltaY, destination);
+    }
+
+    /**
+     * @param normalizedDirectionX Must be between 0-1
+     * @param normalizedDirectionY Must be between 0-1
+     * @param destination Map area coordinate that the player will appear in
+     */
+    public static void playerEnterNewMapArea(Entity player, float normalizedDirectionX, float normalizedDirectionY, Point destination) {
         Mappers.hitbox.get(player).setTravelling(true);
         Mappers.hitbox.get(player).setIgnoreSpeedLimit(true);
 
@@ -42,9 +55,12 @@ public class EntityActions {
 
         // TODO: make the player accelerate instead of constant speed
         final float playerTravelSpeed = 30f;
-        Mappers.hitbox.get(player).setVelocity(directionOfTravel.deltaX * playerTravelSpeed, directionOfTravel.deltaY * playerTravelSpeed);
-        Mappers.hitbox.get(player).setTravellingDirection(directionOfTravel);
-        Mappers.hitbox.get(player).setTravellingSpeed(playerTravelSpeed);
+        Mappers.hitbox.get(player).setVelocity(normalizedDirectionX * playerTravelSpeed, normalizedDirectionY * playerTravelSpeed);
+        Mappers.hitbox.get(player).setTravellingDirectionX(normalizedDirectionX);
+        Mappers.hitbox.get(player).setTravellingDirectionY(normalizedDirectionY);
+        Mappers.hitbox.get(player).setTravellingVelocityX(normalizedDirectionX * playerTravelSpeed);
+        Mappers.hitbox.get(player).setTravellingVelocityY(normalizedDirectionY * playerTravelSpeed);
+        Mappers.hitbox.get(player).setTravellingMapAreaDestination(destination);
     }
 
     public static void playerEnterNewFloor(final PooledEngine engine, final Entity player, final Map map, final int newFloor) {

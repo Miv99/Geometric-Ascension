@@ -169,13 +169,13 @@ public class MovementSystem extends EntitySystem {
             float angle = MathUtils.atan2(origin.y, origin.x);
             angle = Utils.normalizeAngle(angle);
             if (angle >= Math.PI / 4f && angle <= 3f * Math.PI / 4f) {
-                EntityActions.playerEnterNewMapArea(e, EntityActions.Direction.UP);
+                EntityActions.playerEnterNewMapArea(e, EntityActions.Direction.UP, new Point(map.getFocus().x, map.getFocus().y + 1));
             } else if (angle >= 3f * Math.PI / 4f && angle <= 5f * Math.PI / 4f) {
-                EntityActions.playerEnterNewMapArea(e, EntityActions.Direction.LEFT);
+                EntityActions.playerEnterNewMapArea(e, EntityActions.Direction.LEFT, new Point(map.getFocus().x - 1, map.getFocus().y));
             } else if (angle >= 5f * Math.PI / 4f && angle <= 7f * Math.PI / 4f) {
-                EntityActions.playerEnterNewMapArea(e, EntityActions.Direction.DOWN);
+                EntityActions.playerEnterNewMapArea(e, EntityActions.Direction.DOWN, new Point(map.getFocus().x, map.getFocus().y - 1));
             } else {
-                EntityActions.playerEnterNewMapArea(e, EntityActions.Direction.RIGHT);
+                EntityActions.playerEnterNewMapArea(e, EntityActions.Direction.RIGHT, new Point(map.getFocus().x + 1, map.getFocus().y));
             }
             return true;
         }
@@ -252,14 +252,13 @@ public class MovementSystem extends EntitySystem {
 
         for (Entity e : entities) {
             HitboxComponent hitbox = Mappers.hitbox.get(e);
-            Point hitboxOrigin = hitbox.getOrigin();
             Point origin = hitbox.getOrigin();
             Vector2 velocity = hitbox.getVelocity();
             Point velocityAdditionDueToGravity = null;
 
             boolean isValidMovement = true;
 
-            if (!hitbox.isIntangible() && !hitbox.isTravelling()) {
+            if (!hitbox.isIntangible() && !hitbox.isTravelling() && !hitbox.isDisabledMovement()) {
                 // If entity is a player, check for collisions against the edges of the MapArea, enemies, enemy bullets
                 if (Mappers.player.has(e)) {
                     // Check if circle is outside map area radius
@@ -270,7 +269,7 @@ public class MovementSystem extends EntitySystem {
 
                     for (CircleHitbox c : hitbox.getCircles()) {
                         // Check against enemy bullets
-                        checkForCollision(hitboxOrigin, c, enemyBullets);
+                        checkForCollision(origin, c, enemyBullets);
                         for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
                             isValidMovement = false;
                             handleBulletCollision(e, c, collisionEntitiesToHandle.get(i));
@@ -281,7 +280,7 @@ public class MovementSystem extends EntitySystem {
                 else if (Mappers.enemy.has(e)) {
                     for (CircleHitbox c : hitbox.getCircles()) {
                         // Against player bullets
-                        checkForCollision(hitboxOrigin, c, playerBullets);
+                        checkForCollision(origin, c, playerBullets);
                         for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
                             isValidMovement = false;
                             handleBulletCollision(e, c, collisionEntitiesToHandle.get(i));
@@ -303,7 +302,7 @@ public class MovementSystem extends EntitySystem {
                         }
 
                         // Against enemies
-                        checkForCollision(hitboxOrigin, c, enemies);
+                        checkForCollision(origin, c, enemies);
                         for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
                             isValidMovement = false;
                             handleBulletCollision(collisionEntitiesToHandle.get(i), collisionCirclesToHandle.get(i), e);
@@ -321,7 +320,7 @@ public class MovementSystem extends EntitySystem {
                         }
 
                         // Check for collision against the players
-                        checkForCollision(hitboxOrigin, c, players);
+                        checkForCollision(origin, c, players);
                         for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
                             isValidMovement = false;
                             handleBulletCollision(collisionEntitiesToHandle.get(i), collisionCirclesToHandle.get(i), e);
@@ -330,11 +329,9 @@ public class MovementSystem extends EntitySystem {
                 }
             } else if(hitbox.isTravelling()) {
                 // I already know this is bad code; it's used only for player travelling
-                if(!hitbox.isTravellingFlag() && (hitbox.getTravellingTime() > NEW_MAP_AREA_LEAVE_TRAVEL_TIME || mapAreaIsOutOfCameraRange())) {
-                    EntityActions.Direction directionOfTravel = hitbox.getTravellingDirection();
-
+                if(!hitbox.isTravellingFlag() && mapAreaIsOutOfCameraRange()) {
                     if(!map.getCurrentArea().isBossArea()) {
-                        map.enterNewArea(engine, e, (int) map.getFocus().x + directionOfTravel.getDeltaX(), (int) map.getFocus().y + directionOfTravel.getDeltaY(), false);
+                        map.enterNewArea(engine, e, (int)hitbox.getTravellingMapAreaDestination().x, (int)hitbox.getTravellingMapAreaDestination().y, false);
                         hitbox.setTravellingFromSameMapArea(false);
                     } else {
                         hitbox.setTravellingFromSameMapArea(true);
@@ -347,28 +344,32 @@ public class MovementSystem extends EntitySystem {
                     float cameraDistanceXFromPlayer = hitbox.getOrigin().x - camera.position.x;
                     float cameraDistanceYFromPlayer = hitbox.getOrigin().y - camera.position.y;
 
-                    hitbox.setOrigin(-directionOfTravel.getDeltaX() * newMapAreaRadius - (directionOfTravel.getDeltaX() * NEW_MAP_AREA_ENTER_TRAVEL_TIME * hitbox.getTravellingSpeed() * Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER),
-                            -directionOfTravel.getDeltaY() * newMapAreaRadius - (directionOfTravel.getDeltaY() * NEW_MAP_AREA_ENTER_TRAVEL_TIME * hitbox.getTravellingSpeed() * Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER));
-                    // Instantly teleport camera to the same distance behind player from before to have illusion of smooth travel
-                    camera.position.x = hitboxOrigin.x - cameraDistanceXFromPlayer;
-                    camera.position.y = hitboxOrigin.y - cameraDistanceYFromPlayer;
+                    // No idea why these if statements are necessary
+                    float newOriginX = 0;
+                    float newOriginY = 0;
+                    if(hitbox.getTravellingDirectionX() > 0) {
+                        newOriginX = -hitbox.getTravellingDirectionX() * newMapAreaRadius - (hitbox.getTravellingDirectionX() * NEW_MAP_AREA_ENTER_TRAVEL_TIME * hitbox.getTravellingVelocityX() * Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER);
+                    } else {
+                        newOriginX = -hitbox.getTravellingDirectionX() * newMapAreaRadius - (-hitbox.getTravellingDirectionX() * NEW_MAP_AREA_ENTER_TRAVEL_TIME * hitbox.getTravellingVelocityX() * Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER);
+                    }
+                    if(hitbox.getTravellingDirectionY() > 0) {
+                        newOriginY = -hitbox.getTravellingDirectionY() * newMapAreaRadius - (hitbox.getTravellingDirectionY() * NEW_MAP_AREA_ENTER_TRAVEL_TIME * hitbox.getTravellingVelocityY() * Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER);
+                    } else {
+                        newOriginY = -hitbox.getTravellingDirectionY() * newMapAreaRadius - (-hitbox.getTravellingDirectionY() * NEW_MAP_AREA_ENTER_TRAVEL_TIME * hitbox.getTravellingVelocityY() * Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER);
+                    }
+                    hitbox.setOrigin(newOriginX, newOriginY);
 
-                    hitbox.setVelocity(directionOfTravel.getDeltaX() * hitbox.getTravellingSpeed(), directionOfTravel.getDeltaY() * hitbox.getTravellingSpeed());
-                    hitbox.setTravellingDestination(new Point(-directionOfTravel.getDeltaX() * newMapAreaRadius + (directionOfTravel.getDeltaX() * hitbox.getGravitationalRadius() * 2.5f),
-                            -directionOfTravel.getDeltaY() * newMapAreaRadius + (directionOfTravel.getDeltaY() * hitbox.getGravitationalRadius() * 2.5f)));
+                    // Instantly teleport camera to the same distance behind player from before to have illusion of smooth travel
+                    camera.position.x = origin.x - cameraDistanceXFromPlayer;
+                    camera.position.y = origin.y - cameraDistanceYFromPlayer;
+
+                    hitbox.setVelocity(hitbox.getTravellingVelocityX(), hitbox.getTravellingVelocityY());
+                    hitbox.setTravellingDestination(new Point(-hitbox.getTravellingDirectionX() * newMapAreaRadius + (hitbox.getTravellingDirectionX() * hitbox.getGravitationalRadius() * 2.5f),
+                            -hitbox.getTravellingDirectionY() * newMapAreaRadius + (hitbox.getTravellingDirectionY() * hitbox.getGravitationalRadius() * 2.5f)));
 
                     hitbox.setTravellingFlag(true);
                     hitbox.setTravellingTime(0);
-                } else if(hitbox.isTravellingFlag()
-                        && (hitbox.getTravellingTime() > NEW_MAP_AREA_ENTER_TRAVEL_TIME || hitbox.isPastTravellingDestination())) {
-                    EntityActions.Direction directionOfTravel = hitbox.getTravellingDirection();
-
-                    // Set position of player in new map area
-                    float newMapAreaRadius = map.getCurrentArea().getRadius();
-                    if(!hitbox.isPastTravellingDestination()) {
-                        hitbox.setOrigin(-directionOfTravel.getDeltaX() * newMapAreaRadius + (directionOfTravel.getDeltaX() * hitbox.getGravitationalRadius() * 2.5f),
-                                -directionOfTravel.getDeltaY() * newMapAreaRadius + (directionOfTravel.getDeltaY() * hitbox.getGravitationalRadius() * 2.5f));
-                    }
+                } else if(hitbox.isTravellingFlag() && Utils.getDistance(origin, 0, 0) <= mapArea.getRadius() - hitbox.getGravitationalRadius() - 25f) {
                     hitbox.setVelocity(0, 0);
 
                     // Save game
@@ -390,6 +391,8 @@ public class MovementSystem extends EntitySystem {
                 } else {
                     hitbox.setTravellingTime(hitbox.getTravellingTime() + deltaTime);
                 }
+            } else if(hitbox.isDisabledMovement()) {
+                isValidMovement = false;
             }
 
             if (isValidMovement) {

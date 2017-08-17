@@ -47,7 +47,7 @@ public class Point implements java.io.Serializable {
     }
 
     public String toString() {
-        return "[x=" + x + ",y=" + y + "]";
+        return "[x=" + x + ", y=" + y + "]";
     }
 }
 

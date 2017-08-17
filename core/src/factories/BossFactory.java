@@ -81,8 +81,8 @@ public class BossFactory {
 
             ArrayList<CircleHitbox> ca1 = new ArrayList<CircleHitbox>();
             e1.setCircleHitboxes(ca1);
-            for(int x = 0; x < squareLength; x++) {
-                for(int y = 0; y < squareLength; y++) {
+            for(int x = 0; x < squareLength/2; x++) {
+                for(int y = 0; y < squareLength/2; y++) {
                     ca1.add(new CircleHitbox(
                             RenderSystem.HitboxTextureType.ENEMY,
                             AttackPatternFactory.getAttackPattern("BOSS_2_1").addRandomAttackPatternStatModifiers(pp),
@@ -95,7 +95,7 @@ public class BossFactory {
                 }
             }
 
-            e1.setSpawnPosition(0, 0);
+            e1.setSpawnPosition(-squareLength * radius/2f, -squareLength * radius/2f);
             Map.randomizeSimpleStalkTargetAI(e1);
             e1.setMaxSpeed(1.5f);
         }

@@ -63,6 +63,8 @@ public class HitboxComponent implements Component, Pool.Poolable {
     // Distance from origin where enemies and players' gravity effects are maximized
     private float gravitationalRadius;
 
+    private boolean disabledMovement;
+
     // If true, hitbox will not push away other hitboxes and will not be pushed away by other hitboxes
     private boolean ignoreGravity;
 
@@ -73,9 +75,12 @@ public class HitboxComponent implements Component, Pool.Poolable {
     // Random crap for player travelling to new map areas
     private boolean travellingFlag;
     private boolean travellingFromSameMapArea;
-    private EntityActions.Direction travellingDirection;
-    private float travellingSpeed;
+    private float travellingDirectionX;
+    private float travellingDirectionY;
+    private float travellingVelocityX;
+    private float travellingVelocityY;
     private Point travellingDestination;
+    private Point travellingMapAreaDestination;
 
     private boolean ignoreSpeedLimit;
     private float maxSpeed;
@@ -106,8 +111,12 @@ public class HitboxComponent implements Component, Pool.Poolable {
         travelling = false;
         travellingTime = 0;
         travellingFlag = false;
-        travellingSpeed = 0;
+        travellingDirectionX = 0;
+        travellingDirectionY = 0;
+        travellingVelocityX = 0;
+        travellingVelocityY = 0;
         travellingDestination = null;
+        travellingMapAreaDestination = null;
     }
 
     public void update(PooledEngine engine, Entity parent, Entity player, float deltaTime) {
@@ -273,19 +282,6 @@ public class HitboxComponent implements Component, Pool.Poolable {
                 }
             }
         }
-    }
-
-    public boolean isPastTravellingDestination() {
-        if(travellingDirection.getDeltaX() == 1) {
-            return origin.x > travellingDestination.x;
-        } else if(travellingDirection.getDeltaX() == -1) {
-            return origin.x < travellingDestination.x;
-        } else if(travellingDirection.getDeltaY() == 1) {
-            return origin.y > travellingDestination.y;
-        } else if(travellingDirection.getDeltaY() == -1) {
-            return origin.y < travellingDestination.y;
-        }
-        return false;
     }
 
     public float getTotalMissingHealth() {
@@ -509,22 +505,6 @@ public class HitboxComponent implements Component, Pool.Poolable {
         this.travellingFlag = travellingFlag;
     }
 
-    public EntityActions.Direction getTravellingDirection() {
-        return travellingDirection;
-    }
-
-    public void setTravellingDirection(EntityActions.Direction travellingDirection) {
-        this.travellingDirection = travellingDirection;
-    }
-
-    public float getTravellingSpeed() {
-        return travellingSpeed;
-    }
-
-    public void setTravellingSpeed(float travellingSpeed) {
-        this.travellingSpeed = travellingSpeed;
-    }
-
     public void setTravellingDestination(Point travellingDestination) {
         this.travellingDestination = travellingDestination;
     }
@@ -551,5 +531,53 @@ public class HitboxComponent implements Component, Pool.Poolable {
 
     public void setTravellingFromSameMapArea(boolean travellingFromSameMapArea) {
         this.travellingFromSameMapArea = travellingFromSameMapArea;
+    }
+
+    public boolean isDisabledMovement() {
+        return disabledMovement;
+    }
+
+    public void setDisabledMovement(boolean disabledMovement) {
+        this.disabledMovement = disabledMovement;
+    }
+
+    public float getTravellingDirectionX() {
+        return travellingDirectionX;
+    }
+
+    public void setTravellingDirectionX(float travellingDirectionX) {
+        this.travellingDirectionX = travellingDirectionX;
+    }
+
+    public float getTravellingDirectionY() {
+        return travellingDirectionY;
+    }
+
+    public void setTravellingDirectionY(float travellingDirectionY) {
+        this.travellingDirectionY = travellingDirectionY;
+    }
+
+    public float getTravellingVelocityX() {
+        return travellingVelocityX;
+    }
+
+    public void setTravellingVelocityX(float travellingVelocityX) {
+        this.travellingVelocityX = travellingVelocityX;
+    }
+
+    public float getTravellingVelocityY() {
+        return travellingVelocityY;
+    }
+
+    public void setTravellingVelocityY(float travellingVelocityY) {
+        this.travellingVelocityY = travellingVelocityY;
+    }
+
+    public Point getTravellingMapAreaDestination() {
+        return travellingMapAreaDestination;
+    }
+
+    public void setTravellingMapAreaDestination(Point travellingMapAreaDestination) {
+        this.travellingMapAreaDestination = travellingMapAreaDestination;
     }
 }

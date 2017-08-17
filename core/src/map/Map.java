@@ -12,6 +12,7 @@ import com.miv.Options;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Set;
 
 import ai.AI;
 import ai.SimpleFollowTarget;
@@ -19,9 +20,11 @@ import ai.SimpleStalkTarget;
 import ai.SimpleWander;
 import components.AIComponent;
 import components.EnemyBulletComponent;
+import components.EnemyComponent;
 import components.PlayerBulletComponent;
 import factories.AttackPatternFactory;
 import factories.BossFactory;
+import screens.MapScreen;
 import systems.RenderSystem;
 import utils.CircleHitbox;
 import utils.Point;
@@ -86,6 +89,7 @@ public class Map {
     private int floor;
     private Point focus;
     // Maps location on the world map to a specific MapArea
+    // String representation of utils.Point is used as key to be able to save HashMap in a json
     private HashMap<String, MapArea> areas;
     // Percent chance of the next undiscovered MapArea being having a stairway (0 to MAX_CHANCE_OF_STAIRS_AREA)*100 %
     private float chanceOfNextAreaHavingStairs;
@@ -121,6 +125,12 @@ public class Map {
 
     public static void clearBullets(PooledEngine engine) {
         for (Entity e : engine.getEntitiesFor(Family.one(EnemyBulletComponent.class, PlayerBulletComponent.class).get())) {
+            engine.removeEntity(e);
+        }
+    }
+
+    public static void clearEnemies(PooledEngine engine) {
+        for (Entity e : engine.getEntitiesFor(Family.one(EnemyComponent.class).get())) {
             engine.removeEntity(e);
         }
     }
@@ -467,5 +477,45 @@ public class Map {
 
     public void setChanceOfNextAreaHavingStairs(float chanceOfNextAreaHavingStairs) {
         this.chanceOfNextAreaHavingStairs = chanceOfNextAreaHavingStairs;
+    }
+
+    public HashMap<Point, MapScreen.MapScreenArea> getDiscoveredAreaPositions() {
+        HashMap<Point, MapScreen.MapScreenArea> mapScreenAreas = new HashMap<Point, MapScreen.MapScreenArea>();
+
+        for(java.util.Map.Entry<String, MapArea> entry : areas.entrySet()) {
+            MapArea mapArea = entry.getValue();
+
+            MapScreen.MapScreenArea area = new MapScreen.MapScreenArea();
+            area.areaCleared = (mapArea.getEnemyCount() == 0);
+
+            // Create red circles on map area display equal to number of enemies in the area
+            // Position of red circle depends on position of enemy spawn
+            if(!area.areaCleared) {
+                area.enemies = new ArrayList<Point>();
+                for(EntityCreationData ecd : mapArea.entityCreationDataArrayList) {
+                    area.enemies.add(new Point(ecd.getSpawnX()/mapArea.getRadius() * MapScreen.MAP_AREA_BUTTON_RADIUS, ecd.getSpawnY()/mapArea.getRadius() * MapScreen.MAP_AREA_BUTTON_RADIUS));
+                }
+            }
+
+            String[] strArr = entry.getKey().replaceAll("\\]|=|x|y|\\[|,", "").split("\\s+");
+            area.x = Float.valueOf(strArr[0]);
+            area.y = Float.valueOf(strArr[1]);
+
+            //TODO: different color for uncommon/rare map areas
+            /**
+             * See {@link MapScreen#loadBubbleTextures()} for color indexes
+             */
+            if(mapArea.getStairsDestination() == -1) {
+                area.colorIndex = 0;
+                area.borderColor = MapScreen.NORMAL_MAP_AREA_BORDER_COLOR;
+            } else {
+                area.colorIndex = 1;
+                area.borderColor = MapScreen.STAIRS_MAP_AREA_BORDER_COLOR;
+            }
+
+            mapScreenAreas.put(new Point(area.x, area.y), area);
+        }
+
+        return mapScreenAreas;
     }
 }

@@ -11,6 +11,7 @@ import com.badlogic.gdx.math.Vector2;
 
 import components.HitboxComponent;
 import components.PlayerComponent;
+import screens.MapScreen;
 import utils.Point;
 
 import static screens.HUD.SMALL_BUTTON_PADDING;
@@ -48,6 +49,8 @@ public class GestureListener implements GestureDetector.GestureListener {
     private float screenHeight;
     private float screenSplitX;
 
+    private MapScreen mapScreen;
+
     public GestureListener(Main main, InputMultiplexer inputMultiplexer) {
         this.main = main;
         movementDragTouchDownPoint = new Point(-1, 0);
@@ -66,11 +69,15 @@ public class GestureListener implements GestureDetector.GestureListener {
         playerHitbox = Mappers.hitbox.get(player);
     }
 
+    public void setMapScreen(MapScreen mapScreen) {
+        this.mapScreen = mapScreen;
+    }
+
     @Override
     public boolean touchDown(float x, float y, int pointer, int button) {
         if(main.getState() == Main.GameState.MAIN_GAME) {
             // Prevent movement touches on right side of screen
-            if(!(x > screenSplitX) && !playerHitbox.isTravelling()) {
+            if(x <= screenSplitX) {
                 movementDragTouchDownPoint.x = x;
                 movementDragTouchDownPoint.y = y;
                 movementDragCurrentPoint.x = x;
@@ -79,7 +86,7 @@ public class GestureListener implements GestureDetector.GestureListener {
                 movementArrowAngle = MathUtils.PI2;
             }
             // Prevent rotation touches on left side of screen and near buttons
-            if(!(x <= screenSplitX) && !playerHitbox.isTravelling()
+            if(x > screenSplitX
                     && y > SMALL_BUTTON_SIZE + SMALL_BUTTON_PADDING) {
                 shootingDragTouchDownPoint.x = x;
                 shootingDragTouchDownPoint.y = y;
@@ -90,8 +97,6 @@ public class GestureListener implements GestureDetector.GestureListener {
 
                 playerHitbox.setIsShooting(true);
             }
-        } else if(main.getState() == Main.GameState.MAP) {
-
         } else if(main.getState() == Main.GameState.CUSTOMIZE) {
 
         }
@@ -107,7 +112,7 @@ public class GestureListener implements GestureDetector.GestureListener {
                 shootingTouchUp();
             }
         } else if(main.getState() == Main.GameState.MAP) {
-
+            mapScreen.touchUp(x, y);
         } else if(main.getState() == Main.GameState.CUSTOMIZE) {
 
         }
@@ -150,8 +155,6 @@ public class GestureListener implements GestureDetector.GestureListener {
 
                 playerHitbox.setLastFacedAngle(-shootingArrowAngle);
             }
-        } else if(main.getState() == Main.GameState.MAP) {
-
         } else if(main.getState() == Main.GameState.CUSTOMIZE) {
 
         }
@@ -175,6 +178,9 @@ public class GestureListener implements GestureDetector.GestureListener {
 
     @Override
     public boolean pan(float x, float y, float deltaX, float deltaY) {
+        if(main.getState() == Main.GameState.MAP) {
+            mapScreen.pan(x, y, deltaX, deltaY);
+        }
         return false;
     }
 
@@ -185,6 +191,9 @@ public class GestureListener implements GestureDetector.GestureListener {
 
     @Override
     public boolean zoom(float initialDistance, float distance) {
+        if(main.getState() == Main.GameState.MAP) {
+            mapScreen.zoom(distance - initialDistance);
+        }
         return false;
     }
 

@@ -25,6 +25,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import map.Map;
 import screens.HUD;
 import screens.MainMenu;
+import screens.MapScreen;
 import screens.PlayerBuilder;
 import systems.AISystem;
 import systems.MovementSystem;
@@ -58,8 +59,6 @@ public class Main extends Game {
 	public static final String MOVEMENT_ARROW_TAIL_PATH = "movement_arrow_tail.png";
 	public static final String MOVEMENT_ARROW_BODY_PATH = "movement_arrow_body.png";
 	public static final String MOVEMENT_ARROW_HEAD_PATH = "movement_arrow_head.png";
-	public static final String ATTACK_BUTTON_UP_PATH = "attack_button_up.png";
-	public static final String ATTACK_BUTTON_DOWN_PATH = "attack_button_down.png";
 	public static final String BACK_BUTTON_UP_PATH = "back_button_up.png";
 	public static final String BACK_BUTTON_DOWN_PATH = "back_button_down.png";
 	public static final String CANCEL_BUTTON_UP_PATH = "cancel_button_up.png";
@@ -81,6 +80,8 @@ public class Main extends Game {
 	public static final String OPTIONS_BUTTON_DOWN_PATH = "options_button_down.png";
 	public static final String MAP_BUTTON_UP_PATH = "map_button_up.png";
 	public static final String MAP_BUTTON_DOWN_PATH = "map_button_down.png";
+	public static final String MAP_AREA_TRAVEL_BUTTON_DOWN_PATH = "map_area_travel_button_down.png";
+
 	public static final String BUBBLE_DEFAULT_PATH = "bubble_default.png";
     public static final String BUBBLE_SHIELD_PATH = "bubble_shield.png";
 
@@ -107,6 +108,7 @@ public class Main extends Game {
 	private MainMenu mainMenu;
 	private PlayerBuilder playerBuilder;
 	private screens.Options options;
+	private MapScreen mapScreen;
 
 	@Override
 	public void create() {
@@ -198,10 +200,12 @@ public class Main extends Game {
 	}
 
 	public void loadMapScreen() {
-		//TODO
+		if(mapScreen == null) {
+			mapScreen = new MapScreen(this, assetManager, engine, player, map, inputMultiplexer);
+			gestureListener.setMapScreen(mapScreen);
+		}
+		setScreen(mapScreen);
 		state = GameState.MAP;
-
-		//TODO: on exit, set state to main game
 	}
 
 	public void loadCustomizeScreen() {
@@ -240,8 +244,6 @@ public class Main extends Game {
 		assetManager.load(MOVEMENT_ARROW_BODY_PATH, Texture.class);
 		assetManager.load(MOVEMENT_ARROW_HEAD_PATH, Texture.class);
 
-		assetManager.load(ATTACK_BUTTON_UP_PATH, Texture.class);
-		assetManager.load(ATTACK_BUTTON_DOWN_PATH, Texture.class);
 		assetManager.load(BACK_BUTTON_UP_PATH, Texture.class);
 		assetManager.load(BACK_BUTTON_DOWN_PATH, Texture.class);
 		assetManager.load(CANCEL_BUTTON_UP_PATH, Texture.class);
@@ -263,6 +265,7 @@ public class Main extends Game {
 		assetManager.load(OPTIONS_BUTTON_DOWN_PATH, Texture.class);
 		assetManager.load(MAP_BUTTON_UP_PATH, Texture.class);
 		assetManager.load(MAP_BUTTON_DOWN_PATH, Texture.class);
+		assetManager.load(MAP_AREA_TRAVEL_BUTTON_DOWN_PATH, Texture.class);
 
 		assetManager.load(BUBBLE_SHIELD_PATH, Texture.class);
 		assetManager.load(BUBBLE_DEFAULT_PATH, Texture.class);
@@ -303,12 +306,12 @@ public class Main extends Game {
 	public void startGame() {
 		playerDead = false;
 		try {
-			engine.addEntity(player);
+			if(!engine.getEntities().contains(player, false)) {
+				engine.addEntity(player);
+			}
 		} catch(IllegalArgumentException e) {
 
 		}
-		// map.enterNewArea(engine, player, (int)map.getFocus().x, (int)map.getFocus().y);
-
 		gestureListener.setPlayer(player);
 		hud = new HUD(Main.this, assetManager, inputMultiplexer, gestureListener, player, map);
 		setScreen(hud);
@@ -328,7 +331,9 @@ public class Main extends Game {
 			// Store enemies into ECDs
 			map.getCurrentArea().storeExistingEnemies(engine, false);
 
-			Save.save(this);
+			if(!state.equals(GameState.MAIN_MENU)) {
+				Save.save(this);
+			}
 		}
 	}
 
@@ -421,6 +426,9 @@ public class Main extends Game {
 		if(playerBuilder != null) {
 			playerBuilder.setPlayer(player);
 		}
+		if(mapScreen != null) {
+			mapScreen.setPlayer(player);
+		}
 	}
 
 	public void setMap(Map map) {
@@ -430,6 +438,9 @@ public class Main extends Game {
 		}
 		if(movementSystem != null) {
 			movementSystem.setMap(map);
+		}
+		if(mapScreen != null) {
+			mapScreen.setMap(map);
 		}
 		this.map = map;
 	}
