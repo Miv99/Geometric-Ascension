@@ -164,19 +164,41 @@ public class MovementSystem extends EntitySystem {
         return Math.abs(origin.x) > Math.abs(boundary) || Math.abs(origin.y) > Math.abs(boundary);
     }
 
-    private boolean checkIfOutsideCurrentMapArea(Entity e, Point origin, float boundary) {
+    private boolean checkIfOutsideCurrentMapArea(Entity e, Point origin, Vector2 velocity, float boundary) {
         if(origin.x*origin.x + origin.y*origin.y > boundary*boundary) {
-            float angle = MathUtils.atan2(origin.y, origin.x);
-            angle = Utils.normalizeAngle(angle);
+            // Angle depends on direction the entity is currently travelling in
+            float angle = Utils.normalizeAngle(MathUtils.atan2(velocity.y, velocity.x));
             if (angle >= Math.PI / 4f && angle <= 3f * Math.PI / 4f) {
-                EntityActions.playerEnterNewMapArea(e, EntityActions.Direction.UP, new Point(map.getFocus().x, map.getFocus().y + 1));
+                EntityActions.playerEnterNewMapArea(e, MathUtils.cos(angle), MathUtils.sin(angle), new Point(map.getFocus().x, map.getFocus().y + 1));
             } else if (angle >= 3f * Math.PI / 4f && angle <= 5f * Math.PI / 4f) {
-                EntityActions.playerEnterNewMapArea(e, EntityActions.Direction.LEFT, new Point(map.getFocus().x - 1, map.getFocus().y));
+                EntityActions.playerEnterNewMapArea(e, MathUtils.cos(angle), MathUtils.sin(angle), new Point(map.getFocus().x - 1, map.getFocus().y));
             } else if (angle >= 5f * Math.PI / 4f && angle <= 7f * Math.PI / 4f) {
-                EntityActions.playerEnterNewMapArea(e, EntityActions.Direction.DOWN, new Point(map.getFocus().x, map.getFocus().y - 1));
+                EntityActions.playerEnterNewMapArea(e, MathUtils.cos(angle), MathUtils.sin(angle), new Point(map.getFocus().x, map.getFocus().y - 1));
             } else {
-                EntityActions.playerEnterNewMapArea(e, EntityActions.Direction.RIGHT, new Point(map.getFocus().x + 1, map.getFocus().y));
+                EntityActions.playerEnterNewMapArea(e, MathUtils.cos(angle), MathUtils.sin(angle), new Point(map.getFocus().x + 1, map.getFocus().y));
             }
+            /**
+             * // 4 cardinal directions
+             if (angle >= 3f * Math.PI / 8f && angle <= 5f * Math.PI / 8f) {
+             EntityActions.playerEnterNewMapArea(e, MathUtils.cos(angle), MathUtils.sin(angle), new Point(map.getFocus().x, map.getFocus().y + 1));
+             } else if (angle >= 7f * Math.PI / 8f && angle <= 9f * Math.PI / 8f) {
+             EntityActions.playerEnterNewMapArea(e, MathUtils.cos(angle), MathUtils.sin(angle), new Point(map.getFocus().x - 1, map.getFocus().y));
+             } else if (angle >= 11f * Math.PI / 8f && angle <= 13f * Math.PI / 8f) {
+             EntityActions.playerEnterNewMapArea(e, MathUtils.cos(angle), MathUtils.sin(angle), new Point(map.getFocus().x, map.getFocus().y - 1));
+             } else if (angle >= 15f * Math.PI / 8f || angle <= Math.PI / 8f) {
+             EntityActions.playerEnterNewMapArea(e, MathUtils.cos(angle), MathUtils.sin(angle), new Point(map.getFocus().x + 1, map.getFocus().y));
+             }
+             // Primary inter-cardinal directions
+             else if (angle >= Math.PI / 8f && angle <= 3f * Math.PI / 8f) {
+             EntityActions.playerEnterNewMapArea(e, MathUtils.cos(angle), MathUtils.sin(angle), new Point(map.getFocus().x + 1, map.getFocus().y + 1));
+             } else if (angle >= 5f * Math.PI / 8f && angle <= 7f * Math.PI / 8f) {
+             EntityActions.playerEnterNewMapArea(e, MathUtils.cos(angle), MathUtils.sin(angle), new Point(map.getFocus().x - 1, map.getFocus().y + 1));
+             } else if (angle >= 9f * Math.PI / 8f && angle <= 11f * Math.PI / 8f) {
+             EntityActions.playerEnterNewMapArea(e, MathUtils.cos(angle), MathUtils.sin(angle), new Point(map.getFocus().x - 1, map.getFocus().y - 1));
+             } else if (angle >= 13f * Math.PI / 8f && angle <= 15f * Math.PI / 8f) {
+             EntityActions.playerEnterNewMapArea(e, MathUtils.cos(angle), MathUtils.sin(angle), new Point(map.getFocus().x + 1, map.getFocus().y - 1));
+             }
+             */
             return true;
         }
         return false;
@@ -264,7 +286,7 @@ public class MovementSystem extends EntitySystem {
                     // Check if circle is outside map area radius
                     if(mapArea != null) {
                         // Player cannot leave boss area
-                        checkIfOutsideCurrentMapArea(e, origin, mapArea.getRadius());
+                        checkIfOutsideCurrentMapArea(e, origin, hitbox.getVelocity(), mapArea.getRadius());
                     }
 
                     for (CircleHitbox c : hitbox.getCircles()) {
