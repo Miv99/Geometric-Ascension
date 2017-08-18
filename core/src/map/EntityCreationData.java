@@ -26,6 +26,8 @@ public class EntityCreationData {
     private float spawnX;
     private float spawnY;
     private float maxSpeed;
+    // Used only for displaying enemy size on map screen
+    private float gravitationalRadius;
 
     private AI.AIType aiType;
     // For SimpleStalkTarget
@@ -186,5 +188,13 @@ public class EntityCreationData {
 
     public void setRotationBehaviorParams(AI.RotationBehaviorParams rotationBehaviorParams) {
         this.rotationBehaviorParams = rotationBehaviorParams;
+    }
+
+    public float getGravitationalRadius() {
+        return gravitationalRadius;
+    }
+
+    public void setGravitationalRadius(float gravitationalRadius) {
+        this.gravitationalRadius = gravitationalRadius;
     }
 }

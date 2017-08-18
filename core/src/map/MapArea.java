@@ -124,6 +124,9 @@ public class MapArea {
             ArrayList<CircleHitbox> circles = new ArrayList<CircleHitbox>();
             circles.addAll(Mappers.hitbox.get(e).getCircles());
             ecd.setCircleHitboxes(circles);
+
+            ecd.setGravitationalRadius(Mappers.hitbox.get(e).getGravitationalRadius());
+
             entityCreationDataArrayList.add(ecd);
 
             if(deleteEntitiesAfterwards) {

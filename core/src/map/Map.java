@@ -3,6 +3,7 @@ package map;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.core.PooledEngine;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
 import com.miv.AttackPattern;
 import com.miv.Main;
@@ -21,6 +22,7 @@ import ai.SimpleWander;
 import components.AIComponent;
 import components.EnemyBulletComponent;
 import components.EnemyComponent;
+import components.HitboxComponent;
 import components.PlayerBulletComponent;
 import factories.AttackPatternFactory;
 import factories.BossFactory;
@@ -491,9 +493,33 @@ public class Map {
             // Create red circles on map area display equal to number of enemies in the area
             // Position of red circle depends on position of enemy spawn
             if(!area.areaCleared) {
-                area.enemies = new ArrayList<Point>();
+                area.objectIndicators = new ArrayList<MapScreen.MapScreenObjectIndicator>();
                 for(EntityCreationData ecd : mapArea.entityCreationDataArrayList) {
-                    area.enemies.add(new Point(ecd.getSpawnX()/mapArea.getRadius() * MapScreen.MAP_AREA_BUTTON_RADIUS, ecd.getSpawnY()/mapArea.getRadius() * MapScreen.MAP_AREA_BUTTON_RADIUS));
+                    area.objectIndicators.add(new MapScreen.MapScreenObjectIndicator(
+                            ecd.getSpawnX()/mapArea.getRadius() * MapScreen.MAP_AREA_BUTTON_RADIUS, ecd.getSpawnY()/mapArea.getRadius() * MapScreen.MAP_AREA_BUTTON_RADIUS,
+                            ecd.getGravitationalRadius()/mapArea.getRadius() * MapScreen.MAP_AREA_BUTTON_RADIUS,
+                            Color.RED
+                    ));
+                }
+
+                if(mapArea.equals(currentArea)) {
+                    // Create red circles from existing enemies instead
+                    for(Entity e : main.getEngine().getEntitiesFor(Family.all(EnemyComponent.class, HitboxComponent.class).get())) {
+                        Point pos = Mappers.hitbox.get(e).getOrigin();
+                        area.objectIndicators.add(new MapScreen.MapScreenObjectIndicator(
+                                pos.x/mapArea.getRadius() * MapScreen.MAP_AREA_BUTTON_RADIUS, pos.y/mapArea.getRadius() * MapScreen.MAP_AREA_BUTTON_RADIUS,
+                                Mappers.hitbox.get(e).getGravitationalRadius()/mapArea.getRadius() * MapScreen.MAP_AREA_BUTTON_RADIUS * 2,
+                                Color.RED
+                        ));
+                    }
+
+                    // Create blue circle from player
+                    HitboxComponent playerHitbox = Mappers.hitbox.get(main.getPlayer());
+                    area.objectIndicators.add(new MapScreen.MapScreenObjectIndicator(
+                            playerHitbox.getOrigin().x/mapArea.getRadius() * MapScreen.MAP_AREA_BUTTON_RADIUS, playerHitbox.getOrigin().y/mapArea.getRadius() * MapScreen.MAP_AREA_BUTTON_RADIUS,
+                            playerHitbox.getGravitationalRadius()/mapArea.getRadius() * MapScreen.MAP_AREA_BUTTON_RADIUS * 2,
+                            Color.BLUE
+                    ));
                 }
             }
 

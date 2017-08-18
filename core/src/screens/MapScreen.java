@@ -44,6 +44,23 @@ import utils.Utils;
  * Created by Miv on 8/5/2017.
  */
 public class MapScreen implements Screen {
+    public static class MapScreenObjectIndicator {
+        // Position relative to the MapScreenArea
+        public float x;
+        public float y;
+
+        public float radius;
+
+        public Color color;
+
+        public MapScreenObjectIndicator(float x, float y, float radius, Color color) {
+            this.x = x;
+            this.y = y;
+            this.radius = radius;
+            this.color = color;
+        }
+    }
+
     public static class MapScreenArea {
         public boolean areaCleared;
         public int colorIndex;
@@ -57,8 +74,8 @@ public class MapScreen implements Screen {
         private float screenX;
         private float screenY;
 
-        // Enemy indicators
-        public ArrayList<Point> enemies;
+        // Object indicators (players, enemies, etc)
+        public ArrayList<MapScreenObjectIndicator> objectIndicators;
 
         // If true, draw grid lines
         private boolean hasAreaRight;
@@ -296,7 +313,7 @@ public class MapScreen implements Screen {
 
         shapeRenderer.setProjectionMatrix(stage.getViewport().getCamera().combined);
         shapeRenderer.begin();
-        Gdx.gl.glLineWidth(5f);
+        Gdx.gl.glLineWidth(6f);
         for(MapScreenArea area : mapAreas.values()) {
             // Draw grid lines
             shapeRenderer.setColor(GRID_LINE_COLOR);
@@ -326,10 +343,11 @@ public class MapScreen implements Screen {
             shapeRenderer.circle(area.screenX, area.screenY, MAP_AREA_BUTTON_RADIUS);
 
             // Draw enemies
-            if(area.enemies != null) {
+            if(area.objectIndicators != null) {
                 shapeRenderer.setColor(Color.RED);
-                for(Point p : area.enemies) {
-                    shapeRenderer.circle(area.screenX + p.x, area.screenY + p.y, 5f);
+                for(MapScreenObjectIndicator object : area.objectIndicators) {
+                    shapeRenderer.setColor(object.color);
+                    shapeRenderer.circle(area.screenX + object.x, area.screenY + object.y, object.radius, 50);
                 }
             }
         }
