@@ -59,15 +59,26 @@ public class RenderSystem extends EntitySystem {
 
     public static enum HitboxTextureType {
         // ID must be in ascending order starting from 0
-        PLAYER(0, new Color(Color.CYAN.r, Color.CYAN.g, Color.CYAN.b, 0.3f), new Color(0f, 163/255f, 33/255f, 1f)),
-        ENEMY(1, new Color(Color.ORANGE.r, Color.ORANGE.g, Color.ORANGE.b, 0.3f), new Color(196/255f, 0f, 0f, 1f)),
+        PLAYER(0, new Color(Color.CYAN.r, Color.CYAN.g, Color.CYAN.b, 0.3f), new Color(0f, 163/255f, 33/255f, 1f), new Color(135/255f, 1f, 1f, 1f)),
+        ENEMY(1, new Color(Color.ORANGE.r, Color.ORANGE.g, Color.ORANGE.b, 0.3f), new Color(196/255f, 0f, 0f, 1f), new Color(1f, 186/255f, 140/255f, 1f)),
         ENEMY_BULLET(2, new Color(Color.RED.r, Color.RED.g, Color.RED.b, 0.3f), new Color(Color.RED)),
         PLAYER_BULLET(3, new Color(Color.GREEN.r, Color.GREEN.g, Color.GREEN.b, 0.3f), new Color(Color.RED));
 
         private int id;
         private Color color;
         private Color outlineColor;
+        // Outline color for circle hitboxes that have no attack pattern
+        private Color noncannonOutlineColor;
         private Color healthBarColor;
+
+        HitboxTextureType(int id, Color color, Color healthBarColor, Color noncannonOutlineColor) {
+            this.id = id;
+            this.color = color;
+            outlineColor = new Color(color).set(color.r, color.g, color.b, 1f);
+
+            this.healthBarColor = healthBarColor;
+            this.noncannonOutlineColor = noncannonOutlineColor;
+        }
 
         HitboxTextureType(int id, Color color, Color healthBarColor) {
             this.id = id;
@@ -210,7 +221,11 @@ public class RenderSystem extends EntitySystem {
 
             // Draw hitbox outlines
             for(CircleHitbox c : hitbox.getCircles()) {
-                shapeRenderer.setColor(c.getHitboxTextureType().outlineColor);
+                if(c.getAttackPattern() == null) {
+                    shapeRenderer.setColor(c.getHitboxTextureType().noncannonOutlineColor);
+                } else {
+                    shapeRenderer.setColor(c.getHitboxTextureType().outlineColor);
+                }
                 shapeRenderer.circle(c.x + origin.x, c.y + origin.y, c.radius);
             }
 
