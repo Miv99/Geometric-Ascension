@@ -20,12 +20,15 @@ public abstract class AI {
     }
 
     public static class RotationBehaviorParams {
+        // From 0 - 1.0; default for enemies is 0.6
+        private float lerpFactor;
         private boolean faceTarget;
         // In radians/second
         private float constantRotationVelocity;
 
-        public RotationBehaviorParams(boolean faceTarget) {
+        public RotationBehaviorParams(boolean faceTarget, float lerpFactor) {
             this.faceTarget = faceTarget;
+            this.lerpFactor = lerpFactor;
         }
 
         /**
@@ -55,15 +58,21 @@ public abstract class AI {
 
                 if (params.faceTarget) {
                     // Lerp rotation to target angle
-                    if (angleToTarget - currentRotationAngle > MathUtils.PI) {
-                        angleToTarget -= MathUtils.PI2;
-                    } else if (angleToTarget - currentRotationAngle < -MathUtils.PI) {
-                        angleToTarget += MathUtils.PI2;
+                    angleToTarget += MathUtils.PI2;
+                    while(angleToTarget - currentRotationAngle > MathUtils.PI || angleToTarget - currentRotationAngle < -MathUtils.PI) {
+                        if (angleToTarget - currentRotationAngle > MathUtils.PI) {
+                            angleToTarget -= MathUtils.PI2;
+                        } else if (angleToTarget - currentRotationAngle < -MathUtils.PI) {
+                            angleToTarget += MathUtils.PI2;
+                        }
                     }
-                    currentRotationAngle += (angleToTarget - currentRotationAngle) * 0.6f * deltaTime;
+                    currentRotationAngle += (angleToTarget - currentRotationAngle) * params.lerpFactor * deltaTime;
                     hitboxComponent.setLastFacedAngle(currentRotationAngle);
+                    hitboxComponent.setAimingAngle(currentRotationAngle);
                 } else if (params.constantRotationVelocity != 0) {
-                    hitboxComponent.setLastFacedAngle(currentRotationAngle + params.constantRotationVelocity * deltaTime);
+                    float angle = currentRotationAngle + params.constantRotationVelocity * deltaTime;
+                    hitboxComponent.setLastFacedAngle(angle);
+                    hitboxComponent.setAimingAngle(angle);
                 }
             }
         }

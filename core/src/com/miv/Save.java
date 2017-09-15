@@ -3,6 +3,7 @@ package com.miv;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.PooledEngine;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Json;
 
 import java.util.ArrayList;
@@ -60,8 +61,9 @@ public class Save {
                 Entity player = engine.createEntity();
                 HitboxComponent hitbox = engine.createComponent(HitboxComponent.class);
                 for (CircleHitbox c : data.playerCircles) {
-                    hitbox.addCircle(c, true);
+                    hitbox.addCircle(c, false);
                 }
+                hitbox.setLastFacedAngle(MathUtils.PI/2f);
                 hitbox.recenterOriginalCirclePositions();
                 hitbox.setMaxSpeed(data.playerMaxSpeed);
                 hitbox.setOrigin(data.playerOrigin.x, data.playerOrigin.y);
@@ -88,12 +90,12 @@ public class Save {
         hitboxComponent.setMaxSpeed(5f);
         CircleHitbox c = new CircleHitbox();
         c.setHitboxTextureType(RenderSystem.HitboxTextureType.PLAYER);
-        c.setRadius(40f);
-        c.setMaxHealth(500f);
-        c.setHealth(500f);
-        c.setAttackPattern(AttackPatternFactory.getAttackPattern("PLAYER_STARTING"));
+        c.setRadius(Options.DEFAULT_NEW_CIRCLE_RADIUS);
+        c.setMaxHealth(Options.DEFAULT_NEW_CIRCLE_MAX_HEALTH);
+        c.setHealth(c.getMaxHealth());
+        c.setAttackPattern(AttackPatternFactory.getAttackPattern("PLAYER_DEFAULT_1"));
         hitboxComponent.addCircle(c, true);
-        hitboxComponent.recenterOriginalCirclePositions();
+        hitboxComponent.calculateGravitationalRadius();
         player.add(hitboxComponent);
         player.add(engine.createComponent(PlayerComponent.class));
         main.setPlayer(player);

@@ -40,6 +40,11 @@ public class Camera extends OrthographicCamera {
         renderSystem.getBatch().setProjectionMatrix(combined);
     }
 
+    public void teleportTo(Entity e) {
+        Point pos = Mappers.hitbox.get(e).getOrigin();
+        position.set(pos.x, pos.y, 0);
+    }
+
     public void setFocus(Entity focus) {
         this.focus = Mappers.hitbox.get(focus).getOrigin();
     }

@@ -25,12 +25,6 @@ public class AttackPart {
         NONE
     }
 
-    // For radius scaling with damage
-    private static final float LOWER_RADIUS = 10f;
-    private static final float UPPER_RADIUS = 35f;
-    private static final float LOWER_DAMAGE = 10f;
-    private static final float UPPER_DAMAGE = 30f;
-
     // Time in seconds relative to the start of the attack pattern until this attack part is fired
     private float delay;
     // Origin of the bullet with respect to the origin of the parent entity
@@ -106,14 +100,6 @@ public class AttackPart {
         engine.addEntity(e);
     }
 
-    /**
-     * Used mostly for enemy bullets
-     */
-    public AttackPart scaleRadiusToDamage() {
-        setRadius(((damage - LOWER_DAMAGE)/(UPPER_DAMAGE - LOWER_DAMAGE)) * (UPPER_RADIUS - LOWER_RADIUS) + LOWER_RADIUS);
-        return this;
-    }
-
     public AttackPart clone() {
         AttackPart ap = new AttackPart();
         ap.setOriginX(originX);
@@ -132,6 +118,15 @@ public class AttackPart {
         ap.originalRadius = originalRadius;
         ap.originalSpeed = originalSpeed;
         return ap;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        // Compares stats before modifications
+
+        AttackPart ap = (AttackPart)obj;
+        if(ap.originalSpeed != originalSpeed || ap.originalRadius != originalRadius || ap.originalDelay != originalDelay || ap.originalDamage != originalDamage || ap.originX != originX || ap.originY != originY) return false;
+        return true;
     }
 
     public float getDelay() {

@@ -59,26 +59,20 @@ public class RenderSystem extends EntitySystem {
 
     public static enum HitboxTextureType {
         // ID must be in ascending order starting from 0
-        PLAYER(0, new Color(Color.CYAN.r, Color.CYAN.g, Color.CYAN.b, 0.3f), new Color(0f, 163/255f, 33/255f, 1f), new Color(135/255f, 1f, 1f, 1f)),
-        ENEMY(1, new Color(Color.ORANGE.r, Color.ORANGE.g, Color.ORANGE.b, 0.3f), new Color(196/255f, 0f, 0f, 1f), new Color(1f, 186/255f, 140/255f, 1f)),
+        // DO NOT EVER CHANGE THE ORDER. YOU CAN ADD STUFF BUT DON'T CHANGE EXISTING IDs
+        PLAYER(0, new Color(Color.CYAN.r, Color.CYAN.g, Color.CYAN.b, 0.3f), new Color(0f, 163/255f, 33/255f, 1f)),
+        ENEMY(1, new Color(Color.ORANGE.r, Color.ORANGE.g, Color.ORANGE.b, 0.3f), new Color(196/255f, 0f, 0f, 1f)),
         ENEMY_BULLET(2, new Color(Color.RED.r, Color.RED.g, Color.RED.b, 0.3f), new Color(Color.RED)),
-        PLAYER_BULLET(3, new Color(Color.GREEN.r, Color.GREEN.g, Color.GREEN.b, 0.3f), new Color(Color.RED));
+        PLAYER_BULLET(3, new Color(Color.GREEN.r, Color.GREEN.g, Color.GREEN.b, 0.3f), new Color(Color.RED)),
+        // Used only in player builder to show render of player
+        PLAYER_RENDER_SELECTED(4, new Color(221/255f, 163/255f, 1f, 0.3f), new Color(0f, 163/255f, 33/255f, 1f)),
+        PLAYER_RENDER_INVALID_POSITION(5, new Color(Color.RED.r, Color.RED.g, Color.RED.b, 0.3f), new Color(Color.RED)),
+        PLAYER_NEW_CIRCLE(6, new Color(Color.GREEN.r, Color.GREEN.g, Color.GREEN.b, 0.3f), new Color(Color.RED));
 
         private int id;
         private Color color;
         private Color outlineColor;
-        // Outline color for circle hitboxes that have no attack pattern
-        private Color noncannonOutlineColor;
         private Color healthBarColor;
-
-        HitboxTextureType(int id, Color color, Color healthBarColor, Color noncannonOutlineColor) {
-            this.id = id;
-            this.color = color;
-            outlineColor = new Color(color).set(color.r, color.g, color.b, 1f);
-
-            this.healthBarColor = healthBarColor;
-            this.noncannonOutlineColor = noncannonOutlineColor;
-        }
 
         HitboxTextureType(int id, Color color, Color healthBarColor) {
             this.id = id;
@@ -86,6 +80,14 @@ public class RenderSystem extends EntitySystem {
             outlineColor = new Color(color).set(color.r, color.g, color.b, 1f);
 
             this.healthBarColor = healthBarColor;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public Color getOutlineColor() {
+            return outlineColor;
         }
     }
 
@@ -97,7 +99,7 @@ public class RenderSystem extends EntitySystem {
     public static final Color STAIRS_MAP_AREA_BACKGROUND_COLOR = new Color(1f, 237/255f, 147/255f, 1f);
     public static final Color NORMAL_MAP_AREA_BORDER_COLOR = new Color(NORMAL_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.5f);
     public static final Color STAIRS_MAP_AREA_BORDER_COLOR = new Color(STAIRS_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.5f);
-    private static final Color NORMAL_MAP_AREA_GRID_LINE_COLOR = new Color(NORMAL_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.2f);
+    public static final Color NORMAL_MAP_AREA_GRID_LINE_COLOR = new Color(NORMAL_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.2f);
     private static final Color STAIRS_MAP_AREA_GRID_LINE_COLOR = new Color(STAIRS_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.2f);
 
     private Main main;
@@ -108,7 +110,7 @@ public class RenderSystem extends EntitySystem {
     private SpriteBatch batch;
 
     // Array of bubble textures for each color in HitboxTextureType
-    private Drawable[] bubbleDrawables;
+    public Drawable[] bubbleDrawables;
     private Drawable bubbleShieldDrawable;
 
     private GlyphLayout layout;
@@ -207,9 +209,11 @@ public class RenderSystem extends EntitySystem {
             }
 
             // Draw shield around entity if travelling
+            /**
             if(hitbox.isTravelling()) {
                 bubbleShieldDrawable.draw(batch, origin.x - (hitbox.getGravitationalRadius() + 15f), origin.y - (hitbox.getGravitationalRadius() + 15f), (hitbox.getGravitationalRadius() + 15f)*2, (hitbox.getGravitationalRadius() + 15f)*2);
             }
+             */
         }
         batch.end();
 
@@ -221,11 +225,7 @@ public class RenderSystem extends EntitySystem {
 
             // Draw hitbox outlines
             for(CircleHitbox c : hitbox.getCircles()) {
-                if(c.getAttackPattern() == null) {
-                    shapeRenderer.setColor(c.getHitboxTextureType().noncannonOutlineColor);
-                } else {
-                    shapeRenderer.setColor(c.getHitboxTextureType().outlineColor);
-                }
+                shapeRenderer.setColor(c.getHitboxTextureType().outlineColor);
                 shapeRenderer.circle(c.x + origin.x, c.y + origin.y, c.radius);
             }
 
@@ -243,18 +243,20 @@ public class RenderSystem extends EntitySystem {
                 Point origin = hitbox.getOrigin();
 
                 for (CircleHitbox c : hitbox.getCircles()) {
-                    float healthBarWidth = c.getHealth() / c.getMaxHealth() * c.radius * 2.5f;
-                    float healthBarRadius = Math.min(18f, c.radius / 12f);
-                    float x = -healthBarWidth / 2f;
+                    if(c.getHealth() < c.getMaxHealth()) {
+                        float healthBarWidth = c.getHealth() / c.getMaxHealth() * c.radius * 2.5f;
+                        float healthBarRadius = Math.min(18f, c.radius / 12f);
+                        float x = -healthBarWidth / 2f;
 
-                    // Color in health bar
-                    shapeRenderer.setColor(c.getHitboxTextureType().healthBarColor);
-                    // Draw start arc
-                    shapeRenderer.arc(origin.x + c.x + x, origin.y + c.y + HEALTH_BAR_Y + healthBarRadius, healthBarRadius, 90f, 180f);
-                    // Draw rectangle
-                    shapeRenderer.rect(origin.x + c.x + x, origin.y + c.y + HEALTH_BAR_Y, healthBarWidth, healthBarRadius * 2f);
-                    // Draw end arc
-                    shapeRenderer.arc(origin.x + c.x + x + healthBarWidth, origin.y + c.y + HEALTH_BAR_Y + healthBarRadius, healthBarRadius, 270f, 450f);
+                        // Color in health bar
+                        shapeRenderer.setColor(c.getHitboxTextureType().healthBarColor);
+                        // Draw start arc
+                        shapeRenderer.arc(origin.x + c.x + x, origin.y + c.y + HEALTH_BAR_Y + healthBarRadius, healthBarRadius, 90f, 180f);
+                        // Draw rectangle
+                        shapeRenderer.rect(origin.x + c.x + x, origin.y + c.y + HEALTH_BAR_Y, healthBarWidth, healthBarRadius * 2f);
+                        // Draw end arc
+                        shapeRenderer.arc(origin.x + c.x + x + healthBarWidth, origin.y + c.y + HEALTH_BAR_Y + healthBarRadius, healthBarRadius, 270f, 450f);
+                    }
                 }
             }
         }

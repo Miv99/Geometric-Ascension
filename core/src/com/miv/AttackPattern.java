@@ -5,6 +5,8 @@ import com.badlogic.gdx.math.MathUtils;
 import java.util.ArrayList;
 
 import map.Map;
+import screens.PlayerBuilder;
+import utils.CircleHitbox;
 
 /**
  * An attack pattern consists of multiple {@link AttackPart} that have a {@link AttackPart#delay} time value. After that much time has passed, the attack part is fired,
@@ -13,17 +15,17 @@ import map.Map;
  * Created by Miv on 5/24/2017.
  */
 public class AttackPattern {
-    private static final float MIN_BULLET_SPEED_CONSTANT = Map.INITIAL_MAP_AREA_PIXEL_POINTS * 0.8f;
-    private static final float MAX_BULLET_SPEED_CONSTANT = Map.INITIAL_MAP_AREA_PIXEL_POINTS * 1.2f;
+    private static final float MIN_BULLET_SPEED_MULTIPLIER = 0.8f;
+    private static final float MAX_BULLET_SPEED_MULTIPLIER = 1.2f;
 
-    private static final float MIN_FIRE_RATE_CONSTANT = Map.INITIAL_MAP_AREA_PIXEL_POINTS * 0.8f;
-    private static final float MAX_FIRE_RATE_CONSTANT = Map.INITIAL_MAP_AREA_PIXEL_POINTS * 1.2f;
+    private static final float MIN_FIRE_INTERVAL_MULTIPLIER = 0.4f;
+    private static final float MAX_FIRE_INTERVAL_MULTIPLIER = 0.8f;
 
-    private static final float MIN_BULLET_DAMAGE_CONSTANT = Map.INITIAL_MAP_AREA_PIXEL_POINTS * 0.9f;
-    private static final float MAX_BULLET_DAMAGE_CONSTANT = Map.INITIAL_MAP_AREA_PIXEL_POINTS * 1.5f;
+    private static final float MIN_BULLET_DAMAGE_MULTIPLIER = 0.9f;
+    private static final float MAX_BULLET_DAMAGE_MULTIPLIER = 1.5f;
 
-    private static final float MIN_BULLET_RADIUS_CONSTANT = Map.INITIAL_MAP_AREA_PIXEL_POINTS * 0.5f;
-    private static final float MAX_BULLET_RADIUS_CONSTANT = Map.INITIAL_MAP_AREA_PIXEL_POINTS * 1.5f;
+    private static final float MIN_BULLET_RADIUS_MULTIPLIER = 0.5f;
+    private static final float MAX_BULLET_RADIUS_MULTIPLIER = 1.5f;
 
     /**
      * MUST BE IN ASCENDING ORDER BY {@link AttackPart#delay}
@@ -31,15 +33,22 @@ public class AttackPattern {
     private ArrayList<AttackPart> attackParts;
     // Duration of attack pattern in seconds before it repeats
     private float duration;
+    private float originalDuration;
     // Total damage of all bullets in all attack parts
     private float totalDamage;
     private float totalRadius;
+    // In radians
+    private float angleOffset;
+
+    // Used for info display in player builder
+    private String type;
+    private int level;
 
     private float totalPpInStatModifiers;
-    private float speedPpDivisor;
-    private float fireRatePpDivisor;
-    private float bulletDamagePpDivisor;
-    private float bulletRadiusPpDivisor;
+    private float speedPpMultiplier;
+    private float fireIntervalPpMultiplier;
+    private float bulletDamagePpMultiplier;
+    private float bulletRadiusPpMultiplier;
 
     public AttackPattern() {
         attackParts = new ArrayList<AttackPart>();
@@ -50,31 +59,36 @@ public class AttackPattern {
 
         // First time stat modifiers are retrieved, generate random values for divisors
         // Any other time they are retrieved, use old random values but with added pp
-        if(speedPpDivisor == 0) {
-            speedPpDivisor = MathUtils.random(MIN_BULLET_SPEED_CONSTANT, MAX_BULLET_SPEED_CONSTANT);
-            fireRatePpDivisor = MathUtils.random(MIN_FIRE_RATE_CONSTANT, MAX_FIRE_RATE_CONSTANT);
-            bulletDamagePpDivisor = MathUtils.random(MIN_BULLET_DAMAGE_CONSTANT, MAX_BULLET_DAMAGE_CONSTANT);
-            bulletRadiusPpDivisor = MathUtils.random(MIN_BULLET_RADIUS_CONSTANT, MAX_BULLET_RADIUS_CONSTANT);
+        if(speedPpMultiplier == 0) {
+            speedPpMultiplier = MathUtils.random(MIN_BULLET_SPEED_MULTIPLIER, MAX_BULLET_SPEED_MULTIPLIER);
+            fireIntervalPpMultiplier = MathUtils.random(MIN_FIRE_INTERVAL_MULTIPLIER, MAX_FIRE_INTERVAL_MULTIPLIER);
+            bulletDamagePpMultiplier = MathUtils.random(MIN_BULLET_DAMAGE_MULTIPLIER, MAX_BULLET_DAMAGE_MULTIPLIER);
+            bulletRadiusPpMultiplier = MathUtils.random(MIN_BULLET_RADIUS_MULTIPLIER, MAX_BULLET_RADIUS_MULTIPLIER);
         }
-        float speedMultiplier = totalPpInStatModifiers / speedPpDivisor;
-        float fireRateMultiplier = totalPpInStatModifiers / fireRatePpDivisor;
-        float bulletDamageMultiplier = totalPpInStatModifiers / bulletDamagePpDivisor;
-        // Bullet radius not scaled to pp
-        float bulletRadiusMultiplier = (MIN_BULLET_RADIUS_CONSTANT + MAX_BULLET_RADIUS_CONSTANT) / (2f * bulletRadiusPpDivisor);
-
-        modify(speedMultiplier, fireRateMultiplier, bulletDamageMultiplier, bulletRadiusMultiplier);
+        calculateAndSetModificationMultipliers();
 
         return this;
     }
 
-    private void modify(float speedMultiplier, float fireRateMultiplier, float bulletDamageMultiplier, float bulletRadiusMultiplier) {
+    private void calculateAndSetModificationMultipliers() {
+        float fireIntervalMultiplier = totalPpInStatModifiers / Map.INITIAL_MAP_AREA_PIXEL_POINTS * fireIntervalPpMultiplier;
+        float bulletDamageMultiplier = totalPpInStatModifiers / Map.INITIAL_MAP_AREA_PIXEL_POINTS * bulletDamagePpMultiplier;
+        // Bullet radius and speed not scaled to pp
+        float bulletRadiusMultiplier = bulletRadiusPpMultiplier;
+        float speedMultiplier = speedPpMultiplier;
+
+        modify(speedMultiplier, fireIntervalMultiplier, bulletDamageMultiplier, bulletRadiusMultiplier);
+    }
+
+    private void modify(float speedMultiplier, float fireIntervalMultiplier, float bulletDamageMultiplier, float bulletRadiusMultiplier) {
         // Modify the attack pattern according to pp distribution
         for(AttackPart a : attackParts) {
             a.setSpeed(a.getOriginalSpeed() * speedMultiplier, false);
-            a.setDelay(a.getOriginalDelay() * fireRateMultiplier, false);
+            a.setDelay(a.getOriginalDelay() * fireIntervalMultiplier, false);
             a.setDamage(a.getOriginalDamage() * bulletDamageMultiplier, false);
             a.setRadius(a.getOriginalRadius() * bulletRadiusMultiplier, false);
         }
+        duration = originalDuration * fireIntervalMultiplier;
     }
 
     public AttackPattern clone() {
@@ -84,22 +98,124 @@ public class AttackPattern {
             ap.attackParts.add(a.clone());
         }
         ap.duration = duration;
+        ap.originalDuration = originalDuration;
         ap.totalDamage = totalDamage;
         ap.totalRadius = totalRadius;
-        ap.speedPpDivisor = speedPpDivisor;
-        ap.bulletDamagePpDivisor = bulletDamagePpDivisor;
-        ap.bulletRadiusPpDivisor = bulletRadiusPpDivisor;
-        ap.fireRatePpDivisor = fireRatePpDivisor;
+        ap.speedPpMultiplier = speedPpMultiplier;
+        ap.bulletDamagePpMultiplier = bulletDamagePpMultiplier;
+        ap.bulletRadiusPpMultiplier = bulletRadiusPpMultiplier;
+        ap.fireIntervalPpMultiplier = fireIntervalPpMultiplier;
         ap.totalPpInStatModifiers = totalPpInStatModifiers;
+        ap.level = level;
+        ap.type = type;
         return ap;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == null) return false;
+        // Compares stats before modifications
+        AttackPattern ap = (AttackPattern)obj;
+        if(ap.duration != duration || ap.totalDamage != totalDamage || ap.totalRadius != totalRadius || attackParts.size() != ap.attackParts.size()) return false;
+        for(int i = 0; i < attackParts.size(); i++) {
+            AttackPart a1 = attackParts.get(i);
+            AttackPart a2 = ap.attackParts.get(i);
+            if(!a1.equals(a2)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns stats in a readable format.
+     */
+    public String getStringFormattedStats() {
+        String s = "Level: " + (level + 1) + "\n"
+                + "Type: " + type + "\n"
+                + "DPS: " + PlayerBuilder.formatNumber(getDPS()) + "\n"
+                + "Attack speed: " + PlayerBuilder.formatNumber(1f/duration) + "\n"
+                + "Bullet speed: " + PlayerBuilder.formatNumber(getAverageBulletSpeed()) + "\n"
+                + "Bullet size: " + PlayerBuilder.formatNumber(getAverageBulletRadius()) + "\n"
+                + "\nNext upgrade cost: " + PlayerBuilder.formatNumber(calculateNextUpgradeCost()) + "pp\n";
+        return s;
+    }
+
+    public float getAverageBulletSpeed() {
+        float avg = 0f;
+        for(AttackPart ap : attackParts) {
+            avg += ap.getSpeed();
+        }
+        return avg/attackParts.size();
+    }
+
+    public float getAverageBulletRadius() {
+        float avg = 0f;
+        for(AttackPart ap : attackParts) {
+            avg += ap.getRadius();
+        }
+        return avg/attackParts.size();
+    }
+
+    public float getDPS() {
+        float totalDamage = 0f;
+        for(AttackPart ap : attackParts) {
+            totalDamage += ap.getDamage();
+        }
+        return totalDamage/duration;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public void reapplySpecializationModifiers(CircleHitbox parent) {
+        CircleHitbox.Specialization specialization = parent.getSpecialization();
+
+        // Reapply modifiers
+        modify(specialization.getInitialBulletSpeedMultiplier(), specialization.getInitialFireIntervalMultiplier(), specialization.getInitialBulletDamageMultiplier(), specialization.getInitialBulletRadiusMultiplier());
+    }
+
+    public void upgrade(CircleHitbox parent) {
+        level++;
+
+        // Increase stats
+        for(AttackPart a : attackParts) {
+            a.setOriginalSpeed(a.getOriginalSpeed() + Options.ATTACK_PATTERN_DELTA_PLAYER_BULLET_SPEED);
+            a.setOriginalDelay(a.getOriginalDelay() * Options.ATTACK_PATTERN_DELTA_PLAYER_FIRE_INTERVAL_MULTIPLIER);
+            a.setOriginalDamage(a.getOriginalDamage() + Options.ATTACK_PATTERN_DELTA_PLAYER_DAMAGE);
+            a.setOriginalRadius(a.getOriginalRadius() + Options.ATTACK_PATTERN_DELTA_PLAYER_BULLET_RADIUS);
+        }
+        originalDuration *=  Options.ATTACK_PATTERN_DELTA_PLAYER_FIRE_INTERVAL_MULTIPLIER;
+
+        reapplySpecializationModifiers(parent);
+    }
+
+    public float calculateNextUpgradeCost() {
+        return (float)Math.pow(level + 1, Options.ATTACK_PATTERN_UPGRADE_EXPONENT) + Map.INITIAL_MAP_AREA_PIXEL_POINTS/2f;
+    }
+
+    public float getAngleOffset() {
+        return angleOffset;
     }
 
     public float getDuration() {
         return duration;
     }
 
-    public void setDuration(float duration) {
+    public void setDuration(float duration, boolean setOriginal) {
         this.duration = duration;
+        if(setOriginal) {
+            originalDuration = duration;
+        }
     }
 
     public ArrayList<AttackPart> getAttackParts() {
@@ -129,5 +245,21 @@ public class AttackPattern {
 
     public float getTotalPpInStatModifiers() {
         return totalPpInStatModifiers;
+    }
+
+    public float getSpeedPpMultiplier() {
+        return speedPpMultiplier;
+    }
+
+    public float getFireIntervalPpMultiplier() {
+        return fireIntervalPpMultiplier;
+    }
+
+    public float getBulletDamagePpMultiplier() {
+        return bulletDamagePpMultiplier;
+    }
+
+    public float getBulletRadiusPpMultiplier() {
+        return bulletRadiusPpMultiplier;
     }
 }

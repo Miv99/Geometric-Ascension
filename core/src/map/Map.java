@@ -254,6 +254,8 @@ public class Map {
         ArrayList<CircleHitbox> enemyBoundingCircles = new ArrayList<CircleHitbox>();
 
         for(int i = 0; i < enemies; i++) {
+            float adjustedPpPerEnemy = ppPerEnemy;
+
             EntityCreationData ecd = new EntityCreationData();
             ecd.setIsEnemy(true);
 
@@ -262,13 +264,16 @@ public class Map {
             // Max speed is a random number between 1f and 5f
             ecd.setMaxSpeed(MathUtils.random(1f, 3f));
 
-            // Max health is 250% to 1000% of total pp
-            ecd.setMaxHealth(ppPerEnemy * MathUtils.random(2.5f, 10f));
+            // Max health is 25% to 100% of total pp
+            float hpMultiplier = MathUtils.random(0.25f, 1f);
+            ecd.setMaxHealth(ppPerEnemy * hpMultiplier);
+            adjustedPpPerEnemy *= (hpMultiplier/((0.25f + 1f)/2f));
 
             ArrayList<CircleHitbox> circles = ecd.getCircleHitboxes();
 
             AttackPattern attackPattern = AttackPatternFactory.getRandomAttackPatternByFloor(floor);
             attackPattern.addRandomAttackPatternStatModifiers(ppPerEnemy);
+            adjustedPpPerEnemy *= Math.pow((attackPattern.getBulletDamagePpMultiplier() * attackPattern.getBulletRadiusPpMultiplier() * attackPattern.getFireIntervalPpMultiplier() * attackPattern.getSpeedPpMultiplier())/3f, 1.5f);
 
             CircleHitbox c1 = new CircleHitbox();
 
@@ -279,7 +284,7 @@ public class Map {
             for(int a = 1; a < circlesCount; a++) {
                 CircleHitbox c = new CircleHitbox();
 
-                c.setPpGain(ppPerEnemy / circlesCount * Options.PP_GAIN_MULTIPLIER);
+                c.setPpGain(adjustedPpPerEnemy / circlesCount * Options.PP_GAIN_MULTIPLIER);
 
                 // Set color
                 c.setHitboxTextureType(RenderSystem.HitboxTextureType.ENEMY);
@@ -306,7 +311,7 @@ public class Map {
                 totalCircleRadius += circles.get(a).radius;
             }
 
-            c1.setPpGain(ppPerEnemy / circlesCount * Options.PP_GAIN_MULTIPLIER);
+            c1.setPpGain(adjustedPpPerEnemy / circlesCount * Options.PP_GAIN_MULTIPLIER);
 
             // Scale circle health to radius
             float c1Health = c1Radius/totalCircleRadius * ecd.getMaxHealth();
@@ -374,14 +379,14 @@ public class Map {
     }
 
     public static void randomizeSimpleStalkTargetAI(EntityCreationData ecd) {
-        ecd.setRotationBehaviorParams(new AI.RotationBehaviorParams(true));
+        ecd.setRotationBehaviorParams(new AI.RotationBehaviorParams(true, 0.6f));
         ecd.setAiType(AI.AIType.SIMPLE_STALK_TARGET);
         ecd.setSimpleStalkMinSpeedDistance(MathUtils.random(100f, 250f));
         ecd.setSimpleStalkMaxSpeedDistance(MathUtils.random(330f, 450f));
     }
 
     public static void randomizeSimpleWanderAI(EntityCreationData ecd, float mapAreaRadius) {
-        ecd.setRotationBehaviorParams(new AI.RotationBehaviorParams(true));
+        ecd.setRotationBehaviorParams(new AI.RotationBehaviorParams(true, 0.6f));
         ecd.setAiType(AI.AIType.SIMPLE_WANDER);
         ecd.setSimpleWanderRadius(MathUtils.random(0.2f * mapAreaRadius, 0.4f * mapAreaRadius));
         ecd.setSimpleWanderMinInterval(0.5f);

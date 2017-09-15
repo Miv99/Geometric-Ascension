@@ -98,7 +98,7 @@ public class GestureListener implements GestureDetector.GestureListener {
                 playerHitbox.setIsShooting(true);
             }
         } else if(main.getState() == Main.GameState.CUSTOMIZE) {
-
+            main.getPlayerBuilder().touchDown(x, screenHeight - y);
         }
         return false;
     }
@@ -114,7 +114,7 @@ public class GestureListener implements GestureDetector.GestureListener {
         } else if(main.getState() == Main.GameState.MAP) {
             mapScreen.touchUp(x, y);
         } else if(main.getState() == Main.GameState.CUSTOMIZE) {
-
+            main.getPlayerBuilder().touchUp(x, screenHeight - y);
         }
         return false;
     }
@@ -126,13 +126,13 @@ public class GestureListener implements GestureDetector.GestureListener {
         }
     }
 
-    private void shootingTouchUp() {
+    public void shootingTouchUp() {
         shootingDragTouchDownPoint.x = -1;
         playerHitbox.setIsShooting(false);
     }
 
     public boolean touchDragged(float x, float y, int pointer, int button) {
-        if(main.getState() == Main.GameState.MAIN_GAME && !playerHitbox.isTravelling()) {
+        if(main.getState() == Main.GameState.MAIN_GAME) {
             if(movementDragTouchDownPoint.x != -1 && x < screenSplitX) {
                 movementDragCurrentPoint.x = x;
                 movementDragCurrentPoint.y = y;
@@ -140,11 +140,13 @@ public class GestureListener implements GestureDetector.GestureListener {
                 movementArrowAngle = MathUtils.atan2(y - movementDragTouchDownPoint.y, x - movementDragTouchDownPoint.x);
                 movementArrowLength = Math.min((float) Math.sqrt((x - movementDragTouchDownPoint.x) * (x - movementDragTouchDownPoint.x) + (y - movementDragTouchDownPoint.y) * (y - movementDragTouchDownPoint.y)), Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE);
 
-                // Get angle from touch down to current finger pointer position
-                float velocityX = (movementArrowLength / Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE) * playerHitbox.getMaxSpeed() * MathUtils.cos(movementArrowAngle);
-                float velocityY = (movementArrowLength / Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE) * playerHitbox.getMaxSpeed() * MathUtils.sin(movementArrowAngle);
+                if(!playerHitbox.isTravelling()) {
+                    // Get angle from touch down to current finger pointer position
+                    float velocityX = (movementArrowLength / Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE) * playerHitbox.getMaxSpeed() * MathUtils.cos(movementArrowAngle);
+                    float velocityY = (movementArrowLength / Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE) * playerHitbox.getMaxSpeed() * MathUtils.sin(movementArrowAngle);
 
-                playerHitbox.setVelocity(velocityX, -velocityY);
+                    playerHitbox.setVelocity(velocityX, -velocityY);
+                }
             }
             if(shootingDragTouchDownPoint.x != -1 && x >= screenSplitX) {
                 shootingDragCurrentPoint.x = x;
@@ -153,16 +155,20 @@ public class GestureListener implements GestureDetector.GestureListener {
                 shootingArrowAngle = MathUtils.atan2(y - shootingDragTouchDownPoint.y, x - shootingDragTouchDownPoint.x);
                 shootingArrowLength = Math.min((float) Math.sqrt((x - shootingDragTouchDownPoint.x) * (x - shootingDragTouchDownPoint.x) + (y - shootingDragTouchDownPoint.y) * (y - shootingDragTouchDownPoint.y)), Options.MOVEMENT_DRAG_ARROW_MAX_DISTANCE);
 
-                playerHitbox.setLastFacedAngle(-shootingArrowAngle);
+                playerHitbox.setTargetAngle(-shootingArrowAngle);
+                playerHitbox.setAimingAngle(-shootingArrowAngle);
             }
         } else if(main.getState() == Main.GameState.CUSTOMIZE) {
-
+            main.getPlayerBuilder().touchDragged(x, screenHeight - y);
         }
         return false;
     }
 
     @Override
     public boolean tap(float x, float y, int count, int button) {
+        if(main.getState() == Main.GameState.CUSTOMIZE) {
+            main.getPlayerBuilder().tap(x, screenHeight - y);
+        }
         return false;
     }
 
@@ -180,6 +186,8 @@ public class GestureListener implements GestureDetector.GestureListener {
     public boolean pan(float x, float y, float deltaX, float deltaY) {
         if(main.getState() == Main.GameState.MAP) {
             mapScreen.pan(x, y, deltaX, deltaY);
+        } else if(main.getState() == Main.GameState.CUSTOMIZE) {
+            main.getPlayerBuilder().pan(x, y, deltaX, deltaY);
         }
         return false;
     }
@@ -191,20 +199,24 @@ public class GestureListener implements GestureDetector.GestureListener {
 
     @Override
     public boolean zoom(float initialDistance, float distance) {
-        if(main.getState() == Main.GameState.MAP) {
-            mapScreen.zoom(distance - initialDistance);
-        }
         return false;
     }
 
     @Override
     public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1, Vector2 pointer2) {
+        if(main.getState() == Main.GameState.MAP) {
+            mapScreen.pinch(initialPointer1, initialPointer2, pointer1, pointer2);
+        } else if(main.getState() == Main.GameState.CUSTOMIZE) {
+            main.getPlayerBuilder().pinch(initialPointer1, initialPointer2, pointer1, pointer2);
+        }
         return false;
     }
 
     @Override
     public void pinchStop() {
-
+        if(main.getState() == Main.GameState.CUSTOMIZE) {
+            main.getPlayerBuilder().pinchStop();
+        }
     }
 
     public Point getMovementDragTouchDownPoint() {

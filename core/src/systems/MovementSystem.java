@@ -117,7 +117,7 @@ public class MovementSystem extends EntitySystem {
     }
 
     private void handleBulletCollision(Entity victim, CircleHitbox victimCircleHit, Entity bullet) {
-        if(!entityRemovalQueue.contains(bullet)) {
+        if(!entityRemovalQueue.contains(bullet) && !entityRemovalQueue.contains(victim)) {
             float damage = 0;
             if (Mappers.enemyBullet.has(bullet)) {
                 damage = Mappers.enemyBullet.get(bullet).getDamage();
@@ -459,7 +459,7 @@ public class MovementSystem extends EntitySystem {
 
                 if(map.getCurrentArea().getEnemyCount() == 0) {
                     // Bonus pp for killing all enemies
-                    float bonusPp = map.getCurrentArea().getOriginalEnemyCount()/((map.getMinEnemiesPerMapArea() + map.getMaxEnemiesPerMapArea())/2f) * map.getMaxPixelPoints() * Options.BONUS_PP_MULTIPLIER;
+                    float bonusPp = map.getCurrentArea().getOriginalEnemyCount()/((map.getMinEnemiesPerMapArea() + map.getMaxEnemiesPerMapArea())/2f) * map.getMaxPixelPoints() * Options.BONUS_PP_MULTIPLIER * Options.PP_GAIN_MULTIPLIER;
                     Mappers.player.get(player).addPixelPoints(main, bonusPp);
 
                     // Save

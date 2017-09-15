@@ -62,6 +62,10 @@ com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
 		up: button-small
 		down: button-small-down
 	}
+	white-overlay: {
+		up: white-overlay
+		down: white-overlay
+	}
 }
 com.badlogic.gdx.scenes.scene2d.ui.CheckBox$CheckBoxStyle: {
 	default: {
@@ -180,6 +184,16 @@ com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
 		up: button-small
 		down: button-small-down
 	}
+	small-with-big-font: {
+		font: font-big
+		up: button-small
+		down: button-small-down
+	}
+	window: {
+		font: font
+		up: text-window
+		down: text-window-down
+	}
 }
 com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
 	default: {
@@ -206,7 +220,12 @@ com.badlogic.gdx.scenes.scene2d.ui.Tree$TreeStyle: {
 com.badlogic.gdx.scenes.scene2d.ui.Window$WindowStyle: {
 	default: {
 		background: window
-		titleFont: font
+		titleFont: font-big
+		titleFontColor: black
+	}
+	text-button-window: {
+		background: text-window
+		titleFont: font-big
 		titleFontColor: black
 	}
 }

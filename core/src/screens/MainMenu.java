@@ -68,8 +68,7 @@ public class MainMenu implements Screen {
 		optionsButton.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-				main.loadOptionsScreen(music);
-				main.getOptions().setShowMainMenuOnBackButtonClick(true);
+				main.loadOptionsScreen(music, true);
 			}
 		});
 		// Disable input around options button in case of fat fingers
@@ -116,9 +115,6 @@ public class MainMenu implements Screen {
 
 	@Override
 	public void render(float delta) {
-		stage.getBatch().begin();
-		stage.getBatch().end();
-
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);

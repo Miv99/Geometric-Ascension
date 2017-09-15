@@ -261,3 +261,30 @@ window
   orig: 63, 272
   offset: 0, 0
   index: -1
+text-window
+  rotate: false
+  xy: 179, 68
+  size: 59, 270
+  split: 12, 12, 12, 12
+  pad: 5, 5, 32, 24
+  orig: 236, 272
+  offset: 0, 0
+  index: -1
+text-window-down
+  rotate: false
+  xy: 113, 68
+  size: 59, 270
+  split: 12, 12, 12, 12
+  pad: 5, 5, 32, 24
+  orig: 171, 272
+  offset: 0, 0
+  index: -1
+white-overlay
+  rotate: false
+  xy: 28, 0
+  size: 25, 25
+  split: 2, 2, 2, 2
+  pad: 0, 0, 0, 0
+  orig: 25, 25
+  offset: 0, 0
+  index: -1

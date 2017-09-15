@@ -12,9 +12,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -27,7 +25,6 @@ import com.miv.GestureListener;
 import com.miv.Main;
 import com.miv.Mappers;
 
-import components.HitboxComponent;
 import map.Map;
 import utils.Point;
 
@@ -110,8 +107,7 @@ public class HUD implements Screen {
         optionsButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                main.loadOptionsScreen(null);
-                main.getOptions().setShowMainMenuOnBackButtonClick(false);
+                main.loadOptionsScreen(null, false);
                 main.getOptions().setAudioPlayer(audioPlayer);
                 audioPlayer.resume();
             }
@@ -179,16 +175,10 @@ public class HUD implements Screen {
     public void updateActors() {
         // Update pp label
         float pixelPoints = Mappers.player.get(player).getPixelPoints();
-        if(pixelPoints < 10) {
-            pp.setText(String.format("%.2f", pixelPoints) + "pp");
-        } else if(pixelPoints < 100) {
-            pp.setText(String.format("%.1f", pixelPoints) + "pp");
-        } else {
-            pp.setText(Math.round(pixelPoints) + "pp");
-        }
+        pp.setText(PlayerBuilder.formatNumber(pixelPoints) + "pp");
         pp.setPosition(PP_LABEL_X, ppY);
 
-        // Update customize button
+        // Update customize but ton
         if(main.getMap().getCurrentArea().getEnemyCount() == 0) {
             customizeButton.setDisabled(false);
             mapButton.setDisabled(false);

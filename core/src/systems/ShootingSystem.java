@@ -36,7 +36,7 @@ public class ShootingSystem extends EntitySystem {
     public void update(float deltaTime) {
         for(Entity e : entities) {
             HitboxComponent hitbox = Mappers.hitbox.get(e);
-            if(hitbox.isShooting()) {
+            if(hitbox.isShooting() && !hitbox.isTravelling()) {
                 hitbox.update(engine, e, player, deltaTime);
             }
         }

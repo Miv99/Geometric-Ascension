@@ -39,9 +39,6 @@ public class HitboxComponent implements Component, Pool.Poolable {
         public EntityCreationData aiData;
     }
 
-    // How much health is healed per pp spent
-    public static final float HEALTH_PER_PP_HEALING_COST_RATIO = 10;
-
     // Position of hitbox
     private Point origin;
     // Velocity of hitbox, in meters/frame
@@ -54,6 +51,9 @@ public class HitboxComponent implements Component, Pool.Poolable {
     private boolean intangible;
     // In radians
     private float lastFacedAngle;
+    private float targetAngle;
+    // For shooting
+    private float aimingAngle;
     // If the hitbox is firing bullets
     private boolean isShooting;
     /**
@@ -129,7 +129,7 @@ public class HitboxComponent implements Component, Pool.Poolable {
                 int index = 0;
                 for (AttackPart ap : attackPattern.getAttackParts()) {
                     if (!fired[index] && c.getTime() >= ap.getDelay()) {
-                        ap.fire(engine, parent, player, origin.x + c.x, origin.y + c.y, lastFacedAngle);
+                        ap.fire(engine, parent, player, origin.x + c.x, origin.y + c.y, aimingAngle + attackPattern.getAngleOffset());
                         fired[index] = true;
                     } else {
                         break;
@@ -216,6 +216,11 @@ public class HitboxComponent implements Component, Pool.Poolable {
     }
 
     public Entity splitIntoSubEntities(PooledEngine engine, Entity self) {
+        // Disable subentity splitting for player
+        if(Mappers.player.has(self)) {
+            return null;
+        }
+
         // Get all circles connected to the first circle hitbox
         HashSet<CircleHitbox> cSet = new HashSet<CircleHitbox>();
         addConnectedCircles(0, cSet);
@@ -292,8 +297,8 @@ public class HitboxComponent implements Component, Pool.Poolable {
         return missing;
     }
 
-    public float getTotalHealingCostInPP() {
-        return getTotalMissingHealth()/HEALTH_PER_PP_HEALING_COST_RATIO;
+    public float getTotalHealingCostInPp() {
+        return getTotalMissingHealth()/Options.HEALTH_PER_PP_HEALING_COST_RATIO;
     }
 
     /**
@@ -317,14 +322,43 @@ public class HitboxComponent implements Component, Pool.Poolable {
      */
     public float heal(CircleHitbox circle, float pp) {
         float missing = circle.getMaxHealth() - circle.getHealth();
-        float ppCost = missing/HEALTH_PER_PP_HEALING_COST_RATIO;
+        float ppCost = missing/Options.HEALTH_PER_PP_HEALING_COST_RATIO;
         if(pp >= ppCost) {
             circle.setHealth(circle.getMaxHealth());
             return pp - ppCost;
         } else {
-            circle.setHealth(circle.getHealth() + pp * HEALTH_PER_PP_HEALING_COST_RATIO);
+            circle.setHealth(circle.getHealth() + pp * Options.HEALTH_PER_PP_HEALING_COST_RATIO);
             return 0;
         }
+    }
+
+    /**
+     * Clears all circles without calling {@link HitboxComponent#removeCircle(PooledEngine, Entity, CircleHitbox, boolean)}
+     */
+    public void clearCircles() {
+        circles.clear();
+    }
+
+    /**
+     * For player only
+     */
+    public void update(float deltaTime) {
+        float currentRotationAngle = lastFacedAngle;
+
+        // Lerp rotation to target angle
+        while(targetAngle - currentRotationAngle > MathUtils.PI || targetAngle - currentRotationAngle < -MathUtils.PI) {
+            if (targetAngle - currentRotationAngle > MathUtils.PI) {
+                targetAngle -= MathUtils.PI2;
+            } else if (targetAngle - currentRotationAngle < -MathUtils.PI) {
+                targetAngle += MathUtils.PI2;
+            }
+        }
+        currentRotationAngle += (targetAngle - currentRotationAngle) * 0.995f * deltaTime;
+        setLastFacedAngle(currentRotationAngle);
+    }
+
+    public void setTargetAngle(float targetAngle) {
+        this.targetAngle = targetAngle;
     }
 
     public Vector2 getVelocity() {
@@ -436,7 +470,11 @@ public class HitboxComponent implements Component, Pool.Poolable {
                 subEntities.add(subEntity);
                 subEntity = splitIntoSubEntities(engine, self);
             }
-            recenterOriginalCirclePositions();
+            if(Mappers.player.has(self)) {
+                calculateGravitationalRadius();
+            } else {
+                recenterOriginalCirclePositions();
+            }
 
             // Transfer part of pp to all other boss entities' circles' attack patterns evenly
             if(transferPpToBosses && c.getAttackPattern() != null) {
@@ -579,5 +617,13 @@ public class HitboxComponent implements Component, Pool.Poolable {
 
     public void setTravellingMapAreaDestination(Point travellingMapAreaDestination) {
         this.travellingMapAreaDestination = travellingMapAreaDestination;
+    }
+
+    public float getAimingAngle() {
+        return aimingAngle;
+    }
+
+    public void setAimingAngle(float aimingAngle) {
+        this.aimingAngle = aimingAngle;
     }
 }

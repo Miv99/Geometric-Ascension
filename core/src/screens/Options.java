@@ -40,6 +40,8 @@ public class Options implements Screen {
     private InputMultiplexer inputMultiplexer;
     private boolean showMainMenuOnBackButtonClick;
 
+    private TextButton deleteSave;
+
     public Options(final Main main, AssetManager assetManager, InputMultiplexer inputMultiplexer, final Music music) {
         stage = new Stage();
         this.inputMultiplexer = inputMultiplexer;
@@ -213,17 +215,17 @@ public class Options implements Screen {
         stage.addActor(ppGainDisplay);
 
         // Delete save button
-        TextButton deleteSave = new TextButton("Delete save", skin);
+        deleteSave = new TextButton("Delete save", skin);
         deleteSave.getLabel().setColor(Color.WHITE);
         deleteSave.getLabel().setFontScale(0.6f);
-        deleteSave.setSize(250, 80);
-        deleteSave.setPosition(Gdx.graphics.getWidth() - LEFT_PADDING - deleteSave.getWidth(), TOP_PADDING);
+        deleteSave.setPosition(Gdx.graphics.getWidth() - LEFT_PADDING - deleteSave.getPrefWidth(), TOP_PADDING);
         deleteSave.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 main.deleteSave();
             }
         });
+        deleteSave.pack();
         stage.addActor(deleteSave);
     }
 
@@ -233,6 +235,13 @@ public class Options implements Screen {
         if(music != null) {
             music.play();
             music.setVolume(com.miv.Options.MASTER_VOLUME * com.miv.Options.MUSIC_VOLUME);
+        }
+        if(showMainMenuOnBackButtonClick) {
+            if(!stage.getActors().contains(deleteSave, false)) {
+                stage.addActor(deleteSave);
+            }
+        } else {
+            deleteSave.remove();
         }
     }
 

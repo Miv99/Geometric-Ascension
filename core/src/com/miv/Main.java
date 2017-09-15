@@ -17,11 +17,13 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGeneratorLoader;
 import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader;
 import com.badlogic.gdx.input.GestureDetector;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import components.HitboxComponent;
 import map.Map;
 import screens.HUD;
 import screens.MainMenu;
@@ -81,6 +83,8 @@ public class Main extends Game {
 	public static final String MAP_BUTTON_UP_PATH = "map_button_up.png";
 	public static final String MAP_BUTTON_DOWN_PATH = "map_button_down.png";
 	public static final String MAP_AREA_TRAVEL_BUTTON_DOWN_PATH = "map_area_travel_button_down.png";
+	public static final String ATTACK_PATTERN_INFO_DISPLAY_TOGGLE_BUTTON_UP_PATH = "attack_pattern_info_display_toggle_button_up.png";
+	public static final String ATTACK_PATTERN_INFO_DISPLAY_TOGGLE_BUTTON_DOWN_PATH = "attack_pattern_info_display_toggle_button_down.png";
 
 	public static final String BUBBLE_DEFAULT_PATH = "bubble_default.png";
     public static final String BUBBLE_SHIELD_PATH = "bubble_shield.png";
@@ -94,6 +98,7 @@ public class Main extends Game {
 	private GestureListener gestureListener;
 	private Map map;
     private Entity player;
+	private HitboxComponent playerHitboxComponent;
 
 	private boolean playerDead;
 
@@ -159,12 +164,13 @@ public class Main extends Game {
 		loadMainMenu();
 	}
 
-	public void loadOptionsScreen(Music musicToBeContinuedPlaying) {
+	public void loadOptionsScreen(Music musicToBeContinuedPlaying, boolean showMainMenuOnBackButtonClick) {
 		if(options == null) {
 			options = new screens.Options(this, assetManager, inputMultiplexer, musicToBeContinuedPlaying);
 		} else {
 			options.setMusic(musicToBeContinuedPlaying);
 		}
+		options.setShowMainMenuOnBackButtonClick(showMainMenuOnBackButtonClick);
 		setScreen(options);
 		state = GameState.OPTIONS;
 	}
@@ -172,10 +178,13 @@ public class Main extends Game {
 	public void loadMainMenuMapPreview() {
 		Save.load(this);
 		engine.addEntity(player);
+		Mappers.hitbox.get(player).setLastFacedAngle(MathUtils.PI / 2f);
+		Mappers.hitbox.get(player).setTargetAngle(MathUtils.PI / 2f);
 		playerDead = false;
 		map.enterNewArea(engine, player, (int) map.getFocus().x, (int) map.getFocus().y, true);
 		if(camera != null) {
 			camera.setFocus(player);
+			camera.teleportTo(player);
 		}
 	}
 
@@ -214,8 +223,6 @@ public class Main extends Game {
 		}
 		setScreen(playerBuilder);
 		state = GameState.CUSTOMIZE;
-
-		//TODO: on exit, set state to main game
 	}
 
 	public void loadHUD() {
@@ -266,6 +273,8 @@ public class Main extends Game {
 		assetManager.load(MAP_BUTTON_UP_PATH, Texture.class);
 		assetManager.load(MAP_BUTTON_DOWN_PATH, Texture.class);
 		assetManager.load(MAP_AREA_TRAVEL_BUTTON_DOWN_PATH, Texture.class);
+		assetManager.load(ATTACK_PATTERN_INFO_DISPLAY_TOGGLE_BUTTON_UP_PATH, Texture.class);
+		assetManager.load(ATTACK_PATTERN_INFO_DISPLAY_TOGGLE_BUTTON_DOWN_PATH, Texture.class);
 
 		assetManager.load(BUBBLE_SHIELD_PATH, Texture.class);
 		assetManager.load(BUBBLE_DEFAULT_PATH, Texture.class);
@@ -297,6 +306,8 @@ public class Main extends Game {
 			hud.updateActors();
 		} else if(state == GameState.CUSTOMIZE) {
 			playerBuilder.updateActors();
+		} else if(state == GameState.MAP) {
+			mapScreen.updateActors();
 		}
 	}
 
@@ -312,6 +323,8 @@ public class Main extends Game {
 		} catch(IllegalArgumentException e) {
 
 		}
+		Mappers.hitbox.get(player).setLastFacedAngle(MathUtils.PI / 2f);
+		Mappers.hitbox.get(player).setTargetAngle(MathUtils.PI/2f);
 		gestureListener.setPlayer(player);
 		hud = new HUD(Main.this, assetManager, inputMultiplexer, gestureListener, player, map);
 		setScreen(hud);
@@ -349,6 +362,7 @@ public class Main extends Game {
 		assetManager.update();
 		if (state == GameState.MAIN_GAME) {
 			if (!playerDead) {
+				playerHitboxComponent.update(deltaTime);
 				engine.update(deltaTime);
 			} else {
 				// Update all systems except for ShootingSystem
@@ -417,6 +431,7 @@ public class Main extends Game {
 
 	public void setPlayer(Entity player) {
 		this.player = player;
+		playerHitboxComponent = Mappers.hitbox.get(player);
 		if(movementSystem != null) {
 			movementSystem.setPlayer(player);
 		}
@@ -463,5 +478,9 @@ public class Main extends Game {
 
 	public screens.Options getOptions() {
 		return options;
+	}
+
+	public PlayerBuilder getPlayerBuilder() {
+		return playerBuilder;
 	}
 }

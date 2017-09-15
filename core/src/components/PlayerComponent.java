@@ -10,11 +10,14 @@ import com.miv.Options;
  * Created by Miv on 5/23/2017.
  */
 public class PlayerComponent implements Component, Pool.Poolable {
+    // Maximum distance from player origin of any placed circle when customizing player
+    private float customizationRadius = Options.INITIAL_PLAYER_CUSTOMIZATION_RADIUS;
     private float pixelPoints;
 
     @Override
     public void reset() {
         pixelPoints = 0;
+        customizationRadius = Options.INITIAL_PLAYER_CUSTOMIZATION_RADIUS;
     }
 
     public float getPixelPoints() {
@@ -49,5 +52,13 @@ public class PlayerComponent implements Component, Pool.Poolable {
 
     public void setPixelPoints(Main main, float pixelPoints) {
         addPixelPoints(main, pixelPoints - this.pixelPoints);
+    }
+
+    public float getCustomizationRadius() {
+        return customizationRadius;
+    }
+
+    public void setCustomizationRadius(float customizationRadius) {
+        this.customizationRadius = customizationRadius;
     }
 }

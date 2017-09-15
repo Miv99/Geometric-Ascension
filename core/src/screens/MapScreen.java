@@ -14,6 +14,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -126,6 +127,10 @@ public class MapScreen implements Screen {
 
     private boolean disableMapAreaButtons;
 
+    // Random stuff for pinch zooming
+    private Vector2 oldInitialFirstPointer=null, oldInitialSecondPointer=null;
+    private float oldScale;
+
     public MapScreen(Main main, AssetManager assetManager, PooledEngine engine, Entity player, Map map, InputMultiplexer inputMultiplexer) {
         this.main = main;
         this.assetManager = assetManager;
@@ -178,7 +183,6 @@ public class MapScreen implements Screen {
     }
 
     public void createMap() {
-
         // Set camera focus
         stageCamera.position.set(map.getFocus().x * (MAP_AREA_BUTTON_RADIUS*2f + MAP_AREA_BUTTON_PADDING), map.getFocus().y * (MAP_AREA_BUTTON_RADIUS*2f + MAP_AREA_BUTTON_PADDING), 0);
 
@@ -202,7 +206,7 @@ public class MapScreen implements Screen {
         teleportButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (selectedMapArea != null && !(map.getFocus().x == selectedMapArea.x && map.getFocus().y == selectedMapArea.y)) {
+                if (!teleportButton.isDisabled()) {
                     main.loadHUD();
 
                     float angle = MathUtils.atan2(selectedMapArea.y - map.getFocus().y, selectedMapArea.x - map.getFocus().x);
@@ -253,8 +257,10 @@ public class MapScreen implements Screen {
     }
 
     public void updateActors() {
-        // Teleport button disabled until valid map area selected
-        if(selectedMapArea == null || (selectedMapArea.x == map.getFocus().x && selectedMapArea.y == map.getFocus().y)) {
+        // Teleport button disabled until valid map area selected and all enemies dead\
+        if(map.getCurrentArea().getEnemyCount() != 0) {
+            teleportButton.setDisabled(true);
+        } else if(selectedMapArea == null || (selectedMapArea.x == map.getFocus().x && selectedMapArea.y == map.getFocus().y)) {
             teleportButton.setDisabled(true);
         } else {
             teleportButton.setDisabled(false);
@@ -282,13 +288,32 @@ public class MapScreen implements Screen {
         disableMapAreaButtons = true;
     }
 
-    public void zoom(float deltaDistance) {
-        stageCamera.zoom -= deltaDistance * 0.01f;
-        if(stageCamera.zoom > 3) {
-            stageCamera.zoom = 3;
-        } else if(stageCamera.zoom < 0.2) {
-            stageCamera.zoom = 0.2f;
+    /**
+     * Camera zooming code copied off some guy
+     */
+    public boolean pinch(Vector2 initialFirstPointer, Vector2 initialSecondPointer, Vector2 firstPointer, Vector2 secondPointer){
+        if(!(initialFirstPointer.equals(oldInitialFirstPointer)&&initialSecondPointer.equals(oldInitialSecondPointer))){
+            oldInitialFirstPointer = initialFirstPointer.cpy();
+            oldInitialSecondPointer = initialSecondPointer.cpy();
+            oldScale = stageCamera.zoom;
         }
+        Vector3 center = new Vector3(
+                (firstPointer.x+initialSecondPointer.x)/2,
+                (firstPointer.y+initialSecondPointer.y)/2,
+                0
+        );
+        zoomCamera(center, oldScale*initialFirstPointer.dst(initialSecondPointer)/firstPointer.dst(secondPointer));
+        return true;
+    }
+
+    private void zoomCamera(Vector3 origin, float scale) {
+        stageCamera.update();
+        Vector3 oldUnprojection = stageCamera.unproject(origin.cpy()).cpy();
+        stageCamera.zoom = scale;
+        stageCamera.zoom = Math.min(3f, Math.max(stageCamera.zoom, 0.2f));
+        stageCamera.update();
+        Vector3 newUnprojection = stageCamera.unproject(origin.cpy()).cpy();
+        stageCamera.position.add(oldUnprojection.cpy().add(newUnprojection.cpy().scl(-1f)));
     }
 
     @Override
@@ -298,6 +323,7 @@ public class MapScreen implements Screen {
         inputMultiplexer.addProcessor(stage);
         selectedMapArea = null;
         stageCamera.zoom = 1;
+        updateActors();
     }
 
     @Override

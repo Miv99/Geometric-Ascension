@@ -2,7 +2,20 @@ package utils;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.PooledEngine;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Timer;
 import com.miv.Mappers;
 
 import java.util.ArrayList;
@@ -18,6 +31,64 @@ import components.HitboxComponent;
  * Created by Miv on 6/26/2017.
  */
 public class Utils {
+    public static class PopupDialogBox extends Actor {
+        private Window window;
+        private Skin skin;
+        private Table table;
+        private Label text;
+
+        public PopupDialogBox(Skin skin, String text, float width, float height, float verticalPadding) {
+            this.skin = skin;
+
+            window = new Window("", skin);
+            window.center();
+
+            table = new Table();
+            table.center();
+            table.padTop(verticalPadding);
+            table.padBottom(verticalPadding);
+            table.setPosition((Gdx.graphics.getWidth() - width)/2f, (Gdx.graphics.getHeight() - height)/2f);
+            window.add(table);
+
+            this.text = new Label(text, skin);
+            this.text.setColor(Color.WHITE);
+            table.add(this.text);
+            table.row();
+        }
+
+        public void setText(String text) {
+            this.text.setText(text);
+        }
+
+        /**
+         * @param text Text on the button
+         * @param task Task to be done when the button is clicked
+         */
+        public void addButton(String text, final Timer.Task task) {
+            TextButton textButton = new TextButton(text, skin);
+            textButton.getLabel().setFontScale(0.6f);
+            textButton.getLabel().setColor(Color.WHITE);
+            textButton.setSize(100f, 80f);
+            textButton.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    PopupDialogBox.this.remove();
+                    if(task != null) {
+                        task.run();
+                    }
+                }
+            });
+            table.add(textButton);
+        }
+
+        @Override
+        public void draw(Batch batch, float parentAlpha) {
+            super.draw(batch, parentAlpha);
+
+            window.draw(batch, parentAlpha);
+        }
+    }
+
     /**
      * Checks if c overlaps with any circle in circles
      */
@@ -71,6 +142,7 @@ public class Utils {
             hitbox.addCircle(c, false);
         }
         hitbox.setLastFacedAngle(originalHitbox.getLastFacedAngle());
+        hitbox.setAimingAngle(originalHitbox.getAimingAngle());
         e.add(hitbox);
 
         if(cloneAI && Mappers.ai.has(original)) {
