@@ -60,14 +60,21 @@ public class RenderSystem extends EntitySystem {
     public static enum HitboxTextureType {
         // ID must be in ascending order starting from 0
         // DO NOT EVER CHANGE THE ORDER. YOU CAN ADD STUFF BUT DON'T CHANGE EXISTING IDs
-        PLAYER(0, new Color(Color.CYAN.r, Color.CYAN.g, Color.CYAN.b, 0.3f), new Color(0f, 163/255f, 33/255f, 1f)),
+        PLAYER(0, new Color(183/255f, 183/255f, 183/255f, 0.3f), new Color(0f, 163/255f, 33/255f, 1f)),
         ENEMY(1, new Color(Color.ORANGE.r, Color.ORANGE.g, Color.ORANGE.b, 0.3f), new Color(196/255f, 0f, 0f, 1f)),
         ENEMY_BULLET(2, new Color(Color.RED.r, Color.RED.g, Color.RED.b, 0.3f), new Color(Color.RED)),
         PLAYER_BULLET(3, new Color(Color.GREEN.r, Color.GREEN.g, Color.GREEN.b, 0.3f), new Color(Color.RED)),
         // Used only in player builder to show render of player
         PLAYER_RENDER_SELECTED(4, new Color(221/255f, 163/255f, 1f, 0.3f), new Color(0f, 163/255f, 33/255f, 1f)),
         PLAYER_RENDER_INVALID_POSITION(5, new Color(Color.RED.r, Color.RED.g, Color.RED.b, 0.3f), new Color(Color.RED)),
-        PLAYER_NEW_CIRCLE(6, new Color(Color.GREEN.r, Color.GREEN.g, Color.GREEN.b, 0.3f), new Color(Color.RED));
+        PLAYER_NEW_CIRCLE(6, new Color(Color.GREEN.r, Color.GREEN.g, Color.GREEN.b, 0.3f), new Color(Color.RED)),
+
+        PLAYER_DAMAGE_SPECIALIZATION(7, new Color(Color.RED.r, Color.RED.g, Color.RED.b, 0.3f), new Color(0f, 163/255f, 33/255f, 1f)),
+        PLAYER_HEALTH_SPECIALIZATION(8, new Color(Color.CYAN.r, Color.CYAN.g, Color.CYAN.b, 0.3f), new Color(0f, 163/255f, 33/255f, 1f)),
+        PLAYER_HEALTH_AURA_SPECIALIZATION(9, new Color(Color.BLUE.r, Color.BLUE.g, Color.BLUE.b, 0.3f), new Color(0f, 163/255f, 33/255f, 1f)),
+        PLAYER_LIFESTEAL_SPECIALIZATION(10, new Color(Color.GREEN.r, Color.GREEN.g, Color.GREEN.b, 0.3f), new Color(0f, 163/255f, 33/255f, 1f)),
+        PLAYER_LIFESTEAL_AURA_SPECIALIZATION(11, new Color(0f, 127/255f, 0f, 0.3f), new Color(0f, 163/255f, 33/255f, 1f)),
+        PLAYER_UTILITY_SPECIALIZATION(12, new Color(Color.WHITE.r, Color.WHITE.g, Color.WHITE.b, 0.3f), new Color(0f, 163/255f, 33/255f, 1f));
 
         private int id;
         private Color color;
@@ -205,7 +212,11 @@ public class RenderSystem extends EntitySystem {
 
             // Draw hitboxes
             for(CircleHitbox c : hitbox.getCircles()) {
-                bubbleDrawables[c.getHitboxTextureType().id].draw(batch, c.x + origin.x - c.radius, c.y + origin.y - c.radius, c.radius * 2, c.radius * 2);
+                if(c.getColor() == null) {
+                    bubbleDrawables[c.getHitboxTextureType().id].draw(batch, c.x + origin.x - c.radius, c.y + origin.y - c.radius, c.radius * 2, c.radius * 2);
+                } else {
+                    bubbleDrawables[c.getColor().id].draw(batch, c.x + origin.x - c.radius, c.y + origin.y - c.radius, c.radius * 2, c.radius * 2);
+                }
             }
 
             // Draw shield around entity if travelling
@@ -225,7 +236,11 @@ public class RenderSystem extends EntitySystem {
 
             // Draw hitbox outlines
             for(CircleHitbox c : hitbox.getCircles()) {
-                shapeRenderer.setColor(c.getHitboxTextureType().outlineColor);
+                if(c.getColor() == null) {
+                    shapeRenderer.setColor(c.getHitboxTextureType().outlineColor);
+                } else {
+                    shapeRenderer.setColor(c.getColor().outlineColor);
+                }
                 shapeRenderer.circle(c.x + origin.x, c.y + origin.y, c.radius);
             }
 

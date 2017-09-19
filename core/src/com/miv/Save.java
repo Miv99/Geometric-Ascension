@@ -87,7 +87,7 @@ public class Save {
         // Create new player entity
         Entity player = engine.createEntity();
         HitboxComponent hitboxComponent = engine.createComponent(HitboxComponent.class);
-        hitboxComponent.setMaxSpeed(5f);
+        hitboxComponent.setMaxSpeed(Options.PLAYER_BASE_MAX_SPEED);
         CircleHitbox c = new CircleHitbox();
         c.setHitboxTextureType(RenderSystem.HitboxTextureType.PLAYER);
         c.setRadius(Options.DEFAULT_NEW_CIRCLE_RADIUS);
@@ -95,7 +95,7 @@ public class Save {
         c.setHealth(c.getMaxHealth());
         c.setAttackPattern(AttackPatternFactory.getAttackPattern("PLAYER_DEFAULT_1"));
         hitboxComponent.addCircle(c, true);
-        hitboxComponent.calculateGravitationalRadius();
+        hitboxComponent.recenterOriginalCirclePositions();
         player.add(hitboxComponent);
         player.add(engine.createComponent(PlayerComponent.class));
         main.setPlayer(player);

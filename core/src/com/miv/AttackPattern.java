@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import map.Map;
 import screens.PlayerBuilder;
 import utils.CircleHitbox;
+import utils.Utils;
 
 /**
  * An attack pattern consists of multiple {@link AttackPart} that have a {@link AttackPart#delay} time value. After that much time has passed, the attack part is fired,
@@ -50,6 +51,8 @@ public class AttackPattern {
     private float bulletDamagePpMultiplier;
     private float bulletRadiusPpMultiplier;
 
+    private float lifestealMultiplier;
+
     public AttackPattern() {
         attackParts = new ArrayList<AttackPart>();
     }
@@ -91,6 +94,19 @@ public class AttackPattern {
         duration = originalDuration * fireIntervalMultiplier;
     }
 
+    private void modify(float speedMultiplier, float fireIntervalMultiplier, float bulletDamageMultiplier, float bulletRadiusMultiplier, float lifestealMultiplier) {
+        // Modify the attack pattern according to pp distribution
+        for(AttackPart a : attackParts) {
+            a.setSpeed(a.getOriginalSpeed() * speedMultiplier, false);
+            a.setDelay(a.getOriginalDelay() * fireIntervalMultiplier, false);
+            a.setDamage(a.getOriginalDamage() * bulletDamageMultiplier, false);
+            a.setRadius(a.getOriginalRadius() * bulletRadiusMultiplier, false);
+            a.setLifestealPercent(lifestealMultiplier);
+        }
+        duration = originalDuration * fireIntervalMultiplier;
+        this.lifestealMultiplier = lifestealMultiplier;
+    }
+
     public AttackPattern clone() {
         AttackPattern ap = new AttackPattern();
         ap.attackParts = new ArrayList<AttackPart>();
@@ -101,6 +117,7 @@ public class AttackPattern {
         ap.originalDuration = originalDuration;
         ap.totalDamage = totalDamage;
         ap.totalRadius = totalRadius;
+        ap.angleOffset = angleOffset;
         ap.speedPpMultiplier = speedPpMultiplier;
         ap.bulletDamagePpMultiplier = bulletDamagePpMultiplier;
         ap.bulletRadiusPpMultiplier = bulletRadiusPpMultiplier;
@@ -108,6 +125,7 @@ public class AttackPattern {
         ap.totalPpInStatModifiers = totalPpInStatModifiers;
         ap.level = level;
         ap.type = type;
+        ap.lifestealMultiplier = lifestealMultiplier;
         return ap;
     }
 
@@ -137,6 +155,7 @@ public class AttackPattern {
                 + "Attack speed: " + PlayerBuilder.formatNumber(1f/duration) + "\n"
                 + "Bullet speed: " + PlayerBuilder.formatNumber(getAverageBulletSpeed()) + "\n"
                 + "Bullet size: " + PlayerBuilder.formatNumber(getAverageBulletRadius()) + "\n"
+                + "\nOffset: " + (int)(Math.round(Utils.normalizeAngleIn180Range(angleOffset) * MathUtils.radiansToDegrees)) + " degrees\n"
                 + "\nNext upgrade cost: " + PlayerBuilder.formatNumber(calculateNextUpgradeCost()) + "pp\n";
         return s;
     }
@@ -181,7 +200,22 @@ public class AttackPattern {
         CircleHitbox.Specialization specialization = parent.getSpecialization();
 
         // Reapply modifiers
-        modify(specialization.getInitialBulletSpeedMultiplier(), specialization.getInitialFireIntervalMultiplier(), specialization.getInitialBulletDamageMultiplier(), specialization.getInitialBulletRadiusMultiplier());
+        modify(specialization.getInitialBulletSpeedMultiplier(), specialization.getInitialFireIntervalMultiplier(),
+                specialization.getInitialBulletDamageMultiplier(), specialization.getInitialBulletRadiusMultiplier(),
+                specialization.getInitialLifestealMultiplier() + ((parent.getLevel() - (specialization.getDepth() * 5)) * specialization.getDeltaLifestealMultiplier()));
+
+        // Change colors
+        for(AttackPart ap : attackParts) {
+            ap.setColor(specialization.getHitboxTextureType());
+        }
+    }
+
+    /**
+     * Used for when a circle changes attack pattern but needs to
+     * keep some fields from the original attack pattern
+     */
+    public void transferEssentialFieldsTo(AttackPattern target) {
+        target.angleOffset = angleOffset;
     }
 
     public void upgrade(CircleHitbox parent) {
@@ -261,5 +295,13 @@ public class AttackPattern {
 
     public float getBulletRadiusPpMultiplier() {
         return bulletRadiusPpMultiplier;
+    }
+
+    public float getLifestealMultiplier() {
+        return lifestealMultiplier;
+    }
+
+    public void setAngleOffset(float angleOffset) {
+        this.angleOffset = angleOffset;
     }
 }

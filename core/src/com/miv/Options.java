@@ -14,12 +14,19 @@ public class Options {
     public static final float ATTACK_PATTERN_DELTA_PLAYER_BULLET_RADIUS = 1f;
     // Change in a player circle's raw stat when it is levelled up
     public static final float CIRCLE_DELTA_MAX_HEALTH = 10f;
+    public static final float PLAYER_BASE_MAX_SPEED = 5f;
 
     // Determines growth of cost of upgrading a circle
     public static final float CIRCLE_UPGRADE_EXPONENT = 1.6f;
     public static final float ATTACK_PATTERN_UPGRADE_EXPONENT = 1.45f;
     // Determines growth of cost of adding a circle in player builder
     public static final float CIRCLE_CREATION_EXPONENT = 1.4f;
+    // Determines amount of pp returned from deleting a circle
+    public static final float CIRCLE_DELETION_PP_RETURN_MULTIPLIER = 0.5f;
+
+    // Maximum distance from an aura source's circumference that another circle can be before it stops receiving aura buffs
+    public static final float CIRCLE_AURA_RANGE = 20f;
+    public static final float MIN_DAMAGE_TAKEN_MULTIPLIER = 0.5f;
 
     // Determines amount of pp enemies give
     public static final float PP_GAIN_MULTIPLIER = 1.3f/Map.INITIAL_MAP_AREA_PIXEL_POINTS;

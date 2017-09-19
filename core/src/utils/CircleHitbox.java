@@ -25,104 +25,105 @@ public class CircleHitbox extends Circle {
         // Circles shouldn't be losing maximum health upon upgrading specialization or levelling up
         // so initialHealthMultiplier is always > 1 and deltaHealthMultiplier is always > 0
 
-        NONE("None", "PLAYER_DEFAULT_1", Options.DEFAULT_NEW_CIRCLE_RADIUS, 1f, 0f, 1f, ""),
-        DAMAGE("Damage", "PLAYER_DEFAULT_1", NONE,
+        NONE(RenderSystem.HitboxTextureType.PLAYER, "None", "PLAYER_DEFAULT_1", Options.DEFAULT_NEW_CIRCLE_RADIUS, 1f, 0f, 1f, ""),
+        DAMAGE(RenderSystem.HitboxTextureType.PLAYER_DAMAGE_SPECIALIZATION, "Damage", "PLAYER_DEFAULT_1", NONE,
                 Options.DEFAULT_NEW_CIRCLE_RADIUS, 1f, 0f, DAMAGE_DELTA_HEALTH_MULTIPLIER,
                 1f, 1f, 1.5f, 1f,
                 "Sacrifices maximum health for increased damage"),
-        HEALTH("Health", "PLAYER_DEFAULT_1", NONE,
+        HEALTH(RenderSystem.HitboxTextureType.PLAYER_HEALTH_SPECIALIZATION, "Health", "PLAYER_DEFAULT_1", NONE,
                 Options.DEFAULT_NEW_CIRCLE_RADIUS * 1.5f, 1.25f, 0f, HEALTH_DELTA_HEALTH_MULTIPLIER,
                 1f, 1f, 0.5f, 1f,
                 "Sacrifices damage for increased maximum health"),
-        UTILITY("Utility", "PLAYER_DEFAULT_1", NONE, Options.DEFAULT_NEW_CIRCLE_RADIUS * 0.75f, 1f, 0f, 1f,
+        UTILITY(RenderSystem.HitboxTextureType.PLAYER_UTILITY_SPECIALIZATION, "Utility", "PLAYER_DEFAULT_1", NONE, Options.DEFAULT_NEW_CIRCLE_RADIUS * 0.75f, 1f, 0f, 1f,
                 0.5f, 0.1f,
                 "Increases your maximum speed"),
 
         /**
-         * All specializations, {@link CircleHitbox#upgrade()}, and {@link PlayerBuilder#upgradeCircle(CircleHitbox)} are designed around the assumption
+         * All specializations, {@link CircleHitbox#upgrade()}, {@link AttackPattern#reapplySpecializationModifiers(CircleHitbox)},
+         * {@link CircleHitbox#receiveAuraBuffs(CircleHitbox)}, and {@link PlayerBuilder#upgradeCircle(CircleHitbox)} are designed around the assumption
          * that circles upgrade specialization every 5 levels
          */
 
         // 30 degree spread, 8 bullets
-                //TODO shorten name of stuff lonnger than 12 characters
-        SHOTGUN("Shotgun", "PLAYER_SHOTGUN", DAMAGE,
+        SHOTGUN(RenderSystem.HitboxTextureType.PLAYER_DAMAGE_SPECIALIZATION, "Shotgun", "PLAYER_SHOTGUN", DAMAGE,
                 Options.DEFAULT_NEW_CIRCLE_RADIUS, 1f, 0f, DAMAGE_DELTA_HEALTH_MULTIPLIER,
                 1f, 2f, 1/8f * 2.5f, 0.75f,
                 "Fires 8 bullets at once with a medium spread"),
         // 45 degree spread, 12 bullets
-        HIGH_SPREAD_SHOTGUN("High-spread shotgun", "PLAYER_HIGH_SPREAD_SHOTGUN", SHOTGUN,
+        HIGH_SPREAD_SHOTGUN(RenderSystem.HitboxTextureType.PLAYER_DAMAGE_SPECIALIZATION, "Shotgun (L)", "PLAYER_HIGH_SPREAD_SHOTGUN", SHOTGUN,
                 Options.DEFAULT_NEW_CIRCLE_RADIUS, 1f, 0f, DAMAGE_DELTA_HEALTH_MULTIPLIER,
                 1.25f, 1.4f, 1/12f * 3.5f * 1.4f, 0.85f,
                 "Fires 12 bullets at once with a high spread"),
         // 15 degree spread, 6 bullets
-        FOCUSED_SHOTGUN("Focused shotgun", "PLAYER_FOCUSED_SHOTGUN", SHOTGUN,
+        FOCUSED_SHOTGUN(RenderSystem.HitboxTextureType.PLAYER_DAMAGE_SPECIALIZATION, "Shotgun (S)", "PLAYER_FOCUSED_SHOTGUN", SHOTGUN,
                 Options.DEFAULT_NEW_CIRCLE_RADIUS, 1f, 0f, DAMAGE_DELTA_HEALTH_MULTIPLIER,
                 1.5f, 2.85f, 1/6f * 3.5f, 0.5f,
                 "Fires 6 bullets at once with a low spread"),
-        SNIPER("Sniper", "PLAYER_SNIPER", DAMAGE,
+        SNIPER(RenderSystem.HitboxTextureType.PLAYER_DAMAGE_SPECIALIZATION, "Sniper", "PLAYER_SNIPER", DAMAGE,
                 Options.DEFAULT_NEW_CIRCLE_RADIUS * 0.625f, 1f, 0f, DAMAGE_DELTA_HEALTH_MULTIPLIER,
                 3f, 1.3f, 1.75f, 0.4f,
                 "Fires a single small but fast and high-damage bullet"),
-        STRONG_SNIPER("Strong sniper", "PLAYER_STRONG_SNIPER", SNIPER,
+        STRONG_SNIPER(RenderSystem.HitboxTextureType.PLAYER_DAMAGE_SPECIALIZATION, "Sniper (L)", "PLAYER_STRONG_SNIPER", SNIPER,
                 Options.DEFAULT_NEW_CIRCLE_RADIUS * 0.625f, 1f, 0f, DAMAGE_DELTA_HEALTH_MULTIPLIER,
                 5f * 2f, 0.65f, 2.75f * 2f * 1.2f, 0.8f,
                 "Increases the bullet size, speed, and damage but lowers fire rrate"),
-        RAPID_SNIPER("Rapid sniper", "PLAYER_RAPID_SNIPER", SNIPER,
+        RAPID_SNIPER(RenderSystem.HitboxTextureType.PLAYER_DAMAGE_SPECIALIZATION, "Sniper (S)", "PLAYER_RAPID_SNIPER", SNIPER,
                 Options.DEFAULT_NEW_CIRCLE_RADIUS * 0.625f, 1f, 0f, DAMAGE_DELTA_HEALTH_MULTIPLIER,
                 5f * 1.3f, 2.6f, 2.75f/2f, 0.25f,
                 "Fires faster at the cost of a smaller bullet size"),
         // 10 degree spread
-        MACHINE_GUN("Machine gun", "PLAYER_MACHINE_GUN", DAMAGE,
+        MACHINE_GUN(RenderSystem.HitboxTextureType.PLAYER_DAMAGE_SPECIALIZATION, "Machine gun", "PLAYER_MACHINE_GUN", DAMAGE,
                 Options.DEFAULT_NEW_CIRCLE_RADIUS * 1.25f, 1f, 0f, DAMAGE_DELTA_HEALTH_MULTIPLIER,
                 1.25f, 0.5f, 0.75f, 1f,
                 "Rapidly fires a flurry of bullets at low spread"),
         // 20 degree spread
-        UNSTABLE_MACHINE_GUN("Unstable machine gun", "PLAYER_UNSTABLE_MACHINE_GUN", MACHINE_GUN,
+        UNSTABLE_MACHINE_GUN(RenderSystem.HitboxTextureType.PLAYER_DAMAGE_SPECIALIZATION, "Unstable MG", "PLAYER_UNSTABLE_MACHINE_GUN", MACHINE_GUN,
                 Options.DEFAULT_NEW_CIRCLE_RADIUS * 1.25f, 1f, 0f, DAMAGE_DELTA_HEALTH_MULTIPLIER,
                 1.75f, 0.35f, 1.25f, 1f,
                 "Fires faster than the machine gun but increases spread"),
         // 10 degree spread, 2 bullets
-        DUAL_MACHINE_GUNS("Dual machine guns", "PLAYER_DUAL_MACHINE_GUNS", MACHINE_GUN,
+        DUAL_MACHINE_GUNS(RenderSystem.HitboxTextureType.PLAYER_DAMAGE_SPECIALIZATION, "Dual MGs", "PLAYER_DUAL_MACHINE_GUNS", MACHINE_GUN,
                 Options.DEFAULT_NEW_CIRCLE_RADIUS * 1.25f, 1f, 0f, DAMAGE_DELTA_HEALTH_MULTIPLIER,
                 1.5f, 0.55f, 1.25f/2f, 0.7f,
                 "Fires 2 bullets at once instead of 1"),
 
-        MEAT_SHIELD("Meat shield", "PLAYER_DEFAULT_1", HEALTH,
+        MEAT_SHIELD(RenderSystem.HitboxTextureType.PLAYER_HEALTH_SPECIALIZATION, "Meat shield", "PLAYER_DEFAULT_1", HEALTH,
                 Options.DEFAULT_NEW_CIRCLE_RADIUS * 2.5f, 5f, 5f, HEALTH_DELTA_HEALTH_MULTIPLIER,
                 1f, 1f, 0.75f, 1f,
                 "Greatly increases health and size\nAllows circles of other types to overlap with this one"),
-        HEALTH_AURA("Health aura", "PLAYER_DEFAULT_1", MEAT_SHIELD,
+        HEALTH_AURA(RenderSystem.HitboxTextureType.PLAYER_HEALTH_AURA_SPECIALIZATION, "Health aura", "PLAYER_DEFAULT_1", MEAT_SHIELD,
                 Options.DEFAULT_NEW_CIRCLE_RADIUS * 2.5f + 25f, 10f, 0, HEALTH_DELTA_HEALTH_MULTIPLIER,
                 1f, 1f, 0.5f, 1f,
-                1.5f, 0f, 0f,
+                1.5f, 0f, 1f,
                 0.15f, 0f, 0f,
                 "Increases the maximum health of circles near this one"),
-        LIFESTEAL("Lifesteal", "PLAYER_DEFAULT_1", HEALTH,
+        LIFESTEAL(RenderSystem.HitboxTextureType.PLAYER_LIFESTEAL_SPECIALIZATION, "Lifesteal", "PLAYER_DEFAULT_1", HEALTH,
                 Options.DEFAULT_NEW_CIRCLE_RADIUS, 1.25f, 0f, HEALTH_DELTA_HEALTH_MULTIPLIER,
                 1f, 1f, 0.75f, 1f,
                 0.05f, 0.015f,
                 "Heals the weakest circle by damaging enemies"),
-        LIFESTEAL_AURA("Lifesteal aura", "PLAYER_DEFAULT_1", LIFESTEAL,
+        LIFESTEAL_AURA(RenderSystem.HitboxTextureType.PLAYER_LIFESTEAL_AURA_SPECIALIZATION, "LS aura", "PLAYER_DEFAULT_1", LIFESTEAL,
                 Options.DEFAULT_NEW_CIRCLE_RADIUS, 1.25f, 0f, HEALTH_DELTA_HEALTH_MULTIPLIER,
                 1f, 1.5f, 1.5f, 1f,
                 0.125f, 0f,
-                0f, 0.01f, 0f,
+                1f, 0.01f, 1f,
                 0f, 0.0025f, 0f,
                 "Grants nearby circles a weak lifesteal"),
 
-        THRUSTERS("Thrusters", "PLAYER_DEFAULT_1", UTILITY,
+        THRUSTERS(RenderSystem.HitboxTextureType.PLAYER_UTILITY_SPECIALIZATION, "Thrusters", "PLAYER_DEFAULT_1", UTILITY,
                 Options.DEFAULT_NEW_CIRCLE_RADIUS, 1f, 0f, 1f,
                 1.5f, 0.2f,
                 "Further increases your maximum speed"),
-        DAMAGE_MITIGATOR_AURA("Damage mitigator aura", "PLAYER_DEFAULT_1", UTILITY,
+        DAMAGE_MITIGATOR_AURA(RenderSystem.HitboxTextureType.PLAYER_UTILITY_SPECIALIZATION, "Def. aura", "PLAYER_DEFAULT_1", UTILITY,
                 Options.DEFAULT_NEW_CIRCLE_RADIUS, 1f, 0f, 1f,
                 1f, 1f, 1f, 1f,
-                0f, 0f, 0.05f,
-                0f, 0f, 0.05f,
+                1f, 0f, 0.95f,
+                0f, 0f, -0.05f,
                 "Grants nearby circles damage reduction, up to\na maximum of 50% damage reduction per circle");
 
         Array<Specialization> children = new Array<Specialization>();
 
+        RenderSystem.HitboxTextureType hitboxTextureType;
         String stringRepresentation;
         String attackPatternName;
         Specialization parentSpecialization = null;
@@ -148,18 +149,19 @@ public class CircleHitbox extends Circle {
         float initialLifestealMultiplier;
         float deltaLifestealMultiplier;
 
-        float initialMaxHealthMultiplierAura;
+        float initialMaxHealthMultiplierAura = 1f;
         float initialLifestealMultiplierAura;
-        float initialDamageMitigationMultiplierAura;
+        float initialDamageTakenMultiplierAura = 1f;
 
         float deltaMaxHealthMultiplierAura;
         float deltaLifestealMultiplierAura;
-        float deltaDamageMitigationMultiplierAura;
+        float deltaDamageTakenMultiplierAura;
 
         float initialRawSpeedBoost;
         float deltaRawSpeedBoost;
 
-        Specialization(String stringRepresentation, String attackPatternName, float initialRadius, float initialMaxHealthMultiplier, float deltaRadius, float deltaMaxHealthMultiplier, String description) {
+        Specialization(RenderSystem.HitboxTextureType hitboxTextureType, String stringRepresentation, String attackPatternName, float initialRadius, float initialMaxHealthMultiplier, float deltaRadius, float deltaMaxHealthMultiplier, String description) {
+            this.hitboxTextureType = hitboxTextureType;
             this.attackPatternName = attackPatternName;
             this.stringRepresentation = stringRepresentation;
             this.initialRadius = initialRadius;
@@ -174,9 +176,10 @@ public class CircleHitbox extends Circle {
             this.description = description;
         }
 
-        Specialization(String stringRepresentation, String attackPatternName, Specialization parentSpecialization, float initialRadius, float initialMaxHealthMultiplier, float deltaRadius, float deltaMaxHealthMultiplier,
+        Specialization(RenderSystem.HitboxTextureType hitboxTextureType, String stringRepresentation, String attackPatternName, Specialization parentSpecialization, float initialRadius, float initialMaxHealthMultiplier, float deltaRadius, float deltaMaxHealthMultiplier,
                        float initialRawSpeedBoost, float deltaRawSpeedBoost, String description) {
             parentSpecialization.children.add(this);
+            this.hitboxTextureType = hitboxTextureType;
             this.attackPatternName = attackPatternName;
             this.stringRepresentation = stringRepresentation;
             this.parentSpecialization = parentSpecialization;
@@ -195,9 +198,10 @@ public class CircleHitbox extends Circle {
             this.description = description;
         }
 
-        Specialization(String stringRepresentation, String attackPatternName, Specialization parentSpecialization, float initialRadius, float initialMaxHealthMultiplier, float deltaRadius, float deltaMaxHealthMultiplier,
+        Specialization(RenderSystem.HitboxTextureType hitboxTextureType, String stringRepresentation, String attackPatternName, Specialization parentSpecialization, float initialRadius, float initialMaxHealthMultiplier, float deltaRadius, float deltaMaxHealthMultiplier,
                        float initialBulletSpeedMultiplier, float initialFireIntervalMultiplier, float initialBulletDamageMultiplier, float initialBulletRadiusMultiplier, String description) {
             parentSpecialization.children.add(this);
+            this.hitboxTextureType = hitboxTextureType;
             this.attackPatternName = attackPatternName;
             this.initialRadius = initialRadius;
             this.initialMaxHealthMultiplier = initialMaxHealthMultiplier;
@@ -212,10 +216,11 @@ public class CircleHitbox extends Circle {
             this.description = description;
         }
 
-        Specialization(String stringRepresentation, String attackPatternName, Specialization parentSpecialization, float initialRadius, float initialMaxHealthMultiplier, float deltaRadius, float deltaMaxHealthMultiplier,
+        Specialization(RenderSystem.HitboxTextureType hitboxTextureType, String stringRepresentation, String attackPatternName, Specialization parentSpecialization, float initialRadius, float initialMaxHealthMultiplier, float deltaRadius, float deltaMaxHealthMultiplier,
                        float initialBulletSpeedMultiplier, float initialFireIntervalMultiplier, float initialBulletDamageMultiplier, float initialBulletRadiusMultiplier,
                        float initialLifestealMultiplier, float deltaLifestealMultiplier, String description) {
             parentSpecialization.children.add(this);
+            this.hitboxTextureType = hitboxTextureType;
             this.attackPatternName = attackPatternName;
             this.initialRadius = initialRadius;
             this.initialMaxHealthMultiplier = initialMaxHealthMultiplier;
@@ -232,11 +237,12 @@ public class CircleHitbox extends Circle {
             this.description = description;
         }
 
-        Specialization(String stringRepresentation, String attackPatternName, Specialization parentSpecialization, float initialRadius, float initialMaxHealthMultiplier, float deltaRadius, float deltaMaxHealthMultiplier,
+        Specialization(RenderSystem.HitboxTextureType hitboxTextureType, String stringRepresentation, String attackPatternName, Specialization parentSpecialization, float initialRadius, float initialMaxHealthMultiplier, float deltaRadius, float deltaMaxHealthMultiplier,
                        float initialBulletSpeedMultiplier, float initialFireIntervalMultiplier, float initialBulletDamageMultiplier, float initialBulletRadiusMultiplier,
-                       float initialMaxHealthMultiplierAura, float initialLifestealMultiplierAura, float initialDamageMitigationMultiplierAura,
-                       float deltaMaxHealthMultiplierAura, float deltaLifestealMultiplierAura, float deltaDamageMitigationMultiplierAura, String description) {
+                       float initialMaxHealthMultiplierAura, float initialLifestealMultiplierAura, float initialDamageTakenMultiplierAura,
+                       float deltaMaxHealthMultiplierAura, float deltaLifestealMultiplierAura, float deltaDamageTakenMultiplierAura, String description) {
             parentSpecialization.children.add(this);
+            this.hitboxTextureType = hitboxTextureType;
             this.attackPatternName = attackPatternName;
             this.initialRadius = initialRadius;
             this.initialMaxHealthMultiplier = initialMaxHealthMultiplier;
@@ -251,19 +257,20 @@ public class CircleHitbox extends Circle {
 
             this.initialMaxHealthMultiplierAura = initialMaxHealthMultiplierAura;
             this.initialLifestealMultiplierAura = initialLifestealMultiplierAura;
-            this.initialDamageMitigationMultiplierAura = initialDamageMitigationMultiplierAura;
+            this.initialDamageTakenMultiplierAura = initialDamageTakenMultiplierAura;
             this.deltaMaxHealthMultiplierAura = deltaMaxHealthMultiplierAura;
             this.deltaLifestealMultiplierAura = deltaLifestealMultiplierAura;
-            this.deltaDamageMitigationMultiplierAura = deltaDamageMitigationMultiplierAura;
+            this.deltaDamageTakenMultiplierAura = deltaDamageTakenMultiplierAura;
             this.description = description;
         }
 
-        Specialization(String stringRepresentation, String attackPatternName, Specialization parentSpecialization, float initialRadius, float initialMaxHealthMultiplier, float deltaRadius, float deltaMaxHealthMultiplier,
+        Specialization(RenderSystem.HitboxTextureType hitboxTextureType, String stringRepresentation, String attackPatternName, Specialization parentSpecialization, float initialRadius, float initialMaxHealthMultiplier, float deltaRadius, float deltaMaxHealthMultiplier,
                        float initialBulletSpeedMultiplier, float initialFireIntervalMultiplier, float initialBulletDamageMultiplier, float initialBulletRadiusMultiplier,
                        float initialLifestealMultiplier, float deltaLifestealMultiplier,
-                       float initialMaxHealthMultiplierAura, float initialLifestealMultiplierAura, float initialDamageMitigationMultiplierAura,
-                       float deltaMaxHealthMultiplierAura, float deltaLifestealMultiplierAura, float deltaDamageMitigationMultiplierAura, String description) {
+                       float initialMaxHealthMultiplierAura, float initialLifestealMultiplierAura, float initialDamageTakenMultiplierAura,
+                       float deltaMaxHealthMultiplierAura, float deltaLifestealMultiplierAura, float deltaDamageTakenMultiplierAura, String description) {
             parentSpecialization.children.add(this);
+            this.hitboxTextureType = hitboxTextureType;
             this.attackPatternName = attackPatternName;
             this.initialRadius = initialRadius;
             this.initialMaxHealthMultiplier = initialMaxHealthMultiplier;
@@ -280,11 +287,47 @@ public class CircleHitbox extends Circle {
 
             this.initialMaxHealthMultiplierAura = initialMaxHealthMultiplierAura;
             this.initialLifestealMultiplierAura = initialLifestealMultiplierAura;
-            this.initialDamageMitigationMultiplierAura = initialDamageMitigationMultiplierAura;
+            this.initialDamageTakenMultiplierAura = initialDamageTakenMultiplierAura;
             this.deltaMaxHealthMultiplierAura = deltaMaxHealthMultiplierAura;
             this.deltaLifestealMultiplierAura = deltaLifestealMultiplierAura;
-            this.deltaDamageMitigationMultiplierAura = deltaDamageMitigationMultiplierAura;
+            this.deltaDamageTakenMultiplierAura = deltaDamageTakenMultiplierAura;
             this.description = description;
+        }
+
+        public RenderSystem.HitboxTextureType getHitboxTextureType() {
+            return hitboxTextureType;
+        }
+
+        public boolean hasAura() {
+            return hasLifestealAura() || hasDamageTakenAura() || hasMaxHealthAura();
+        }
+
+        public boolean hasLifestealAura() {
+            return initialLifestealMultiplierAura != 0 || deltaLifestealMultiplierAura != 0;
+        }
+
+        public boolean hasDamageTakenAura() {
+            return initialDamageTakenMultiplierAura != 1 || deltaDamageTakenMultiplierAura != 0;
+        }
+
+        public boolean hasMaxHealthAura() {
+            return initialMaxHealthMultiplierAura != 1 || deltaMaxHealthMultiplierAura != 0;
+        }
+
+        public float getInitialRawSpeedBoost() {
+            return initialRawSpeedBoost;
+        }
+
+        public float getDeltaRawSpeedBoost() {
+            return deltaRawSpeedBoost;
+        }
+
+        public float getInitialLifestealMultiplier() {
+            return initialLifestealMultiplier;
+        }
+
+        public float getDeltaLifestealMultiplier() {
+            return deltaLifestealMultiplier;
         }
 
         public String getDescription() {
@@ -311,11 +354,11 @@ public class CircleHitbox extends Circle {
         }
 
         public Specialization getRootSpecialization() {
-            if(parentSpecialization == null) {
+            if(parentSpecialization == null || parentSpecialization == NONE) {
                 return this;
             } else {
                 Specialization sp = parentSpecialization;
-                while (sp.parentSpecialization != null) {
+                while (sp.parentSpecialization != null && sp.parentSpecialization != NONE) {
                     sp = sp.parentSpecialization;
                 }
                 return sp;
@@ -379,6 +422,18 @@ public class CircleHitbox extends Circle {
     private Specialization specialization = Specialization.NONE;
     private int level;
     private boolean specializationAvailable;
+
+    // Total pp put into upgrades
+    private float totalUpgradesPp;
+
+    // Buffs from auras
+    private float damageTakenMultiplierFromAura = 1f;
+    private float lifestealMultiplierFromAura;
+    private float maxHealthMultiplierFromAura = 1f;
+
+    // Color determined by HitboxTextureType since textures are generated only through HitboxTextureType values
+    // null value defaults color to hitboxTextureType's
+    private RenderSystem.HitboxTextureType color = null;
 
     // How much pp the player gains by killing this circle
     private float ppGain;
@@ -458,7 +513,31 @@ public class CircleHitbox extends Circle {
         c.setSpecializationAvailable(specializationAvailable);
         c.specialization = specialization;
         c.level = level;
+        c.totalUpgradesPp = totalUpgradesPp;
+        c.damageTakenMultiplierFromAura = damageTakenMultiplierFromAura;
+        c.lifestealMultiplierFromAura = lifestealMultiplierFromAura;
+        c.maxHealthMultiplierFromAura = maxHealthMultiplierFromAura;
+        c.color = color;
         return c;
+    }
+
+    public void removeAuraBuffs() {
+        damageTakenMultiplierFromAura = 1f;
+        lifestealMultiplierFromAura = 0f;
+        maxHealthMultiplierFromAura = 1f;
+    }
+
+    public void receiveAuraBuffs(CircleHitbox source) {
+        Specialization sp = source.getSpecialization();
+
+        if(sp.hasDamageTakenAura()) {
+            damageTakenMultiplierFromAura -= (1f - (sp.initialDamageTakenMultiplierAura + ((source.level - (sp.getDepth() * 5)) * sp.deltaDamageTakenMultiplierAura)));
+            damageTakenMultiplierFromAura = Math.max(damageTakenMultiplierFromAura, Options.MIN_DAMAGE_TAKEN_MULTIPLIER);
+        }
+
+        lifestealMultiplierFromAura += sp.initialLifestealMultiplierAura + ((source.level - (sp.getDepth() * 5)) * sp.deltaLifestealMultiplierAura);
+
+        maxHealthMultiplierFromAura += 1f - (sp.initialMaxHealthMultiplierAura + ((source.level - (sp.getDepth() * 5)) * sp.deltaMaxHealthMultiplierAura));
     }
 
     public String getAttackPatternFormattedStats() {
@@ -472,10 +551,44 @@ public class CircleHitbox extends Circle {
     public String getStringFormattedStats() {
         String s = "Level: " + (level + 1) + "\n"
                 + "Specialization: " + specialization.getStringRepresentation() + "\n"
-                + "Max health: " + (int)Math.ceil(maxHealth) + "\n"
-                + "Health: " + (int)Math.ceil(health) + " (" + String.format("%.1f", (health/maxHealth) * 100f) + "%)\n"
-                + "Radius: " + (int)radius + "\n"
-                + "\nNext upgrade cost: " + PlayerBuilder.formatNumber(calculateNextUpgradeCost()) + "pp\n";
+                + "Max health: " + (int)Math.ceil(maxHealth) + "\n";
+        if(maxHealthMultiplierFromAura != 1) {
+            s += "  " + PlayerBuilder.formatNumber(maxHealthMultiplierFromAura) + "x from aura(s)\n";
+        }
+        s += "Health: " + (int)Math.ceil(health) + " (" + String.format("%.1f", (health/maxHealth) * 100f) + "%)\n"
+                + "Radius: " + (int)radius + "\n";
+        if(speedBoost > 0) {
+            s += "Speed: +" + PlayerBuilder.formatNumber(speedBoost) + "\n";
+        } else if(speedBoost < 0) {
+            s += "Speed: " + PlayerBuilder.formatNumber(speedBoost) + "\n";
+        }
+        if(attackPattern != null && attackPattern.getLifestealMultiplier() != 0) {
+            s += "Lifesteal: " + PlayerBuilder.formatNumber((attackPattern.getLifestealMultiplier() + lifestealMultiplierFromAura) * 100f) + "%\n";
+            if(lifestealMultiplierFromAura != 0) {
+                s += "  " + PlayerBuilder.formatNumber(lifestealMultiplierFromAura * 100f) + "%  from aura(s)\n";
+            }
+        } else if(attackPattern != null && lifestealMultiplierFromAura != 0) {
+            s += "Lifesteal from aura(s): " + PlayerBuilder.formatNumber((attackPattern.getLifestealMultiplier() + lifestealMultiplierFromAura) * 100f) + "%\n";
+        }
+        if(damageTakenMultiplierFromAura != 1) {
+            s += "Def. from aura(s): " + PlayerBuilder.formatNumber(Math.min(1f/damageTakenMultiplierFromAura, 1f/Options.MIN_DAMAGE_TAKEN_MULTIPLIER)) + "x\n";
+        }
+
+        if(specialization.hasAura()) {
+            s += "\n";
+        }
+        if(specialization.hasMaxHealthAura()) {
+            s += "Emitting " + PlayerBuilder.formatNumber(specialization.initialMaxHealthMultiplierAura + ((level - (specialization.getDepth() * 5)) * specialization.deltaMaxHealthMultiplierAura)) + "x health aura\n";
+        }
+        if(specialization.hasDamageTakenAura()) {
+            s += "Emitting " + PlayerBuilder.formatNumber(1f/(specialization.initialDamageTakenMultiplierAura + ((level - (specialization.getDepth() * 5)) * specialization.deltaDamageTakenMultiplierAura))) + "x def. aura\n";
+        }
+        if(specialization.hasLifestealAura()) {
+            s += "Emitting " + PlayerBuilder.formatNumber((specialization.initialLifestealMultiplierAura + ((level - (specialization.getDepth() * 5)) * specialization.deltaLifestealMultiplierAura)) * 100f) + "% lifesteal aura\n";
+        }
+
+        s += "\nNext upgrade cost: " + PlayerBuilder.formatNumber(calculateNextUpgradeCost()) + "pp\n";
+
         return s;
     }
 
@@ -497,9 +610,14 @@ public class CircleHitbox extends Circle {
     }
 
     public void setAttackPattern(AttackPattern attackPattern) {
+        if(this.attackPattern != null) {
+            this.attackPattern.transferEssentialFieldsTo(attackPattern);
+        }
+
         this.attackPattern = attackPattern;
         if(attackPattern != null) {
             fired = new boolean[attackPattern.getAttackParts().size()];
+            attackPattern.reapplySpecializationModifiers(this);
         }
         time = 0;
     }
@@ -521,6 +639,7 @@ public class CircleHitbox extends Circle {
     }
 
     public void upgrade() {
+        totalUpgradesPp += calculateNextUpgradeCost();
         unsavedUpgradeCost += calculateNextUpgradeCost();
 
         level++;
@@ -538,24 +657,34 @@ public class CircleHitbox extends Circle {
         if((level + 1) % 5 == 0 && specialization.getChildren().size > 0) {
             specializationAvailable = true;
         }
-    }
-
-    public void changeSpecialization(Specialization newSpecialization) {
-        specializationAvailable = false;
-
-        this.specialization = newSpecialization;
-        setMaxHealth(maxHealth * newSpecialization.initialMaxHealthMultiplier);
-        setRadius(newSpecialization.initialRadius);
-        setSpeedBoost(specialization.initialRawSpeedBoost + ((level - (specialization.getDepth() * 5)) * specialization.deltaRawSpeedBoost));
 
         if(attackPattern != null) {
             attackPattern.reapplySpecializationModifiers(this);
         }
     }
 
+    public void changeSpecialization(Specialization newSpecialization) {
+        specializationAvailable = false;
+
+        this.specialization = newSpecialization;
+        setMaxHealth(maxHealth * (newSpecialization.initialMaxHealthMultiplier + maxHealthMultiplierFromAura));
+        setRadius(newSpecialization.initialRadius);
+        setSpeedBoost(specialization.initialRawSpeedBoost + ((level - (specialization.getDepth() * 5)) * specialization.deltaRawSpeedBoost));
+
+        if(attackPattern != null) {
+            attackPattern.reapplySpecializationModifiers(this);
+        }
+        setColor(newSpecialization.getHitboxTextureType());
+    }
+
     public void upgradeAttackPattern() {
+        totalUpgradesPp += attackPattern.calculateNextUpgradeCost();
         unsavedUpgradeCost += attackPattern.calculateNextUpgradeCost();
         attackPattern.upgrade(this);
+    }
+
+    public float getTotalUpgradesPp() {
+        return totalUpgradesPp;
     }
 
     public Specialization getSpecialization() {
@@ -594,6 +723,9 @@ public class CircleHitbox extends Circle {
 
     public void setHealth(float health) {
         this.health = health;
+        if(this.health > maxHealth) {
+            this.health = maxHealth;
+        }
     }
 
     public float getOriginalPosX() {
@@ -662,5 +794,13 @@ public class CircleHitbox extends Circle {
 
     public void setSpecializationAvailable(boolean specializationAvailable) {
         this.specializationAvailable = specializationAvailable;
+    }
+
+    public void setColor(RenderSystem.HitboxTextureType color) {
+        this.color = color;
+    }
+
+    public RenderSystem.HitboxTextureType getColor() {
+        return color;
     }
 }

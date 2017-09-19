@@ -44,6 +44,7 @@ import com.miv.Options;
 import java.util.ArrayList;
 
 import components.HitboxComponent;
+import factories.AttackPatternFactory;
 import jdk.nashorn.internal.runtime.Specialization;
 import systems.RenderSystem;
 import utils.CircleHitbox;
@@ -180,6 +181,8 @@ public class PlayerBuilder implements Screen {
         }
 
         public void playShowAnimation() {
+            setTouchable(Touchable.enabled);
+
             cancelChoosing.setTouchable(Touchable.enabled);
             cancelChoosing.addAction(Actions.alpha(0.7f, ANIMATION_TIME));
             disableNonPopupInputs();
@@ -196,6 +199,8 @@ public class PlayerBuilder implements Screen {
         }
 
         public void playHideAnimation() {
+            setTouchable(Touchable.disabled);
+
             cancelChoosing.setTouchable(Touchable.disabled);
             cancelChoosing.addAction(Actions.fadeOut(ANIMATION_TIME));
             // TODO White overlay transitions to 0% alpha
@@ -328,6 +333,14 @@ public class PlayerBuilder implements Screen {
     private static final float CIRCLE_OVERLAP_LENIENCY = 5f;
     // Distance in screen units before a circle being moved snaps to x/y axes
     private static final float CIRCLE_SNAP_DISTANCE = 15f;
+    // Difference in radians between current
+    private static final float ATTACK_PATTERN_ANGLE_SNAP_MARGIN = MathUtils.degreesToRadians * 3f;
+
+    private static final Color DAMAGE_TAKEN_AURA_COLOR = new Color(Color.LIGHT_GRAY.r, Color.LIGHT_GRAY.g, Color.LIGHT_GRAY.b, 0.35f);
+    private static final Color LIFESTEAL_AURA_COLOR = new Color(Color.GREEN.r, Color.GREEN.g, Color.GREEN.b, 0.35f);
+    private static final Color MAX_HEALTH_AURA_COLOR = new Color(Color.CYAN.r, Color.CYAN.g, Color.CYAN.b, 0.35f);
+
+    private static final float ATTACK_PATTERN_ANGLE_ARROW_LENGTH = 200f;
 
     private Main main;
     private Skin skin;
@@ -341,6 +354,7 @@ public class PlayerBuilder implements Screen {
     private boolean isPanningCamera;
     private CircleHitbox selectedCircle;
     private float selectedCircleRadiusInScreenUnits;
+    private float selectedCircleAuraRadiusInScreenUnits;
 
     private ShapeRenderer playerShapeRenderer;
     private Batch playerRenderBatch;
@@ -352,16 +366,21 @@ public class PlayerBuilder implements Screen {
     // Contains any new circles or circles with unsaved changes
     // Changed circles are removed from the player render and placed in here
     private ArrayList<CircleHitbox> unsavedCircles;
+    private ArrayList<CircleHitbox> allCircles;
     private boolean unsavedChangesExist;
 
     // Actors that show up when a circle is selected
     private Label playerStatsTitleLabel;
     private Label playerStatsLabel;
     private Label circleStatsLabel;
+    private ImageButton circleDeleteButton;
     private TextButton circleUpgradeButton;
     private AttackPatternInfo attackPatternInfo;
     private ImageButton attackPatternDisplayToggle;
     private SpecializationChooser specializationChooser;
+
+    // Pp from deleting circles
+    private float circleDeletionPp;
 
     private Label pp;
     private ImageButton saveChangesButton;
@@ -382,6 +401,10 @@ public class PlayerBuilder implements Screen {
     // Position of finger if is dragging an existing circle around
     private boolean isMovingCircle;
     private Point movingCircleDragCurrentPoint;
+    // Position of finger if it is dragging the angle of an attack pattern around
+    private boolean isDraggingAttackPatternArrowAngle;
+    private Point draggingAttackPatternArrowPos;
+    private float draggingAttackPatternArrowAngle; // In radians
     // In screen coordinates
     private Point movingCircleDragOffset;
 
@@ -402,9 +425,11 @@ public class PlayerBuilder implements Screen {
         playerRenderOrigin = new Point(0, 0);
         newCircleDragCurrentPoint = new Point(-1, -1);
         movingCircleDragCurrentPoint = new Point(-1, -1);
+        draggingAttackPatternArrowPos = new Point(-1, -1);
         movingCircleDragOffset = new Point(0, 0);
         playerRender = new ArrayList<CircleHitbox>();
         unsavedCircles = new ArrayList<CircleHitbox>();
+        allCircles = new ArrayList<CircleHitbox>();
         playerShapeRenderer = new ShapeRenderer();
         playerShapeRenderer.setAutoShapeType(true);
         staticShapeRenderer = new ShapeRenderer();
@@ -478,14 +503,6 @@ public class PlayerBuilder implements Screen {
         newBubbleButtonX = editableAreaRightXBound - newBubbleButtonLength;
         newBubbleButtonY = screenHeight - newBubbleButtonLength;
 
-        playerStatsTitleLabel = new Label("PLAYER STATS", skin);
-        playerStatsTitleLabel.setAlignment(Align.top);
-        playerStatsTitleLabel.setAlignment(Align.left);
-        playerStatsTitleLabel.setFontScale(TITLE_LABEL_FONT_SCALE);
-        playerStatsTitleLabel.setPosition(editableAreaRightXBound + LEFT_PADDING, screenHeight - 20f - TOP_PADDING);
-        playerStatsTitleLabel.setColor(Color.BLACK);
-        stage.addActor(playerStatsTitleLabel);
-
         playerStatsLabel = new Label("", skin);
         playerStatsLabel.setAlignment(Align.top);
         playerStatsLabel.setAlignment(Align.left);
@@ -504,6 +521,33 @@ public class PlayerBuilder implements Screen {
         circleStatsLabel.setColor(Color.BLACK);
         circleStatsLabel.setVisible(false);
         stage.addActor(circleStatsLabel);
+
+        Texture circleDeleteButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.DELETE_BUTTON_UP_PATH).path());
+        Texture circleDeleteButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.DELETE_BUTTON_DOWN_PATH).path());
+        ImageButton.ImageButtonStyle circleDeleteButtonStyle = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(circleDeleteButtonUp)), new TextureRegionDrawable(new TextureRegion(circleDeleteButtonDown)), null, null, null, null);
+        circleDeleteButton = new ImageButton(circleDeleteButtonStyle);
+        circleDeleteButton.setSize(70f, 70f);
+        circleDeleteButton.setPosition(screenWidth - LEFT_PADDING - circleDeleteButton.getWidth(), screenHeight - TOP_PADDING - circleDeleteButton.getHeight());
+        circleDeleteButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // Cannot delete last circle
+                if(allCircles.size() > 1) {
+                    deleteCircle(selectedCircle);
+                    deselectCircle();
+                }
+            }
+        });
+        circleDeleteButton.setVisible(false);
+        stage.addActor(circleDeleteButton);
+
+        playerStatsTitleLabel = new Label("PLAYER STATS", skin);
+        playerStatsTitleLabel.setAlignment(Align.top);
+        playerStatsTitleLabel.setAlignment(Align.left);
+        playerStatsTitleLabel.setFontScale(TITLE_LABEL_FONT_SCALE);
+        playerStatsTitleLabel.setPosition(editableAreaRightXBound + LEFT_PADDING, circleDeleteButton.getY() + circleDeleteButton.getHeight()/2f);
+        playerStatsTitleLabel.setColor(Color.BLACK);
+        stage.addActor(playerStatsTitleLabel);
 
         circleUpgradeButton = new TextButton("Upgrade", skin);
         circleUpgradeButton.getLabel().setColor(Color.WHITE);
@@ -574,6 +618,7 @@ public class PlayerBuilder implements Screen {
             newCircleDragCurrentPoint.x = x;
             newCircleDragCurrentPoint.y = y;
             selectedCircleRadiusInScreenUnits = playerRenderCamera.project(new Vector3(Options.DEFAULT_NEW_CIRCLE_RADIUS, 0, 0)).x - playerRenderCamera.project(new Vector3(0, 0, 0)).x;
+            selectedCircleAuraRadiusInScreenUnits = playerRenderCamera.project(new Vector3(Options.DEFAULT_NEW_CIRCLE_RADIUS + Options.CIRCLE_AURA_RANGE, 0, 0)).x - playerRenderCamera.project(new Vector3(0, 0, 0)).x;
         }
         // Touch down on the selected circle
         else if(selectedCircle != null && getAllCirclesAtPoint(playerRenderCamera.unproject(new Vector3(x, -(y - screenHeight), 0))).contains(selectedCircle) && x < editableAreaRightXBound) {
@@ -584,10 +629,24 @@ public class PlayerBuilder implements Screen {
             movingCircleDragOffset.x = selectedCircleScreenPos.x - x;
             movingCircleDragOffset.y = selectedCircleScreenPos.y - y;
             selectedCircleRadiusInScreenUnits = playerRenderCamera.project(new Vector3(selectedCircle.radius, 0, 0)).x - playerRenderCamera.project(new Vector3(0, 0, 0)).x;
+            selectedCircleAuraRadiusInScreenUnits = playerRenderCamera.project(new Vector3(selectedCircle.radius + Options.CIRCLE_AURA_RANGE, 0, 0)).x - playerRenderCamera.project(new Vector3(0, 0, 0)).x;
         }
-        else if(x < editableAreaRightXBound) {
+        // Touch down on the tip of attack pattern arrow angle
+        else if (selectedCircle != null && selectedCircle.getAttackPattern() != null && isWithinRangeOfAttackPatternArrowTip(playerRenderCamera.unproject(new Vector3(x, -(y - screenHeight), 0)))) {
+            isDraggingAttackPatternArrowAngle = true;
+            draggingAttackPatternArrowPos.x = x;
+            draggingAttackPatternArrowPos.y = y;
+            Vector3 worldCoordinates = playerRenderCamera.unproject(new Vector3(x, -(y - screenHeight), 0));
+            draggingAttackPatternArrowAngle = MathUtils.atan2(worldCoordinates.y - selectedCircle.y, worldCoordinates.x - selectedCircle.x) - PLAYER_RENDER_ANGLE;
+        }
+        else if (x < editableAreaRightXBound) {
             isPanningCamera = true;
         }
+    }
+
+    private boolean isWithinRangeOfAttackPatternArrowTip(Vector3 worldCoordinates) {
+        float angle = selectedCircle.getAttackPattern().getAngleOffset() + PLAYER_RENDER_ANGLE;
+        return Utils.getDistance(selectedCircle.x + playerRenderOrigin.x + MathUtils.cos(angle)*(selectedCircle.radius + ATTACK_PATTERN_ANGLE_ARROW_LENGTH), selectedCircle.y + playerRenderOrigin.y + MathUtils.sin(angle)*(selectedCircle.radius + ATTACK_PATTERN_ANGLE_ARROW_LENGTH), worldCoordinates.x, worldCoordinates.y) < 50;
     }
 
     public void touchUp(float x, float y) {
@@ -606,8 +665,30 @@ public class PlayerBuilder implements Screen {
             // Place down circle
             moveCircle(selectedCircle, movingCircleDragCurrentPoint.x + movingCircleDragOffset.x, -(movingCircleDragCurrentPoint.y + movingCircleDragOffset.y - screenHeight));
 
-            isMovingCircle = false;
-            movingCircleDragCurrentPoint.x = -1;
+            /**
+             * Delay setting variable to false to avoid slight adjustments being counted as taps since {@link #tap(float, float)} deselects
+             * circle iff isMovingCircle is true
+             */
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    movingCircleDragCurrentPoint.x = -1;
+                    isMovingCircle = false;
+                }
+            }, 0.04f);
+        } else if(isDraggingAttackPatternArrowAngle) {
+            modifyCircleAttackPatternAngle(selectedCircle, draggingAttackPatternArrowAngle);
+
+            /**
+             * Delay setting variable to false to avoid slight adjustments being counted as taps since {@link #tap(float, float)} deselects
+             * circle iff isDraggingAttackPatternArrowAngle is true
+             */
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    isDraggingAttackPatternArrowAngle = false;
+                }
+            }, 0.04f);
         } else if(isPanningCamera) {
             isPanningCamera = false;
         }
@@ -645,6 +726,20 @@ public class PlayerBuilder implements Screen {
             if(Math.abs(y + movingCircleDragOffset.y - originScreenCoordinates.y) < CIRCLE_SNAP_DISTANCE) {
                 movingCircleDragCurrentPoint.y = originScreenCoordinates.y - movingCircleDragOffset.y;
             }
+        } else if(isDraggingAttackPatternArrowAngle) {
+            draggingAttackPatternArrowPos.x = x;
+            draggingAttackPatternArrowPos.y = y;
+            Vector3 worldCoordinates = playerRenderCamera.unproject(new Vector3(x, -(y - screenHeight), 0));
+            draggingAttackPatternArrowAngle = MathUtils.atan2(worldCoordinates.y - selectedCircle.y, worldCoordinates.x - selectedCircle.x) - PLAYER_RENDER_ANGLE;
+
+            // Snap to nearest increment of 45 degrees
+            float normalized = Utils.normalizeAngle(draggingAttackPatternArrowAngle);
+            for(int i = 0; i < 8; i++) {
+                if(Math.abs(normalized - (i * (MathUtils.PI/4f))) < ATTACK_PATTERN_ANGLE_SNAP_MARGIN) {
+                    draggingAttackPatternArrowAngle = i * (MathUtils.PI/4f);
+                    break;
+                }
+            }
         }
     }
 
@@ -671,12 +766,12 @@ public class PlayerBuilder implements Screen {
             return;
         }
 
-        y = -(y - screenHeight);
-
-        if(x < editableAreaRightXBound) {
+        if(x < editableAreaRightXBound && !isDraggingAttackPatternArrowAngle && !isMovingCircle) {
             if (selectedCircle != null) {
                 deselectCircle();
             } else {
+                y = -(y - screenHeight);
+
                 Vector3 worldCoordinates = playerRenderCamera.unproject(new Vector3(x, y, 0));
 
                 ArrayList<CircleHitbox> circlesAtPoint = getAllCirclesAtPoint(worldCoordinates);
@@ -749,12 +844,7 @@ public class PlayerBuilder implements Screen {
 
     public ArrayList<CircleHitbox> getAllCirclesAtPoint(Vector3 worldCoordinates) {
         ArrayList<CircleHitbox> circlesAtPoint = new ArrayList<CircleHitbox>();
-        for (CircleHitbox c : playerRender) {
-            if (Utils.getDistance(worldCoordinates.x, worldCoordinates.y, c.x, c.y) <= c.radius) {
-                circlesAtPoint.add(c);
-            }
-        }
-        for (CircleHitbox c : unsavedCircles) {
+        for (CircleHitbox c : allCircles) {
             if (Utils.getDistance(worldCoordinates.x, worldCoordinates.y, c.x, c.y) <= c.radius) {
                 circlesAtPoint.add(c);
             }
@@ -768,6 +858,7 @@ public class PlayerBuilder implements Screen {
         playerStatsTitleLabel.setText("CIRCLE STATS");
         playerStatsLabel.setVisible(false);
         circleStatsLabel.setVisible(true);
+        circleDeleteButton.setVisible(true);
         circleUpgradeButton.setVisible(true);
 
         updateActors();
@@ -779,6 +870,7 @@ public class PlayerBuilder implements Screen {
         playerStatsTitleLabel.setText("PLAYER STATS");
         playerStatsLabel.setVisible(true);
         circleStatsLabel.setVisible(false);
+        circleDeleteButton.setVisible(false);
         circleUpgradeButton.setVisible(false);
 
         updateActors();
@@ -786,6 +878,8 @@ public class PlayerBuilder implements Screen {
 
     private float calculateUnsavedPp() {
         float pp = Mappers.player.get(player).getPixelPoints();
+
+        pp += circleDeletionPp;
 
         for(CircleHitbox c : unsavedCircles) {
             // Cost of creating the circle (if it is new)
@@ -813,6 +907,7 @@ public class PlayerBuilder implements Screen {
         c.radius = com.miv.Options.DEFAULT_NEW_CIRCLE_RADIUS;
         c.x = worldCoordinates.x;
         c.y = worldCoordinates.y;
+        c.setAttackPattern(AttackPatternFactory.getAttackPattern("PLAYER_DEFAULT_1"));
         // Set original position to be at if circle was rotated to 0 degrees
         c.setOriginalPosX(c.x * MathUtils.cos(-PLAYER_RENDER_ANGLE) - c.y * MathUtils.sin(-PLAYER_RENDER_ANGLE));
         c.setOriginalPosY(c.x * MathUtils.sin(-PLAYER_RENDER_ANGLE) + c.y * MathUtils.cos(-PLAYER_RENDER_ANGLE));
@@ -821,10 +916,21 @@ public class PlayerBuilder implements Screen {
         // Calculate cost of creating new circle
         c.setUnsavedCreationCost((float) Math.pow((playerRender.size() + unsavedCircles.size()), Options.CIRCLE_CREATION_EXPONENT) + map.Map.INITIAL_MAP_AREA_PIXEL_POINTS / 2f);
         unsavedCircles.add(c);
+        allCircles.add(c);
 
         selectCircle(c);
 
         onCircleModification(c);
+    }
+
+    public void deleteCircle(CircleHitbox c) {
+        playerRender.remove(c);
+        unsavedCircles.remove(c);
+        allCircles.remove(c);
+
+        circleDeletionPp  += c.getTotalUpgradesPp() * Options.CIRCLE_DELETION_PP_RETURN_MULTIPLIER;
+
+        onCircleModification2();
     }
 
     public void upgradeCircle(CircleHitbox c) {
@@ -848,6 +954,12 @@ public class PlayerBuilder implements Screen {
 
     public void modifyCircleSpecialization(CircleHitbox c, CircleHitbox.Specialization newSpecialization) {
         c.changeSpecialization(newSpecialization);
+
+        onCircleModification(c);
+    }
+
+    public void modifyCircleAttackPatternAngle(CircleHitbox c, float angle) {
+        c.getAttackPattern().setAngleOffset(angle);
 
         onCircleModification(c);
     }
@@ -879,7 +991,15 @@ public class PlayerBuilder implements Screen {
         }
         playerRender.remove(c);
 
+        onCircleModification2();
+    }
+
+    private void onCircleModification2() {
         checkAllCirclesPositionsValidity();
+
+        Utils.setAuraBuffsForAllCircles(allCircles);
+
+        //TODO: save state
 
         unsavedChangesExist = true;
         updateActors();
@@ -891,10 +1011,7 @@ public class PlayerBuilder implements Screen {
      * Otherwise, it is set to have a valid position.
      */
     private void checkAllCirclesPositionsValidity() {
-        for(CircleHitbox c : playerRender) {
-            checkCirclePositionValidity(c);
-        }
-        for(CircleHitbox c : unsavedCircles) {
+        for(CircleHitbox c : allCircles) {
             checkCirclePositionValidity(c);
         }
     }
@@ -906,15 +1023,7 @@ public class PlayerBuilder implements Screen {
         boolean invalidPosition = false;
 
         // Check if overlapping with other circles
-        for(CircleHitbox c2 : playerRender) {
-            if(!c2.equals(c)) {
-                if(Utils.getDistance(c.x, c.y, c2.x, c2.y) < c.radius + c2.radius - CIRCLE_OVERLAP_LENIENCY) {
-                    c2.setInvalidPosition(true);
-                    invalidPosition = true;
-                }
-            }
-        }
-        for(CircleHitbox c2 : unsavedCircles) {
+        for(CircleHitbox c2 : allCircles) {
             if(!c2.equals(c)) {
                 if(Utils.getDistance(c.x, c.y, c2.x, c2.y) < c.radius + c2.radius - CIRCLE_OVERLAP_LENIENCY) {
                     c2.setInvalidPosition(true);
@@ -962,6 +1071,9 @@ public class PlayerBuilder implements Screen {
             return;
         }
 
+        for(CircleHitbox c : unsavedCircles) {
+            allCircles.remove(c);
+        }
         unsavedCircles.clear();
         loadPlayerRenderFromPlayerEntity();
         deselectCircle();
@@ -1015,12 +1127,7 @@ public class PlayerBuilder implements Screen {
     }
 
     private boolean allCirclesHaveValidPositions() {
-        for(CircleHitbox c : playerRender) {
-            if(c.isInvalidPosition()) {
-                return false;
-            }
-        }
-        for(CircleHitbox c : unsavedCircles) {
+        for(CircleHitbox c : allCircles) {
             if(c.isInvalidPosition()) {
                 return false;
             }
@@ -1030,13 +1137,7 @@ public class PlayerBuilder implements Screen {
 
     private int getOutOfBoundsCirclesCount() {
         int count = 0;
-        for(CircleHitbox c : playerRender) {
-            float angle = MathUtils.atan2(c.y, c.x);
-            if(Utils.getDistance(c.x + c.radius*MathUtils.cos(angle), c.y + c.radius*MathUtils.sin(angle), 0, 0) > Mappers.player.get(player).getCustomizationRadius() + CIRCLE_OVERLAP_LENIENCY) {
-                count++;
-            }
-        }
-        for(CircleHitbox c : unsavedCircles) {
+        for(CircleHitbox c : allCircles) {
             float angle = MathUtils.atan2(c.y, c.x);
             if(Utils.getDistance(c.x + c.radius*MathUtils.cos(angle), c.y + c.radius*MathUtils.sin(angle), 0, 0) > Mappers.player.get(player).getCustomizationRadius() + CIRCLE_OVERLAP_LENIENCY) {
                 count++;
@@ -1069,12 +1170,12 @@ public class PlayerBuilder implements Screen {
                     // Act 0.5s to speed past the dialog fade out
                     stage.act(0.5f);
 
-                    Mappers.hitbox.get(player).calculateGravitationalRadius();
+                    Mappers.hitbox.get(player).recenterOriginalCirclePositions();
                     main.loadHUD();
                 }
             });
         } else {
-            Mappers.hitbox.get(player).calculateGravitationalRadius();
+            Mappers.hitbox.get(player).recenterOriginalCirclePositions();
             main.loadHUD();
         }
     }
@@ -1121,6 +1222,7 @@ public class PlayerBuilder implements Screen {
                 enableNonPopupInputs();
                 if(task != null) {
                     task.run();
+                    remove();
                 }
             }
         };
@@ -1176,6 +1278,8 @@ public class PlayerBuilder implements Screen {
         isMovingCircle = false;
         isDraggingNewCircle = false;
 
+        circleDeletionPp = 0;
+
         centerCameraOnPlayerRender();
         playerRenderOrigin.x = 0;
         playerRenderOrigin.y = 0;
@@ -1188,9 +1292,12 @@ public class PlayerBuilder implements Screen {
     public void loadPlayerRenderFromPlayerEntity() {
         playerRender.clear();
         unsavedCircles.clear();
+        allCircles.clear();
 
         for(CircleHitbox c : Mappers.hitbox.get(player).getCircles()) {
-            playerRender.add(c.clone());
+            CircleHitbox c2 = c.clone();
+            playerRender.add(c2);
+            allCircles.add(c2);
         }
         for(int i = 0; i < playerRender.size(); i++) {
             CircleHitbox c = playerRender.get(i);
@@ -1229,12 +1336,7 @@ public class PlayerBuilder implements Screen {
         }
 
         boolean saveChangesDisabled = false;
-        for(CircleHitbox c : playerRender) {
-            if(c.isInvalidPosition()) {
-                saveChangesDisabled = true;
-            }
-        }
-        for(CircleHitbox c : unsavedCircles) {
+        for(CircleHitbox c : allCircles) {
             if(c.isInvalidPosition()) {
                 saveChangesDisabled = true;
             }
@@ -1257,9 +1359,12 @@ public class PlayerBuilder implements Screen {
         int typeMachineGun = 0;
         int typeHealth = 0;
         int typeUtility = 0;
-        for(CircleHitbox c : playerRender) {
+        float lifestealPerSecond = 0;
+        float maxSpeed = Options.PLAYER_BASE_MAX_SPEED;
+        for(CircleHitbox c : allCircles) {
             if(c.getAttackPattern() != null) {
                 dps += c.getAttackPattern().getDPS();
+                lifestealPerSecond += c.getAttackPattern().getDPS() * c.getAttackPattern().getLifestealMultiplier();
             }
             CircleHitbox.Specialization sp = c.getSpecialization().getRootSpecialization();
             if(sp == CircleHitbox.Specialization.NONE) {
@@ -1280,56 +1385,52 @@ public class PlayerBuilder implements Screen {
             }
             maxHealth += c.getMaxHealth();
             health += c.getHealth();
-        }
-        for(CircleHitbox c : unsavedCircles) {
-            if(c.getAttackPattern() != null) {
-                dps += c.getAttackPattern().getDPS();
-            }
-            CircleHitbox.Specialization sp = c.getSpecialization().getRootSpecialization();
-            if(sp == CircleHitbox.Specialization.NONE) {
-                typeNone++;
-            } else if(sp == CircleHitbox.Specialization.DAMAGE) {
-                typeDamage++;
-                if(c.getSpecialization().getParentSpecialization() == CircleHitbox.Specialization.SHOTGUN) {
-                    typeShotgun++;
-                } else if(c.getSpecialization().getParentSpecialization() == CircleHitbox.Specialization.SNIPER) {
-                    typeSniper++;
-                } else if(c.getSpecialization().getParentSpecialization() == CircleHitbox.Specialization.MACHINE_GUN) {
-                    typeMachineGun++;
-                }
-            } else if(sp == CircleHitbox.Specialization.HEALTH) {
-                typeHealth++;
-            } else if(sp == CircleHitbox.Specialization.UTILITY) {
-                typeUtility++;
-            }
-            maxHealth += c.getMaxHealth();
-            health += c.getHealth();
+            maxSpeed += c.getSpeedBoost();
         }
 
-        String s = "Total DPS: " + formatNumber(dps) + "\n"
+        String s = "Avg. DPS: " + formatNumber(dps) + "\n"
                 + "Total max health: " + (int)Math.ceil(maxHealth) + "\n"
                 + "Total health: " + (int)Math.ceil(health) + " (" + String.format("%.1f", (health/maxHealth) * 100f) + "%)\n"
-                + "Total circles: " + (playerRender.size() + unsavedCircles.size()) + "\n"
-                + "  Type none: " + typeNone + "\n"
-                + "  Type damage: " + typeDamage + "\n";
+                + "Circles count: " + (playerRender.size() + unsavedCircles.size()) + "\n"
+                + "  No type: " + typeNone + "\n"
+                + "  Damage type: " + typeDamage + "\n";
         if(typeDamage > 0) {
-            s += "    Machine gun: " + typeMachineGun + "\n"
-                    + "    Shotgun: " + typeShotgun + "\n"
-                    + "    Sniper: " + typeSniper + "\n";
+            s += "    Machine gun type: " + typeMachineGun + "\n"
+                    + "    Shotgun type: " + typeShotgun + "\n"
+                    + "    Sniper type: " + typeSniper + "\n";
         }
-        s += "  Type health: " + typeHealth + "\n"
-                + "  Type utility: " + typeUtility + "\n";
-        //TODO: average lifesteal/second, number of circles affected by each type of aura
+        s += "  Health sp.: " + typeHealth + "\n"
+                + "  Utility sp.: " + typeUtility + "\n"
+                + "Avg. lifesteal: " + formatNumber(lifestealPerSecond) + "/s\n"
+                + "Max speed: " + formatNumber(maxSpeed) + "\n";
+        //TODO: number of circles affected by each type of aura
         return s;
     }
 
     public static String formatNumber(float pp) {
-        if(Math.abs(pp) < 1) {
-            return String.format("%.3f", pp);
+        if(pp == 0) {
+            return "0";
+        } else if(Math.abs(pp) < 1) {
+            String s = String.format("%.3f", pp);
+            // Make sure string doesn't end in a 0 if there is a decimal point
+            while((s.charAt(s.length() - 1) == '0' && s.contains(".")) || s.charAt(s.length() - 1) == '.') {
+                s = s.substring(0, s.length() - 1);
+            }
+            return s;
         } else if(Math.abs(pp) < 10) {
-            return String.format("%.2f", pp);
+            String s = String.format("%.2f", pp);
+            // Make sure string doesn't end in a 0 if there is a decimal point
+            while((s.charAt(s.length() - 1) == '0' && s.contains(".")) || s.charAt(s.length() - 1) == '.') {
+                s = s.substring(0, s.length() - 1);
+            }
+            return s;
         } else if(Math.abs(pp) < 100) {
-            return String.format("%.1f", pp);
+            String s = String.format("%.1f", pp);
+            // Make sure string doesn't end in a 0 if there is a decimal point
+            while((s.charAt(s.length() - 1) == '0' && s.contains(".")) || s.charAt(s.length() - 1) == '.') {
+                s = s.substring(0, s.length() - 1);
+            }
+            return s;
         } else {
             return String.valueOf(Math.round(pp));
         }
@@ -1346,9 +1447,9 @@ public class PlayerBuilder implements Screen {
         playerRenderBatch.setProjectionMatrix(playerRenderCamera.combined);
         playerShapeRenderer.setProjectionMatrix(playerRenderCamera.combined);
 
-        // Draw player
         playerRenderBatch.begin();
-        for(CircleHitbox c : playerRender) {
+        // Draw circles
+        for(CircleHitbox c : allCircles) {
             int id;
             // Circle selection has priority for circle image
             if(selectedCircle != null && selectedCircle.equals(c)) {
@@ -1356,21 +1457,11 @@ public class PlayerBuilder implements Screen {
             } else if(c.isInvalidPosition()) {
                 id = RenderSystem.HitboxTextureType.PLAYER_RENDER_INVALID_POSITION.getId();
             } else {
-                id = c.getHitboxTextureType().getId();
-            }
-            if((selectedCircle != null && selectedCircle.equals(c) && !isMovingCircle) || !((selectedCircle != null && selectedCircle.equals(c)))) {
-                main.getRenderSystem().bubbleDrawables[id].draw(playerRenderBatch, c.x + playerRenderOrigin.x - c.radius, c.y + playerRenderOrigin.y - c.radius, c.radius * 2, c.radius * 2);
-            }
-        }
-        for(CircleHitbox c : unsavedCircles) {
-            int id;
-            // Circle selection has priority for circle image
-            if(selectedCircle != null && selectedCircle.equals(c)) {
-                id = RenderSystem.HitboxTextureType.PLAYER_RENDER_SELECTED.getId();
-            } else if(c.isInvalidPosition()) {
-                id = RenderSystem.HitboxTextureType.PLAYER_RENDER_INVALID_POSITION.getId();
-            } else {
-                id = c.getHitboxTextureType().getId();
+                if(c.getColor() == null) {
+                    id = c.getHitboxTextureType().getId();
+                } else {
+                    id = c.getColor().getId();
+                }
             }
             if((selectedCircle != null && selectedCircle.equals(c) && !isMovingCircle) || !((selectedCircle != null && selectedCircle.equals(c)))) {
                 main.getRenderSystem().bubbleDrawables[id].draw(playerRenderBatch, c.x + playerRenderOrigin.x - c.radius, c.y + playerRenderOrigin.y - c.radius, c.radius * 2, c.radius * 2);
@@ -1378,40 +1469,49 @@ public class PlayerBuilder implements Screen {
         }
         playerRenderBatch.end();
 
-        // Draw player outline and center
         Gdx.gl.glLineWidth(4f);
         playerShapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        for(CircleHitbox c : playerRender) {
-            RenderSystem.HitboxTextureType hitboxTextureType = null;
-            // Invalid position has priority for outline
-            if(c.isInvalidPosition()) {
-                hitboxTextureType = RenderSystem.HitboxTextureType.PLAYER_RENDER_INVALID_POSITION;
-            } else if(selectedCircle != null && selectedCircle.equals(c)) {
-                hitboxTextureType = RenderSystem.HitboxTextureType.PLAYER_RENDER_SELECTED;
-            } else {
-                hitboxTextureType = c.getHitboxTextureType();
-            }
-            if((selectedCircle != null && selectedCircle.equals(c) && !isMovingCircle) || !((selectedCircle != null && selectedCircle.equals(c)))) {
-                playerShapeRenderer.setColor(hitboxTextureType.getOutlineColor());
-                playerShapeRenderer.circle(c.x + playerRenderOrigin.x, c.y + playerRenderOrigin.y, c.radius);
+        // Draw auras
+        for(CircleHitbox c : allCircles) {
+            if(((selectedCircle != null && selectedCircle.equals(c) && !isMovingCircle) || !((selectedCircle != null && selectedCircle.equals(c)))) && c.getSpecialization().hasAura()) {
+                Color auraColor = null;
+                if(c.getSpecialization().hasLifestealAura()) {
+                    auraColor = LIFESTEAL_AURA_COLOR;
+                } else if(c.getSpecialization().hasDamageTakenAura()) {
+                    auraColor = DAMAGE_TAKEN_AURA_COLOR;
+                } else if(c.getSpecialization().hasMaxHealthAura()) {
+                    auraColor = MAX_HEALTH_AURA_COLOR;
+                }
+                playerShapeRenderer.setColor(auraColor);
+                playerShapeRenderer.circle(c.x + playerRenderOrigin.x, c.y + playerRenderOrigin.y, c.radius + Options.CIRCLE_AURA_RANGE);
             }
         }
-        for(CircleHitbox c : unsavedCircles) {
-            RenderSystem.HitboxTextureType hitboxTextureType = null;
-            // Invalid position has priority for outline
-            if(c.isInvalidPosition()) {
-                hitboxTextureType = RenderSystem.HitboxTextureType.PLAYER_RENDER_INVALID_POSITION;
-            } else if(selectedCircle != null && selectedCircle.equals(c)) {
-                hitboxTextureType = RenderSystem.HitboxTextureType.PLAYER_RENDER_SELECTED;
-            } else {
-                hitboxTextureType = c.getHitboxTextureType();
-            }
+        playerShapeRenderer.end();
+
+        // Draw player outline and center
+        playerShapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        for(CircleHitbox c : allCircles) {
             if((selectedCircle != null && selectedCircle.equals(c) && !isMovingCircle) || !((selectedCircle != null && selectedCircle.equals(c)))) {
+                RenderSystem.HitboxTextureType hitboxTextureType = null;
+                // Invalid position has priority for outline
+                if(c.isInvalidPosition()) {
+                    hitboxTextureType = RenderSystem.HitboxTextureType.PLAYER_RENDER_INVALID_POSITION;
+                } else if(selectedCircle != null && selectedCircle.equals(c)) {
+                    hitboxTextureType = RenderSystem.HitboxTextureType.PLAYER_RENDER_SELECTED;
+                } else {
+                    if(c.getColor() == null) {
+                        hitboxTextureType = c.getHitboxTextureType();
+                    } else {
+                        hitboxTextureType = c.getColor();
+                    }
+                }
+
                 playerShapeRenderer.setColor(hitboxTextureType.getOutlineColor());
                 playerShapeRenderer.circle(c.x + playerRenderOrigin.x, c.y + playerRenderOrigin.y, c.radius);
             }
         }
         // Draw player editable radius
+        playerShapeRenderer.set(ShapeRenderer.ShapeType.Line);
         playerShapeRenderer.setColor(Color.LIGHT_GRAY);
         playerShapeRenderer.circle(playerRenderOrigin.x, playerRenderOrigin.y, Mappers.player.get(player).getCustomizationRadius());
         playerShapeRenderer.end();
@@ -1443,14 +1543,41 @@ public class PlayerBuilder implements Screen {
         }
         // Draw circle being moved
         else if(isMovingCircle) {
+            Gdx.gl.glEnable(GL20.GL_BLEND);
+            Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
             int id;
             if(isInvalidPosition(movingCircleDragCurrentPoint.x + movingCircleDragOffset.x, movingCircleDragCurrentPoint.y + movingCircleDragOffset.y, selectedCircle.radius, selectedCircle)) {
                 id = RenderSystem.HitboxTextureType.PLAYER_RENDER_INVALID_POSITION.getId();
             } else {
                 id = RenderSystem.HitboxTextureType.PLAYER_RENDER_SELECTED.getId();
             }
+            // Draw aura, if any
+            if(selectedCircle.getSpecialization().hasAura()) {
+                stage.getBatch().end();
+                playerShapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+
+                Color auraColor = null;
+                if (selectedCircle.getSpecialization().hasLifestealAura()) {
+                    auraColor = LIFESTEAL_AURA_COLOR;
+                } else if (selectedCircle.getSpecialization().hasDamageTakenAura()) {
+                    auraColor = DAMAGE_TAKEN_AURA_COLOR;
+                } else if (selectedCircle.getSpecialization().hasMaxHealthAura()) {
+                    auraColor = MAX_HEALTH_AURA_COLOR;
+                }
+                playerShapeRenderer.setColor(auraColor);
+                Vector3 worldCoordinates = playerRenderCamera.unproject(new Vector3(movingCircleDragCurrentPoint.x + movingCircleDragOffset.x, -(movingCircleDragCurrentPoint.y + movingCircleDragOffset.y - screenHeight), 0));
+                playerShapeRenderer.circle(worldCoordinates.x, worldCoordinates.y, selectedCircle.radius + Options.CIRCLE_AURA_RANGE);
+
+                playerShapeRenderer.end();
+                stage.getBatch().begin();
+            }
+
+            // Draw circle
             main.getRenderSystem().bubbleDrawables[id].draw(stage.getBatch(), movingCircleDragCurrentPoint.x + movingCircleDragOffset.x - selectedCircleRadiusInScreenUnits,
                     movingCircleDragCurrentPoint.y + movingCircleDragOffset.y - selectedCircleRadiusInScreenUnits, selectedCircleRadiusInScreenUnits * 2, selectedCircleRadiusInScreenUnits * 2);
+
+            Gdx.gl.glDisable(GL20.GL_BLEND);
         }
         stage.getBatch().end();
 
@@ -1463,6 +1590,26 @@ public class PlayerBuilder implements Screen {
         // Draw arrow showing circle is looking up
         playerShapeRenderer.rectLine(0, gridLineLength, -15f, gridLineLength - 15f, 0.5f);
         playerShapeRenderer.rectLine(0, gridLineLength, 15f, gridLineLength - 15f, 0.5f);
+        // Draw arrow showing angle of selected circle's attack pattern aim
+        if(selectedCircle != null && selectedCircle.getAttackPattern() != null && !isMovingCircle) {
+            float angle = PLAYER_RENDER_ANGLE;
+            if(isDraggingAttackPatternArrowAngle) {
+                angle += draggingAttackPatternArrowAngle;
+            } else {
+                angle += selectedCircle.getAttackPattern().getAngleOffset();
+            }
+            float cos = MathUtils.cos(angle);
+            float sin = MathUtils.sin(angle);
+            playerShapeRenderer.setColor(selectedCircle.getSpecialization().getHitboxTextureType().getOutlineColor());
+            playerShapeRenderer.rectLine(selectedCircle.x + playerRenderOrigin.x, selectedCircle.y + playerRenderOrigin.y,
+                    selectedCircle.x + playerRenderOrigin.x + cos * (selectedCircle.radius + ATTACK_PATTERN_ANGLE_ARROW_LENGTH), selectedCircle.y + playerRenderOrigin.y + sin * (selectedCircle.radius + ATTACK_PATTERN_ANGLE_ARROW_LENGTH), 0.5f);
+            playerShapeRenderer.rectLine(selectedCircle.x + playerRenderOrigin.x + cos * (selectedCircle.radius + ATTACK_PATTERN_ANGLE_ARROW_LENGTH), selectedCircle.y + playerRenderOrigin.y + sin * (selectedCircle.radius + ATTACK_PATTERN_ANGLE_ARROW_LENGTH),
+                    selectedCircle.x + playerRenderOrigin.x + cos * (selectedCircle.radius + ATTACK_PATTERN_ANGLE_ARROW_LENGTH) + MathUtils.cos(angle + MathUtils.PI + MathUtils.PI / 4f) * 30f,
+                    selectedCircle.y + playerRenderOrigin.y + sin * (selectedCircle.radius + ATTACK_PATTERN_ANGLE_ARROW_LENGTH) + MathUtils.sin(angle + MathUtils.PI + MathUtils.PI / 4f)*30f, 0.5f);
+            playerShapeRenderer.rectLine(selectedCircle.x + playerRenderOrigin.x + cos * (selectedCircle.radius + ATTACK_PATTERN_ANGLE_ARROW_LENGTH), selectedCircle.y + playerRenderOrigin.y + sin * (selectedCircle.radius + ATTACK_PATTERN_ANGLE_ARROW_LENGTH),
+                    selectedCircle.x + playerRenderOrigin.x + cos * (selectedCircle.radius + ATTACK_PATTERN_ANGLE_ARROW_LENGTH) + MathUtils.cos(angle + MathUtils.PI - MathUtils.PI / 4f) * 30f,
+                    selectedCircle.y + playerRenderOrigin.y + sin * (selectedCircle.radius + ATTACK_PATTERN_ANGLE_ARROW_LENGTH) + MathUtils.sin(angle + MathUtils.PI - MathUtils.PI / 4f)*30f, 0.5f);
+        }
         playerShapeRenderer.end();
 
         staticShapeRenderer.begin();
@@ -1486,25 +1633,13 @@ public class PlayerBuilder implements Screen {
 
         // Check if overlapping with other circles
         if(circle == null) {
-            for (CircleHitbox c2 : playerRender) {
-                if (Utils.getDistance(worldCoordinates.x, worldCoordinates.y, c2.x, c2.y) < circleRadiusInWorldUnits + c2.radius - CIRCLE_OVERLAP_LENIENCY) {
-                    return true;
-                }
-            }
-            for (CircleHitbox c2 : unsavedCircles) {
+            for (CircleHitbox c2 : allCircles) {
                 if (Utils.getDistance(worldCoordinates.x, worldCoordinates.y, c2.x, c2.y) < circleRadiusInWorldUnits + c2.radius - CIRCLE_OVERLAP_LENIENCY) {
                     return true;
                 }
             }
         } else {
-            for (CircleHitbox c2 : playerRender) {
-                if(!circle.equals(c2)) {
-                    if (Utils.getDistance(worldCoordinates.x, worldCoordinates.y, c2.x, c2.y) < circleRadiusInWorldUnits + c2.radius - CIRCLE_OVERLAP_LENIENCY) {
-                        return true;
-                    }
-                }
-            }
-            for (CircleHitbox c2 : unsavedCircles) {
+            for (CircleHitbox c2 : allCircles) {
                 if(!circle.equals(c2)) {
                     if (Utils.getDistance(worldCoordinates.x, worldCoordinates.y, c2.x, c2.y) < circleRadiusInWorldUnits + c2.radius - CIRCLE_OVERLAP_LENIENCY) {
                         return true;
@@ -1543,6 +1678,7 @@ public class PlayerBuilder implements Screen {
 
         playerRender.clear();
         unsavedCircles.clear();
+        allCircles.clear();
     }
 
     @Override

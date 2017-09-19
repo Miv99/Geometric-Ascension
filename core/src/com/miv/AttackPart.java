@@ -30,10 +30,11 @@ public class AttackPart {
     // Origin of the bullet with respect to the origin of the parent entity
     private float originX;
     private float originY;
-    // Speed of bullet
+
     private float speed;
     private float radius;
     private float damage;
+    private float lifestealPercent;
 
     private float originalDelay;
     private float originalSpeed;
@@ -50,6 +51,10 @@ public class AttackPart {
     // Determined by attackPartAngleDeterminant
     private float angleInRadians;
 
+    // Color determined by HitboxTextureType since textures are generated only through HitboxTextureType values
+    // null value defaults color to either PLAYER_BULLET or ENEMY_BULLET's, depending on the entity that this bullet comes from
+    private RenderSystem.HitboxTextureType color = null;
+
     /**
      * @param originAngle - The lastFacedAngle of the parent's hitbox, in radians
      */
@@ -58,10 +63,10 @@ public class AttackPart {
 
         Entity e = engine.createEntity();
         if(Mappers.player.has(parent)) {
-            e.add(engine.createComponent(PlayerBulletComponent.class).setDamage(damage));
+            e.add(engine.createComponent(PlayerBulletComponent.class).setDamage(damage).setLifestealMultiplier(parent, lifestealPercent));
             hitboxTextureType = RenderSystem.HitboxTextureType.PLAYER_BULLET;
         } else {
-            e.add(engine.createComponent(EnemyBulletComponent.class).setDamage(damage));
+            e.add(engine.createComponent(EnemyBulletComponent.class).setDamage(damage).setLifestealMultiplier(parent, lifestealPercent));
             hitboxTextureType = RenderSystem.HitboxTextureType.ENEMY_BULLET;
         }
 
@@ -93,6 +98,7 @@ public class AttackPart {
         hitbox.setVelocity(speed * MathUtils.cos(angle), speed * MathUtils.sin(angle));
         CircleHitbox circleHitbox = new CircleHitbox();
         circleHitbox.setHitboxTextureType(hitboxTextureType);
+        circleHitbox.setColor(color);
         circleHitbox.setRadius(radius);
         hitbox.addCircle(circleHitbox, true);
         e.add(hitbox);
@@ -117,6 +123,8 @@ public class AttackPart {
         ap.originalDelay = originalDelay;
         ap.originalRadius = originalRadius;
         ap.originalSpeed = originalSpeed;
+        ap.lifestealPercent = lifestealPercent;
+        ap.color = color;
         return ap;
     }
 
@@ -145,6 +153,10 @@ public class AttackPart {
             originalDelay = delay;
         }
         return this;
+    }
+
+    public void setColor(RenderSystem.HitboxTextureType color) {
+        this.color = color;
     }
 
     public float getOriginX() {
@@ -298,5 +310,13 @@ public class AttackPart {
 
     public void setOriginalDamage(float originalDamage) {
         this.originalDamage = originalDamage;
+    }
+
+    public float getLifestealPercent() {
+        return lifestealPercent;
+    }
+
+    public void setLifestealPercent(float lifestealPercent) {
+        this.lifestealPercent = lifestealPercent;
     }
 }

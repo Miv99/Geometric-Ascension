@@ -118,37 +118,40 @@ public class MovementSystem extends EntitySystem {
 
     private void handleBulletCollision(Entity victim, CircleHitbox victimCircleHit, Entity bullet) {
         if(!entityRemovalQueue.contains(bullet) && !entityRemovalQueue.contains(victim)) {
-            float damage = 0;
-            if (Mappers.enemyBullet.has(bullet)) {
-                damage = Mappers.enemyBullet.get(bullet).getDamage();
-            } else if (Mappers.playerBullet.has(bullet)) {
-                damage = Mappers.playerBullet.get(bullet).getDamage();
-            }
-
-            // Victim takes damage
             HitboxComponent victimHitbox = Mappers.hitbox.get(victim);
             if(!victimHitbox.isIntangible()) {
-                victimCircleHit.setHealth(victimCircleHit.getHealth() - damage);
-            }
-
-            if (victimCircleHit.getHealth() <= 0) {
-                //TODO: circle death animation
-                victimHitbox.queueCircleRemoval(victimCircleHit);
-
-                if (Mappers.enemy.has(victim)) {
-                    Mappers.player.get(player).addPixelPoints(main, victimCircleHit.getPpGain());
-
-                    // TODO: remove this
-                    if (victimCircleHit.getPpGain() <= 0) {
-                        System.out.println("you messed up; a circle has no pp gain for some reason 1374dskjfsd9");
-                    }
+                float damage = 0;
+                if (Mappers.enemyBullet.has(bullet)) {
+                    damage = Mappers.enemyBullet.get(bullet).getDamage();
+                    // Parent gets healed
+                    Mappers.hitbox.get(Mappers.enemyBullet.get(bullet).getEntityToBeHealed()).healWeakestCircle(damage * Mappers.enemyBullet.get(bullet).getLifestealMultiplier());
+                } else if (Mappers.playerBullet.has(bullet)) {
+                    damage = Mappers.playerBullet.get(bullet).getDamage();
+                    Mappers.hitbox.get(Mappers.playerBullet.get(bullet).getEntityToBeHealed()).healWeakestCircle(damage * Mappers.enemyBullet.get(bullet).getLifestealMultiplier());
                 }
 
-                // All hit circles considered dead when number of circles is 1 because size() is not updated until
-                // the circle removal queue is fired.
-                if (victimHitbox.getCircles().size() == 1) {
-                    // Queue entity removal from engine
-                    entityRemovalQueue.add(victim);
+                // Victim takes damage
+                victimCircleHit.setHealth(victimCircleHit.getHealth() - damage);
+
+
+                if (victimCircleHit.getHealth() <= 0) {
+                    victimHitbox.queueCircleRemoval(victimCircleHit);
+
+                    if (Mappers.enemy.has(victim)) {
+                        Mappers.player.get(player).addPixelPoints(main, victimCircleHit.getPpGain());
+
+                        // TODO: remove this
+                        if (victimCircleHit.getPpGain() <= 0) {
+                            System.out.println("you messed up; a circle has no pp gain for some reason 1374dskjfsd9");
+                        }
+                    }
+
+                    // All hit circles considered dead when number of circles is 1 because size() is not updated until
+                    // the circle removal queue is fired.
+                    if (victimHitbox.getCircles().size() == 1) {
+                        // Queue entity removal from engine
+                        entityRemovalQueue.add(victim);
+                    }
                 }
             }
 

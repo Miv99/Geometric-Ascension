@@ -17,6 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Timer;
 import com.miv.Mappers;
+import com.miv.Options;
 
 import java.util.ArrayList;
 
@@ -117,11 +118,29 @@ public class Utils {
         return (float)Math.sqrt((x1 - x2)*(x1 - x2) + (y1 - y2)*(y1 - y2));
     }
 
+    /**
+     * Returns the same angle in the range [0, 360) degrees.
+     * Angle returned is in radians.
+     */
     public static float normalizeAngle(float angleInRadians) {
         if(angleInRadians < 0) {
             return normalizeAngle(angleInRadians + MathUtils.PI2);
         } else if(angleInRadians > MathUtils.PI2) {
             return normalizeAngle(angleInRadians - MathUtils.PI2);
+        } else {
+            return angleInRadians;
+        }
+    }
+
+    /**
+     * Returns the same angle but in the range (-180, 180] degrees.
+     * Angle returned is in radians.
+     */
+    public static float normalizeAngleIn180Range(float angleInRadians) {
+        if(angleInRadians < -MathUtils.PI) {
+            return normalizeAngleIn180Range(angleInRadians + MathUtils.PI2);
+        } else if(angleInRadians > MathUtils.PI) {
+            return normalizeAngleIn180Range(angleInRadians - MathUtils.PI2);
         } else {
             return angleInRadians;
         }
@@ -156,5 +175,24 @@ public class Utils {
         }
 
         return e;
+    }
+
+    /**
+     * The aura giver also receives aura buffs
+     */
+    public static void setAuraBuffsForAllCircles(ArrayList<CircleHitbox> circles) {
+        for(CircleHitbox c : circles) {
+            c.removeAuraBuffs();
+        }
+
+        for(CircleHitbox c : circles) {
+            if(c.getSpecialization().hasAura()) {
+                for(CircleHitbox c2 : circles) {
+                    if(getDistance(c.x, c.y, c2.x, c2.y) < c.radius + c2.radius + Options.CIRCLE_AURA_RANGE) {
+                        c2.receiveAuraBuffs(c);
+                    }
+                }
+            }
+        }
     }
 }

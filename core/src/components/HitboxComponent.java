@@ -84,6 +84,7 @@ public class HitboxComponent implements Component, Pool.Poolable {
 
     private boolean ignoreSpeedLimit;
     private float maxSpeed;
+    private float baseMaxSpeed;
 
     private SubEntityStats subEntityStats;
 
@@ -301,6 +302,16 @@ public class HitboxComponent implements Component, Pool.Poolable {
         return getTotalMissingHealth()/Options.HEALTH_PER_PP_HEALING_COST_RATIO;
     }
 
+    public void healWeakestCircle(float health) {
+        CircleHitbox weakest = circles.get(0);
+        for(CircleHitbox c : circles) {
+            if(c.getHealth() < weakest.getHealth()) {
+                weakest = c;
+            }
+        }
+        weakest.setHealth(weakest.getHealth() + health);
+    }
+
     /**
      * @param pp amount of pp put into healing
      * @return the leftover pp
@@ -402,10 +413,6 @@ public class HitboxComponent implements Component, Pool.Poolable {
         return maxSpeed;
     }
 
-    public void setMaxSpeed(float maxSpeed) {
-        this.maxSpeed = maxSpeed;
-    }
-
     public float getLastFacedAngle() {
         return lastFacedAngle;
     }
@@ -445,6 +452,9 @@ public class HitboxComponent implements Component, Pool.Poolable {
             circle.setOriginalPosX(circle.x);
             circle.setOriginalPosY(circle.y);
         }
+
+        Utils.setAuraBuffsForAllCircles(circles);
+        recalculateSpeedBoost();
     }
 
     public void queueCircleRemoval(CircleHitbox circle) {
@@ -470,11 +480,7 @@ public class HitboxComponent implements Component, Pool.Poolable {
                 subEntities.add(subEntity);
                 subEntity = splitIntoSubEntities(engine, self);
             }
-            if(Mappers.player.has(self)) {
-                calculateGravitationalRadius();
-            } else {
-                recenterOriginalCirclePositions();
-            }
+            recenterOriginalCirclePositions();
 
             // Transfer part of pp to all other boss entities' circles' attack patterns evenly
             if(transferPpToBosses && c.getAttackPattern() != null) {
@@ -501,10 +507,23 @@ public class HitboxComponent implements Component, Pool.Poolable {
                 }
             }
 
+            // Recalculate aura buffs
+            Utils.setAuraBuffsForAllCircles(circles);
+            // Recalculate speed boost
+            recalculateSpeedBoost();
+
             return subEntities;
         }
 
         return null;
+    }
+
+    private void recalculateSpeedBoost() {
+        float speedBoostFromSpecializations = 0f;
+        for(CircleHitbox c : circles) {
+            speedBoostFromSpecializations += c.getSpeedBoost();
+        }
+        maxSpeed = baseMaxSpeed + speedBoostFromSpecializations;
     }
 
     public float getGravitationalRadius() {
@@ -625,5 +644,14 @@ public class HitboxComponent implements Component, Pool.Poolable {
 
     public void setAimingAngle(float aimingAngle) {
         this.aimingAngle = aimingAngle;
+    }
+
+    public float getBaseMaxSpeed() {
+        return baseMaxSpeed;
+    }
+
+    public void setMaxSpeed(float baseMaxSpeed) {
+        this.baseMaxSpeed = baseMaxSpeed;
+        recalculateSpeedBoost();
     }
 }
