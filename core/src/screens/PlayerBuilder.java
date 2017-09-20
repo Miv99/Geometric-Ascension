@@ -181,7 +181,10 @@ public class PlayerBuilder implements Screen {
         }
 
         public void playShowAnimation() {
-            setTouchable(Touchable.enabled);
+            chooseButton.setTouchable(Touchable.enabled);
+            for(Actor a : choices) {
+                a.setTouchable(Touchable.enabled);
+            }
 
             cancelChoosing.setTouchable(Touchable.enabled);
             cancelChoosing.addAction(Actions.alpha(0.7f, ANIMATION_TIME));
@@ -199,7 +202,10 @@ public class PlayerBuilder implements Screen {
         }
 
         public void playHideAnimation() {
-            setTouchable(Touchable.disabled);
+            chooseButton.setTouchable(Touchable.disabled);
+            for(Actor a : choices) {
+                a.setTouchable(Touchable.disabled);
+            }
 
             cancelChoosing.setTouchable(Touchable.disabled);
             cancelChoosing.addAction(Actions.fadeOut(ANIMATION_TIME));
@@ -1354,9 +1360,6 @@ public class PlayerBuilder implements Screen {
         float dps = 0f;
         int typeNone = 0;
         int typeDamage = 0;
-        int typeShotgun = 0;
-        int typeSniper = 0;
-        int typeMachineGun = 0;
         int typeHealth = 0;
         int typeUtility = 0;
         float lifestealPerSecond = 0;
@@ -1371,13 +1374,6 @@ public class PlayerBuilder implements Screen {
                 typeNone++;
             } else if(sp == CircleHitbox.Specialization.DAMAGE) {
                 typeDamage++;
-                if(c.getSpecialization().getParentSpecialization() == CircleHitbox.Specialization.SHOTGUN) {
-                    typeShotgun++;
-                } else if(c.getSpecialization().getParentSpecialization() == CircleHitbox.Specialization.SNIPER) {
-                    typeSniper++;
-                } else if(c.getSpecialization().getParentSpecialization() == CircleHitbox.Specialization.MACHINE_GUN) {
-                    typeMachineGun++;
-                }
             } else if(sp == CircleHitbox.Specialization.HEALTH) {
                 typeHealth++;
             } else if(sp == CircleHitbox.Specialization.UTILITY) {
@@ -1394,11 +1390,6 @@ public class PlayerBuilder implements Screen {
                 + "Circles count: " + (playerRender.size() + unsavedCircles.size()) + "\n"
                 + "  No type: " + typeNone + "\n"
                 + "  Damage type: " + typeDamage + "\n";
-        if(typeDamage > 0) {
-            s += "    Machine gun type: " + typeMachineGun + "\n"
-                    + "    Shotgun type: " + typeShotgun + "\n"
-                    + "    Sniper type: " + typeSniper + "\n";
-        }
         s += "  Health sp.: " + typeHealth + "\n"
                 + "  Utility sp.: " + typeUtility + "\n"
                 + "Avg. lifesteal: " + formatNumber(lifestealPerSecond) + "/s\n"

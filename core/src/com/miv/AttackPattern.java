@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 import map.Map;
 import screens.PlayerBuilder;
+import systems.RenderSystem;
 import utils.CircleHitbox;
 import utils.Utils;
 
@@ -204,9 +205,13 @@ public class AttackPattern {
                 specialization.getInitialBulletDamageMultiplier(), specialization.getInitialBulletRadiusMultiplier(),
                 specialization.getInitialLifestealMultiplier() + ((parent.getLevel() - (specialization.getDepth() * 5)) * specialization.getDeltaLifestealMultiplier()));
 
-        // Change colors
-        for(AttackPart ap : attackParts) {
-            ap.setColor(specialization.getHitboxTextureType());
+        // Enemy bullet colors are always the same so don't change colors for attack patterns
+        // whose parent is an enemy
+        if(!parent.getHitboxTextureType().equals(RenderSystem.HitboxTextureType.ENEMY)) {
+            // Change colors
+            for (AttackPart ap : attackParts) {
+                ap.setColor(specialization.getHitboxTextureType());
+            }
         }
     }
 

@@ -537,7 +537,7 @@ public class CircleHitbox extends Circle {
 
         lifestealMultiplierFromAura += sp.initialLifestealMultiplierAura + ((source.level - (sp.getDepth() * 5)) * sp.deltaLifestealMultiplierAura);
 
-        maxHealthMultiplierFromAura += 1f - (sp.initialMaxHealthMultiplierAura + ((source.level - (sp.getDepth() * 5)) * sp.deltaMaxHealthMultiplierAura));
+        maxHealthMultiplierFromAura += (sp.initialMaxHealthMultiplierAura + ((source.level - (sp.getDepth() * 5)) * sp.deltaMaxHealthMultiplierAura)) - 1f;
     }
 
     public String getAttackPatternFormattedStats() {
@@ -568,11 +568,14 @@ public class CircleHitbox extends Circle {
                 s += "  " + PlayerBuilder.formatNumber(lifestealMultiplierFromAura * 100f) + "%  from aura(s)\n";
             }
         } else if(attackPattern != null && lifestealMultiplierFromAura != 0) {
-            s += "Lifesteal from aura(s): " + PlayerBuilder.formatNumber((attackPattern.getLifestealMultiplier() + lifestealMultiplierFromAura) * 100f) + "%\n";
+            s += "\nLifesteal from aura(s): " + PlayerBuilder.formatNumber((attackPattern.getLifestealMultiplier() + lifestealMultiplierFromAura) * 100f) + "%\n";
+            if(damageTakenMultiplierFromAura != 1) {
+                s += "Def. from aura(s): " + PlayerBuilder.formatNumber(Math.min(1f/damageTakenMultiplierFromAura, 1f/Options.MIN_DAMAGE_TAKEN_MULTIPLIER)) + "x\n";
+            }
+        } else if(damageTakenMultiplierFromAura != 1) {
+            s += "\nDef. from aura(s): " + PlayerBuilder.formatNumber(Math.min(1f/damageTakenMultiplierFromAura, 1f/Options.MIN_DAMAGE_TAKEN_MULTIPLIER)) + "x\n";
         }
-        if(damageTakenMultiplierFromAura != 1) {
-            s += "Def. from aura(s): " + PlayerBuilder.formatNumber(Math.min(1f/damageTakenMultiplierFromAura, 1f/Options.MIN_DAMAGE_TAKEN_MULTIPLIER)) + "x\n";
-        }
+
 
         if(specialization.hasAura()) {
             s += "\n";
@@ -649,8 +652,7 @@ public class CircleHitbox extends Circle {
         if(specialization != null) {
             newRadius = specialization.initialRadius + ((level - (specialization.getDepth() * 5)) * specialization.deltaRadius);
         }
-        setBaseMaxHealth(baseMaxHealth + Options.CIRCLE_DELTA_MAX_HEALTH * specialization.deltaMaxHealthMultiplier);
-        setMaxHealth(baseMaxHealth * specialization.initialMaxHealthMultiplier);
+        setBaseMaxHealth(baseMaxHealth + (Options.CIRCLE_DELTA_MAX_HEALTH * specialization.deltaMaxHealthMultiplier));
         setRadius(newRadius);
         setSpeedBoost(specialization.initialRawSpeedBoost + ((level - (specialization.getDepth() * 5)) * specialization.deltaRawSpeedBoost));
 
@@ -667,7 +669,7 @@ public class CircleHitbox extends Circle {
         specializationAvailable = false;
 
         this.specialization = newSpecialization;
-        setMaxHealth(maxHealth * (newSpecialization.initialMaxHealthMultiplier + maxHealthMultiplierFromAura));
+        setBaseMaxHealth(baseMaxHealth);
         setRadius(newSpecialization.initialRadius);
         setSpeedBoost(specialization.initialRawSpeedBoost + ((level - (specialization.getDepth() * 5)) * specialization.deltaRawSpeedBoost));
 
@@ -786,6 +788,11 @@ public class CircleHitbox extends Circle {
 
     public void setBaseMaxHealth(float baseMaxHealth) {
         this.baseMaxHealth = baseMaxHealth;
+        if(specialization == null) {
+            setMaxHealth(baseMaxHealth * (maxHealthMultiplierFromAura));
+        } else {
+            setMaxHealth(baseMaxHealth * (specialization.initialMaxHealthMultiplier + maxHealthMultiplierFromAura));
+        }
     }
 
     public boolean isSpecializationAvailable() {

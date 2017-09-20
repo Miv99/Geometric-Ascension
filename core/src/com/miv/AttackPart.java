@@ -59,7 +59,7 @@ public class AttackPart {
      * @param originAngle - The lastFacedAngle of the parent's hitbox, in radians
      */
     public void fire(PooledEngine engine, Entity parent, Entity player, float originX, float originY, float originAngle) {
-        RenderSystem.HitboxTextureType hitboxTextureType = null;
+        RenderSystem.HitboxTextureType hitboxTextureType;
 
         Entity e = engine.createEntity();
         if(Mappers.player.has(parent)) {
@@ -98,7 +98,9 @@ public class AttackPart {
         hitbox.setVelocity(speed * MathUtils.cos(angle), speed * MathUtils.sin(angle));
         CircleHitbox circleHitbox = new CircleHitbox();
         circleHitbox.setHitboxTextureType(hitboxTextureType);
-        circleHitbox.setColor(color);
+        if(color != null) {
+            circleHitbox.setColor(color);
+        }
         circleHitbox.setRadius(radius);
         hitbox.addCircle(circleHitbox, true);
         e.add(hitbox);

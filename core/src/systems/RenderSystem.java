@@ -69,7 +69,7 @@ public class RenderSystem extends EntitySystem {
         PLAYER_RENDER_INVALID_POSITION(5, new Color(Color.RED.r, Color.RED.g, Color.RED.b, 0.3f), new Color(Color.RED)),
         PLAYER_NEW_CIRCLE(6, new Color(Color.GREEN.r, Color.GREEN.g, Color.GREEN.b, 0.3f), new Color(Color.RED)),
 
-        PLAYER_DAMAGE_SPECIALIZATION(7, new Color(Color.RED.r, Color.RED.g, Color.RED.b, 0.3f), new Color(0f, 163/255f, 33/255f, 1f)),
+        PLAYER_DAMAGE_SPECIALIZATION(7, new Color(190/255f, 0f, 0f, 0.3f), new Color(0f, 163/255f, 33/255f, 1f)),
         PLAYER_HEALTH_SPECIALIZATION(8, new Color(Color.CYAN.r, Color.CYAN.g, Color.CYAN.b, 0.3f), new Color(0f, 163/255f, 33/255f, 1f)),
         PLAYER_HEALTH_AURA_SPECIALIZATION(9, new Color(Color.BLUE.r, Color.BLUE.g, Color.BLUE.b, 0.3f), new Color(0f, 163/255f, 33/255f, 1f)),
         PLAYER_LIFESTEAL_SPECIALIZATION(10, new Color(Color.GREEN.r, Color.GREEN.g, Color.GREEN.b, 0.3f), new Color(0f, 163/255f, 33/255f, 1f)),

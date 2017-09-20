@@ -127,7 +127,7 @@ public class MovementSystem extends EntitySystem {
                     Mappers.hitbox.get(Mappers.enemyBullet.get(bullet).getEntityToBeHealed()).healWeakestCircle(damage * Mappers.enemyBullet.get(bullet).getLifestealMultiplier());
                 } else if (Mappers.playerBullet.has(bullet)) {
                     damage = Mappers.playerBullet.get(bullet).getDamage();
-                    Mappers.hitbox.get(Mappers.playerBullet.get(bullet).getEntityToBeHealed()).healWeakestCircle(damage * Mappers.enemyBullet.get(bullet).getLifestealMultiplier());
+                    Mappers.hitbox.get(Mappers.playerBullet.get(bullet).getEntityToBeHealed()).healWeakestCircle(damage * Mappers.playerBullet.get(bullet).getLifestealMultiplier());
                 }
 
                 // Victim takes damage
