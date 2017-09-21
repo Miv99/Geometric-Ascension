@@ -249,6 +249,9 @@ public class Map {
         mapArea.setEnemyCount(enemies);
         float ppPerEnemy = maxPixelPoints/(float)enemies * (minEnemiesPerMapArea + maxEnemiesPerMapArea)/2f;
 
+        // Set map area attack pattern bias
+        AttackPattern bias = AttackPatternFactory.getRandomAttackPatternByFloor(floor);
+
         // Array list of circles that surround each enemy's hitbox
         // Used to avoid spawning enemies too close to each other
         ArrayList<CircleHitbox> enemyBoundingCircles = new ArrayList<CircleHitbox>();
@@ -271,7 +274,13 @@ public class Map {
 
             ArrayList<CircleHitbox> circles = ecd.getCircleHitboxes();
 
-            AttackPattern attackPattern = AttackPatternFactory.getRandomAttackPatternByFloor(floor);
+            AttackPattern attackPattern;
+            // 75% of enemy having the map area's attack pattern bias
+            if(Math.random() < 0.75f) {
+                attackPattern = bias.clone();
+            } else {
+                attackPattern = AttackPatternFactory.getRandomAttackPatternByFloor(floor);
+            }
             attackPattern.addRandomAttackPatternStatModifiers(ppPerEnemy);
             adjustedPpPerEnemy *= Math.pow((attackPattern.getBulletDamagePpMultiplier() * attackPattern.getBulletRadiusPpMultiplier() * attackPattern.getFireIntervalPpMultiplier() * attackPattern.getSpeedPpMultiplier())/3f, 1.5f);
 
