@@ -353,6 +353,27 @@ public class CircleHitbox extends Circle {
             return parentSpecialization;
         }
 
+        public boolean isATypeOf(Specialization specialization) {
+            if(this.equals(specialization)) {
+                return true;
+            } else {
+                Specialization sp = parentSpecialization;
+                if(sp == null) {
+                    return false;
+                }
+                if(sp.equals(specialization)) {
+                    return true;
+                }
+                while (sp.parentSpecialization != null && sp.parentSpecialization != NONE) {
+                    sp = sp.parentSpecialization;
+                    if(sp.equals(specialization)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+
         public Specialization getRootSpecialization() {
             if(parentSpecialization == null || parentSpecialization == NONE) {
                 return this;

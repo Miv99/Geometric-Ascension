@@ -52,7 +52,7 @@ public class BossFactory {
                 float angle = i * MathUtils.degreesToRadians * (360/16f);
                 ca1.add(new CircleHitbox(
                         RenderSystem.HitboxTextureType.ENEMY,
-                        AttackPatternFactory.getAttackPattern("BOSS_1_1").addRandomAttackPatternStatModifiers(pp),
+                        AttackPatternFactory.getAttackPattern("BOSS_1_2").addRandomAttackPatternStatModifiers(pp),
                         (mainRadius + subRadius) * MathUtils.cos(angle), (mainRadius + subRadius) * MathUtils.sin(angle),
                         subRadius,
                         pp * 10f,

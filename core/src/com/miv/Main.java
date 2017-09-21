@@ -85,6 +85,8 @@ public class Main extends Game {
 	public static final String MAP_AREA_TRAVEL_BUTTON_DOWN_PATH = "map_area_travel_button_down.png";
 	public static final String ATTACK_PATTERN_INFO_DISPLAY_TOGGLE_BUTTON_UP_PATH = "attack_pattern_info_display_toggle_button_up.png";
 	public static final String ATTACK_PATTERN_INFO_DISPLAY_TOGGLE_BUTTON_DOWN_PATH = "attack_pattern_info_display_toggle_button_down.png";
+	public static final String UNDO_BUTTON_UP_PATH = "undo_button_up.png";
+	public static final String UNDO_BUTTON_DOWN_PATH = "undo_button_down.png";
 
 	public static final String BUBBLE_DEFAULT_PATH = "bubble_default.png";
     public static final String BUBBLE_SHIELD_PATH = "bubble_shield.png";
@@ -275,6 +277,8 @@ public class Main extends Game {
 		assetManager.load(MAP_AREA_TRAVEL_BUTTON_DOWN_PATH, Texture.class);
 		assetManager.load(ATTACK_PATTERN_INFO_DISPLAY_TOGGLE_BUTTON_UP_PATH, Texture.class);
 		assetManager.load(ATTACK_PATTERN_INFO_DISPLAY_TOGGLE_BUTTON_DOWN_PATH, Texture.class);
+		assetManager.load(UNDO_BUTTON_UP_PATH, Texture.class);
+		assetManager.load(UNDO_BUTTON_DOWN_PATH, Texture.class);
 
 		assetManager.load(BUBBLE_SHIELD_PATH, Texture.class);
 		assetManager.load(BUBBLE_DEFAULT_PATH, Texture.class);

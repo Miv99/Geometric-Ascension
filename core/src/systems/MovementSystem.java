@@ -356,7 +356,7 @@ public class MovementSystem extends EntitySystem {
                 // I already know this is bad code; it's used only for player travelling
                 if(!hitbox.isTravellingFlag() && mapAreaIsOutOfCameraRange()) {
                     if(!map.getCurrentArea().isBossArea()) {
-                        map.enterNewArea(engine, e, (int)hitbox.getTravellingMapAreaDestination().x, (int)hitbox.getTravellingMapAreaDestination().y, false);
+                        map.enterNewArea(engine, e, (int)hitbox.getTravellingMapAreaDestination().x, (int)hitbox.getTravellingMapAreaDestination().y, true);
                         hitbox.setTravellingFromSameMapArea(false);
                     } else {
                         hitbox.setTravellingFromSameMapArea(true);

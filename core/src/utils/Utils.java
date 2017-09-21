@@ -32,61 +32,45 @@ import components.HitboxComponent;
  * Created by Miv on 6/26/2017.
  */
 public class Utils {
-    public static class PopupDialogBox extends Actor {
-        private Window window;
-        private Skin skin;
-        private Table table;
-        private Label text;
+    public class FixedStack<T> {
+        private T[] stack;
+        private int size;
+        private int top;
+        private int popBalance = 0;//its used to see if all the elements have been popped
 
-        public PopupDialogBox(Skin skin, String text, float width, float height, float verticalPadding) {
-            this.skin = skin;
-
-            window = new Window("", skin);
-            window.center();
-
-            table = new Table();
-            table.center();
-            table.padTop(verticalPadding);
-            table.padBottom(verticalPadding);
-            table.setPosition((Gdx.graphics.getWidth() - width)/2f, (Gdx.graphics.getHeight() - height)/2f);
-            window.add(table);
-
-            this.text = new Label(text, skin);
-            this.text.setColor(Color.WHITE);
-            table.add(this.text);
-            table.row();
+        public FixedStack(T[] stack) {
+            this.stack = stack;
+            this.top = 0;
+            this.size = stack.length;
         }
 
-        public void setText(String text) {
-            this.text.setText(text);
+        public void push(T obj) {
+            if (top == stack.length)top = 0;
+            stack[top] = obj;
+            top++;
+            if (popBalance < size - 1)popBalance++;
         }
 
-        /**
-         * @param text Text on the button
-         * @param task Task to be done when the button is clicked
-         */
-        public void addButton(String text, final Timer.Task task) {
-            TextButton textButton = new TextButton(text, skin);
-            textButton.getLabel().setFontScale(0.6f);
-            textButton.getLabel().setColor(Color.WHITE);
-            textButton.setSize(100f, 80f);
-            textButton.addListener(new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    PopupDialogBox.this.remove();
-                    if(task != null) {
-                        task.run();
-                    }
-                }
-            });
-            table.add(textButton);
+        public T pop() {
+
+            if (top - 1 < 0)top = size;
+            top--;
+            T ob = stack[top];
+            popBalance--;
+            return ob;
         }
 
-        @Override
-        public void draw(Batch batch, float parentAlpha) {
-            super.draw(batch, parentAlpha);
+        public void clear() {
+            top = 0;
+        }
 
-            window.draw(batch, parentAlpha);
+        public int size() {
+            return size;
+        }
+
+        public boolean poppedAll() {
+            if (popBalance == -1)return true;
+            return false;
         }
     }
 

@@ -127,8 +127,8 @@ public class HUD implements Screen {
                 if(!Mappers.hitbox.get(player).isTravelling()) {
                     main.loadMapScreen();
                 }
-                //map.setFloor(1);
-                //map.setChanceOfNextAreaHavingStairs(1f);
+                map.setFloor(0);
+                map.setChanceOfNextAreaHavingStairs(1f);
             }
         });
         stage.addActor(mapButton);
@@ -145,12 +145,16 @@ public class HUD implements Screen {
         customizeButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+
                 if(customizeButton.isDisabled()) {
                     main.getRenderSystem().addFloatingText(player, "Enemies are still alive!", Color.BLACK);
                 } else {
                     main.loadCustomizeScreen();
                     audioPlayer.resume();
                 }
+
+                map.setFloor(1);
+                map.setChanceOfNextAreaHavingStairs(1f);
             }
         });
         stage.addActor(customizeButton);

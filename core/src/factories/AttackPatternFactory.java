@@ -105,8 +105,8 @@ public class AttackPatternFactory {
                     .setRandomAngleInDegrees(0f, 360f)
                     .setOriginX(0).setOriginY(0)
                     .setDelay(0)
-                    .setSpeed(1.5f)
-                    .setDamage(1f)
+                    .setSpeed(2.3f)
+                    .setDamage(14f)
                     .setRadius(60f));
             return ap;
         }
@@ -118,9 +118,9 @@ public class AttackPatternFactory {
                     .setAngleInDegrees(0f)
                     .setOriginX(0).setOriginY(0)
                     .setDelay(0)
-                    .setSpeed(4.5f)
-                    .setDamage(5f)
-                    .setRadius(17f));
+                    .setSpeed(5f)
+                    .setDamage(4f)
+                    .setRadius(12f));
             return ap;
         }
         // Shoots a single bullet near the player

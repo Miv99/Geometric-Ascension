@@ -93,7 +93,7 @@ public class MapArea {
             engine.addEntity(e);
         }
 
-        if(clearEntityCreationDataAfterSpawning) {
+        if(clearEntityCreationDataAfterSpawning && !isBossArea()) {
             entityCreationDataArrayList.clear();
         }
     }

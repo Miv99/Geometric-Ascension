@@ -42,6 +42,7 @@ import com.miv.*;
 import com.miv.Options;
 
 import java.util.ArrayList;
+import java.util.Stack;
 
 import components.HitboxComponent;
 import factories.AttackPatternFactory;
@@ -324,6 +325,22 @@ public class PlayerBuilder implements Screen {
             addAction(Actions.moveTo(-getWidth(), 0, ANIMATION_TIME));
         }
     }
+    private class PlayerBuilderState {
+        ArrayList<CircleHitbox> playerRender;
+        ArrayList<CircleHitbox> unsavedCircles;
+
+        public PlayerBuilderState(ArrayList<CircleHitbox> playerRender, ArrayList<CircleHitbox> unsavedCircles) {
+            this.playerRender = new ArrayList<CircleHitbox>();
+            this.unsavedCircles = new ArrayList<CircleHitbox>();
+
+            for(CircleHitbox c : playerRender) {
+                this.playerRender.add(c.clone());
+            }
+            for(CircleHitbox c : unsavedCircles) {
+                this.unsavedCircles.add(c.clone());
+            }
+        }
+    }
 
     private static final float TITLE_LABEL_FONT_SCALE = 2.5f;
     private static final float BODY_LABEL_FONT_SCALE = 2f;
@@ -348,6 +365,8 @@ public class PlayerBuilder implements Screen {
 
     private static final float ATTACK_PATTERN_ANGLE_ARROW_LENGTH = 200f;
 
+    private static final int UNDO_STACK_MAX_SIZE = 10;
+
     private Main main;
     private Skin skin;
     private Stage stage;
@@ -355,6 +374,8 @@ public class PlayerBuilder implements Screen {
     private Entity player;
     // Shape renderer unaffected by camera
     private ShapeRenderer staticShapeRenderer;
+
+    private float lastSavedPp;
 
     private boolean disableTouch;
     private boolean isPanningCamera;
@@ -391,6 +412,9 @@ public class PlayerBuilder implements Screen {
     private Label pp;
     private ImageButton saveChangesButton;
     private ImageButton discardChangesButton;
+    private ImageButton undoButton;
+
+    private Stack<PlayerBuilderState> undoStack;
 
     private float screenWidth;
     private float screenHeight;
@@ -442,6 +466,7 @@ public class PlayerBuilder implements Screen {
         staticShapeRenderer.setAutoShapeType(true);
         playerRenderBatch = new SpriteBatch();
         playerRenderCamera = new OrthographicCamera(Main.SCREEN_WIDTH, Main.SCREEN_HEIGHT);
+        undoStack = new Stack<PlayerBuilderState>();
 
         screenWidth = Gdx.graphics.getWidth();
         screenHeight = Gdx.graphics.getHeight();
@@ -503,6 +528,21 @@ public class PlayerBuilder implements Screen {
             }
         });
         stage.addActor(discardChangesButton);
+
+        // Undo button
+        Texture undoButtonButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.UNDO_BUTTON_UP_PATH).path());
+        Texture undoButtonButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.UNDO_BUTTON_DOWN_PATH).path());
+        ImageButton.ImageButtonStyle undoButtonStyle = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(undoButtonButtonUp)), new TextureRegionDrawable(new TextureRegion(undoButtonButtonDown)), null, null, null, null);
+        undoButton = new ImageButton(undoButtonStyle);
+        undoButton.setSize(70f, 70f);
+        undoButton.setPosition(discardChangesButton.getX() - LEFT_PADDING - undoButton.getWidth(), TOP_PADDING);
+        undoButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                undo();
+            }
+        });
+        stage.addActor(undoButton);
 
         newBubbleDrawable = main.getRenderSystem().bubbleDrawables[RenderSystem.HitboxTextureType.PLAYER_NEW_CIRCLE.getId()];
         newBubbleButtonLength = 150f;
@@ -898,6 +938,33 @@ public class PlayerBuilder implements Screen {
         return pp;
     }
 
+    /**
+     * @param x In screen units
+     * @param y In screen units
+     */
+    public void moveCircle(CircleHitbox circle, float x, float y) {
+        if(x > editableAreaRightXBound) {
+            isMovingCircle = false;
+            movingCircleDragCurrentPoint.x = -1;
+            return;
+        }
+
+        Vector3 worldCoordinates = playerRenderCamera.unproject(new Vector3(x, y, 0));
+        if(Utils.getDistance(worldCoordinates.x, worldCoordinates.y, 0, 0) > Mappers.player.get(player).getCustomizationRadius() * 2f) {
+            return;
+        }
+
+        saveStateToUndoStack();
+
+        circle.x = worldCoordinates.x;
+        circle.y = worldCoordinates.y;
+        // Set original position to be at if circle was rotated to 0 degrees
+        circle.setOriginalPosX(circle.x * MathUtils.cos(-PLAYER_RENDER_ANGLE) - circle.y * MathUtils.sin(-PLAYER_RENDER_ANGLE));
+        circle.setOriginalPosY(circle.x * MathUtils.sin(-PLAYER_RENDER_ANGLE) + circle.y * MathUtils.cos(-PLAYER_RENDER_ANGLE));
+
+        onCircleModification(circle);
+    }
+
     public void placeNewCircle(float x, float y) {
         if(x > editableAreaRightXBound) {
             return;
@@ -907,6 +974,8 @@ public class PlayerBuilder implements Screen {
         if(Utils.getDistance(worldCoordinates.x, worldCoordinates.y, 0, 0) > Mappers.player.get(player).getCustomizationRadius() * 2f) {
             return;
         }
+
+        saveStateToUndoStack();
 
         CircleHitbox c = new CircleHitbox();
         c.setHitboxTextureType(RenderSystem.HitboxTextureType.PLAYER);
@@ -930,47 +999,48 @@ public class PlayerBuilder implements Screen {
     }
 
     public void deleteCircle(CircleHitbox c) {
+        saveStateToUndoStack();
+
         playerRender.remove(c);
         unsavedCircles.remove(c);
         allCircles.remove(c);
 
-        circleDeletionPp  += c.getTotalUpgradesPp() * Options.CIRCLE_DELETION_PP_RETURN_MULTIPLIER;
+        // Full refund if the circle was created and deleted without saving changes
+        if(c.getUnsavedUpgradeCost() == 0) {
+            circleDeletionPp += c.getTotalUpgradesPp();
+        } else {
+            circleDeletionPp += c.getTotalUpgradesPp() * Options.CIRCLE_DELETION_PP_RETURN_MULTIPLIER;
+        }
 
         onCircleModification2();
     }
 
     public void upgradeCircle(CircleHitbox c) {
+        saveStateToUndoStack();
         c.upgrade();
-
         onCircleModification(c);
     }
 
-    private void showSpecializationChooser() {
-        if(attackPatternInfo.isShowing) {
-            attackPatternInfo.playHideAnimation();
-        }
-        specializationChooser.playShowAnimation();
-    }
-
     public void upgradeCircleAttackPattern(CircleHitbox c) {
+        saveStateToUndoStack();
         c.upgradeAttackPattern();
-
         onCircleModification(c);
     }
 
     public void modifyCircleSpecialization(CircleHitbox c, CircleHitbox.Specialization newSpecialization) {
+        saveStateToUndoStack();
         c.changeSpecialization(newSpecialization);
-
         onCircleModification(c);
     }
 
     public void modifyCircleAttackPatternAngle(CircleHitbox c, float angle) {
+        saveStateToUndoStack();
         c.getAttackPattern().setAngleOffset(angle);
-
         onCircleModification(c);
     }
 
     public void modifyCircleMaxHealth(CircleHitbox c, float newMaxHealth) {
+        saveStateToUndoStack();
         if(newMaxHealth > c.getMaxHealth()) {
             float difference = c.getMaxHealth() - c.getHealth();
             c.setMaxHealth(newMaxHealth);
@@ -982,11 +1052,13 @@ public class PlayerBuilder implements Screen {
     }
 
     public void modifyCircleRadius(CircleHitbox c, float newRadius) {
+        saveStateToUndoStack();
         c.radius = newRadius;
         onCircleModification(c);
     }
 
     public void modifyCircleAttackPattern(CircleHitbox c, AttackPattern ap) {
+        saveStateToUndoStack();
         c.setAttackPattern(ap);
         onCircleModification(c);
     }
@@ -996,7 +1068,6 @@ public class PlayerBuilder implements Screen {
             unsavedCircles.add(c);
         }
         playerRender.remove(c);
-
         onCircleModification2();
     }
 
@@ -1005,10 +1076,23 @@ public class PlayerBuilder implements Screen {
 
         Utils.setAuraBuffsForAllCircles(allCircles);
 
-        //TODO: save state
-
         unsavedChangesExist = true;
         updateActors();
+    }
+
+    private void saveStateToUndoStack() {
+        undoStack.push(new PlayerBuilderState(playerRender, unsavedCircles));
+        if(undoStack.size() > UNDO_STACK_MAX_SIZE) {
+            undoStack.removeElementAt(0);
+        }
+    }
+
+
+    private void showSpecializationChooser() {
+        if(attackPatternInfo.isShowing) {
+            attackPatternInfo.playHideAnimation();
+        }
+        specializationChooser.playShowAnimation();
     }
 
     /**
@@ -1031,9 +1115,11 @@ public class PlayerBuilder implements Screen {
         // Check if overlapping with other circles
         for(CircleHitbox c2 : allCircles) {
             if(!c2.equals(c)) {
-                if(Utils.getDistance(c.x, c.y, c2.x, c2.y) < c.radius + c2.radius - CIRCLE_OVERLAP_LENIENCY) {
-                    c2.setInvalidPosition(true);
-                    invalidPosition = true;
+                if(!areIntangible(c, c2)) {
+                    if (Utils.getDistance(c.x, c.y, c2.x, c2.y) < c.radius + c2.radius - CIRCLE_OVERLAP_LENIENCY) {
+                        c2.setInvalidPosition(true);
+                        invalidPosition = true;
+                    }
                 }
             }
         }
@@ -1047,29 +1133,16 @@ public class PlayerBuilder implements Screen {
         c.setInvalidPosition(invalidPosition);
     }
 
-    /**
-     * @param x In screen units
-     * @param y In screen units
-     */
-    public void moveCircle(CircleHitbox circle, float x, float y) {
-        if(x > editableAreaRightXBound) {
-            isMovingCircle = false;
-            movingCircleDragCurrentPoint.x = -1;
+    public void undo() {
+        if(undoStack.size() == 0) {
             return;
         }
 
-        Vector3 worldCoordinates = playerRenderCamera.unproject(new Vector3(x, y, 0));
-        if(Utils.getDistance(worldCoordinates.x, worldCoordinates.y, 0, 0) > Mappers.player.get(player).getCustomizationRadius() * 2f) {
-            return;
-        }
+        loadState(undoStack.pop());
 
-        circle.x = worldCoordinates.x;
-        circle.y = worldCoordinates.y;
-        // Set original position to be at if circle was rotated to 0 degrees
-        circle.setOriginalPosX(circle.x * MathUtils.cos(-PLAYER_RENDER_ANGLE) - circle.y * MathUtils.sin(-PLAYER_RENDER_ANGLE));
-        circle.setOriginalPosY(circle.x * MathUtils.sin(-PLAYER_RENDER_ANGLE) + circle.y * MathUtils.cos(-PLAYER_RENDER_ANGLE));
-
-        onCircleModification(circle);
+        unsavedChangesExist = true;
+        deselectCircle();
+        updateActors();
     }
 
     public void discardChanges() {
@@ -1085,6 +1158,7 @@ public class PlayerBuilder implements Screen {
         deselectCircle();
 
         unsavedChangesExist = false;
+        undoStack.clear();
         updateActors();
     }
 
@@ -1108,7 +1182,7 @@ public class PlayerBuilder implements Screen {
         }
 
         // Apply changes to pp
-        Mappers.player.get(player).setPixelPoints(main, unsavedPp);
+        lastSavedPp = unsavedPp;
 
         // Move all unsaved circles into playerRender
         for (CircleHitbox c : unsavedCircles) {
@@ -1129,6 +1203,7 @@ public class PlayerBuilder implements Screen {
         Save.save(main);
 
         unsavedChangesExist = false;
+        undoStack.clear();
         updateActors();
     }
 
@@ -1285,6 +1360,7 @@ public class PlayerBuilder implements Screen {
         isDraggingNewCircle = false;
 
         circleDeletionPp = 0;
+        lastSavedPp = Mappers.player.get(player).getPixelPoints();
 
         centerCameraOnPlayerRender();
         playerRenderOrigin.x = 0;
@@ -1632,8 +1708,10 @@ public class PlayerBuilder implements Screen {
         } else {
             for (CircleHitbox c2 : allCircles) {
                 if(!circle.equals(c2)) {
-                    if (Utils.getDistance(worldCoordinates.x, worldCoordinates.y, c2.x, c2.y) < circleRadiusInWorldUnits + c2.radius - CIRCLE_OVERLAP_LENIENCY) {
-                        return true;
+                    if(!areIntangible(circle, c2)) {
+                        if (Utils.getDistance(worldCoordinates.x, worldCoordinates.y, c2.x, c2.y) < circleRadiusInWorldUnits + c2.radius - CIRCLE_OVERLAP_LENIENCY) {
+                            return true;
+                        }
                     }
                 }
             }
@@ -1646,6 +1724,25 @@ public class PlayerBuilder implements Screen {
         }
 
         return false;
+    }
+
+    private boolean areIntangible(CircleHitbox c, CircleHitbox c2) {
+        return (c.getSpecialization().isATypeOf(CircleHitbox.Specialization.MEAT_SHIELD) && !c2.getSpecialization().isATypeOf(CircleHitbox.Specialization.MEAT_SHIELD))
+                || (!c.getSpecialization().isATypeOf(CircleHitbox.Specialization.MEAT_SHIELD) && c2.getSpecialization().isATypeOf(CircleHitbox.Specialization.MEAT_SHIELD));
+    }
+
+    /**
+     * Loads the saved state into the player builder
+     */
+    private void loadState(PlayerBuilderState state) {
+        playerRender.clear();
+        unsavedCircles.clear();
+        allCircles.clear();
+
+        playerRender.addAll(state.playerRender);
+        unsavedCircles.addAll(state.unsavedCircles);
+        allCircles.addAll(playerRender);
+        allCircles.addAll(unsavedCircles);
     }
 
     @Override
@@ -1667,9 +1764,14 @@ public class PlayerBuilder implements Screen {
     public void hide() {
         inputMultiplexer.removeProcessor(stage);
 
+        // Set player pp in hide() to avoid multiple +pp float text appearing if
+        // making multiple changes in one session
+        Mappers.player.get(player).setPixelPoints(main, lastSavedPp);
+
         playerRender.clear();
         unsavedCircles.clear();
         allCircles.clear();
+        undoStack.clear();
     }
 
     @Override
