@@ -128,7 +128,7 @@ public class HUD implements Screen {
                     main.loadMapScreen();
                 }
                 map.setFloor(0);
-                map.setChanceOfNextAreaHavingStairs(1f);
+                map.setNewMapAreasUntilBoss(0);
             }
         });
         stage.addActor(mapButton);
@@ -154,7 +154,7 @@ public class HUD implements Screen {
                 }
 
                 map.setFloor(1);
-                map.setChanceOfNextAreaHavingStairs(1f);
+                map.setNewMapAreasUntilBoss(0);
             }
         });
         stage.addActor(customizeButton);

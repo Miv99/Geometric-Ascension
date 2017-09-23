@@ -68,17 +68,13 @@ public class Map {
     }
 
     //------------------------------------------------------------- MAP AREA GENERATION --------------------------------------------------
-    private static final float MAX_CHANCE_OF_STAIRS_AREA = 1;
-    /**
-     * How much {@link map.Map#chanceOfNextAreaHavingStairs} increases by each time a new MapArea is discovered
-     */
-    private static final float CHANCE_OF_STAIRS_AREA_INCREMENT = 0.01f;
+    private static final float NEW_MAP_AREAS_UNTIL_BOSS = 20;
 
     public static final float INITIAL_MAP_AREA_PIXEL_POINTS = 20f;
     /**
      * How much {@link map.Map#maxPixelPoints} increases by each time the player enters a new floor
      */
-    private static final float MAP_AREA_PIXEL_POINTS_INCREMENT = 2.5f;
+    private static final float MAP_AREA_PIXEL_POINTS_INCREMENT = 7.5f;
 
     private static final int MIN_ENEMIES_PER_MAP_AREA = 3;
     private static final int MAX_ENEMIES_PER_MAP_AREA = 8;
@@ -94,8 +90,8 @@ public class Map {
     // Maps location on the world map to a specific MapArea
     // String representation of utils.Point is used as key to be able to save HashMap in a json
     private HashMap<String, MapArea> areas;
-    // Percent chance of the next undiscovered MapArea being having a stairway (0 to MAX_CHANCE_OF_STAIRS_AREA)*100 %
-    private float chanceOfNextAreaHavingStairs;
+    // Number of new map areas to be discovered until the next one is the floor's boss
+    private float newMapAreasUntilBoss;
     // Maximum pixel points, distributed evenly to all enemies, when generating MapAreas
     private float maxPixelPoints;
 
@@ -119,7 +115,7 @@ public class Map {
         gridLines = new ArrayList<GridLine>();
         areas = new HashMap<String, MapArea>();
         focus = new Point(0, 0);
-        chanceOfNextAreaHavingStairs = 0f;
+        newMapAreasUntilBoss = NEW_MAP_AREAS_UNTIL_BOSS;
         maxPixelPoints = INITIAL_MAP_AREA_PIXEL_POINTS;
 
         minEnemiesPerMapArea = MIN_ENEMIES_PER_MAP_AREA;
@@ -149,7 +145,7 @@ public class Map {
         setFocus(0, 0);
         areas.clear();
 
-        chanceOfNextAreaHavingStairs = 0f;
+        newMapAreasUntilBoss = NEW_MAP_AREAS_UNTIL_BOSS;
         maxPixelPoints = INITIAL_MAP_AREA_PIXEL_POINTS + MAP_AREA_PIXEL_POINTS_INCREMENT*(float)floor;
 
         float enemyCountIncrease = floor/10f;
@@ -222,7 +218,7 @@ public class Map {
         // Increase chance of next area having stairs after autosaving to avoid the user entering new areas and
         // reloading the game to avoid all enemies and quickly enter new floors
         if(increaseChanceOfNextAreaHavingStairs && (x != 0 && y != 0)) {
-            chanceOfNextAreaHavingStairs = Math.min(MAX_CHANCE_OF_STAIRS_AREA, chanceOfNextAreaHavingStairs + CHANCE_OF_STAIRS_AREA_INCREMENT);
+            newMapAreasUntilBoss--;
         }
 
         main.updateScreenActors();
@@ -233,7 +229,7 @@ public class Map {
         if(pos.x == 0 && pos.y == 0) {
             mapArea = new MapArea(MapArea.MAP_AREA_MIN_SIZE);
         } else {
-            if(Math.random() < chanceOfNextAreaHavingStairs) {
+            if(newMapAreasUntilBoss <= 0) {
                 mapArea = new MapArea(BOSS_MAP_AREA_SIZE);
                 mapArea.addStairs(floor + 1);
                 populateWithBoss(mapArea);
@@ -499,10 +495,6 @@ public class Map {
         return maxEnemiesPerMapArea;
     }
 
-    public void setChanceOfNextAreaHavingStairs(float chanceOfNextAreaHavingStairs) {
-        this.chanceOfNextAreaHavingStairs = chanceOfNextAreaHavingStairs;
-    }
-
     public HashMap<Point, MapScreen.MapScreenArea> getDiscoveredAreaPositions() {
         HashMap<Point, MapScreen.MapScreenArea> mapScreenAreas = new HashMap<Point, MapScreen.MapScreenArea>();
 
@@ -565,5 +557,9 @@ public class Map {
         }
 
         return mapScreenAreas;
+    }
+
+    public void setNewMapAreasUntilBoss(float newMapAreasUntilBoss) {
+        this.newMapAreasUntilBoss = newMapAreasUntilBoss;
     }
 }
