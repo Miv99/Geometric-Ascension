@@ -47,7 +47,9 @@ public class Options {
     // Distance from the edge of the farthest CircleHitbox in a hitbox from the origin that the repelling forces of gravity take maximum effect
     public static final float GRAVITATIONAL_RADIUS_PADDING = 10f;
     public static final float GRAVITY_SPEED_CAP = 100f;
-    public static final float GRAVITATIONAL_CONSTANT = 2000f;
+    public static final float GRAVITATIONAL_CONSTANT = 1600f;
+    // How many times stronger gravity is for pp orbs than for other objects
+    public static final float PP_ORB_GRAVITATIONAL_CONSTANT_MULTIPLIER = 5f;
 
     public static final float BULLET_BUBBLE_POP_VOLUME = 1.5f;
     public static final float PLAYER_BUBBLE_POP_VOLUME = 3f;

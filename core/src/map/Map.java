@@ -24,6 +24,7 @@ import components.EnemyBulletComponent;
 import components.EnemyComponent;
 import components.HitboxComponent;
 import components.PlayerBulletComponent;
+import components.PpOrbComponent;
 import factories.AttackPatternFactory;
 import factories.BossFactory;
 import screens.MapScreen;
@@ -131,6 +132,12 @@ public class Map {
         }
     }
 
+    public static void clearPpOrbs(PooledEngine engine) {
+        for (Entity e : engine.getEntitiesFor(Family.one(PpOrbComponent.class).get())) {
+            engine.removeEntity(e);
+        }
+    }
+
     public static void clearEnemies(PooledEngine engine) {
         for (Entity e : engine.getEntitiesFor(Family.one(EnemyComponent.class).get())) {
             engine.removeEntity(e);
@@ -205,6 +212,7 @@ public class Map {
         }
 
         clearBullets(engine);
+        clearPpOrbs(engine);
 
         newMapArea.spawnEntities(engine, player, clearNewMapAreaEntityCreationDataAfterSpawningEnemies);
 

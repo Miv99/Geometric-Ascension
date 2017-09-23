@@ -74,7 +74,9 @@ public class RenderSystem extends EntitySystem {
         PLAYER_HEALTH_AURA_SPECIALIZATION(9, new Color(Color.BLUE.r, Color.BLUE.g, Color.BLUE.b, 0.3f), new Color(0f, 163/255f, 33/255f, 1f)),
         PLAYER_LIFESTEAL_SPECIALIZATION(10, new Color(Color.GREEN.r, Color.GREEN.g, Color.GREEN.b, 0.3f), new Color(0f, 163/255f, 33/255f, 1f)),
         PLAYER_LIFESTEAL_AURA_SPECIALIZATION(11, new Color(0f, 127/255f, 0f, 0.3f), new Color(0f, 163/255f, 33/255f, 1f)),
-        PLAYER_UTILITY_SPECIALIZATION(12, new Color(Color.WHITE.r, Color.WHITE.g, Color.WHITE.b, 0.3f), new Color(0f, 163/255f, 33/255f, 1f));
+        PLAYER_UTILITY_SPECIALIZATION(12, new Color(Color.WHITE.r, Color.WHITE.g, Color.WHITE.b, 0.3f), new Color(0f, 163/255f, 33/255f, 1f)),
+
+        PP_ORB(13, new Color(Color.WHITE.r, Color.WHITE.g, Color.WHITE.b, 0.3f), new Color(Color.RED));
 
         private int id;
         private Color color;

@@ -124,26 +124,43 @@ public class MovementSystem extends EntitySystem {
                 if (Mappers.enemyBullet.has(bullet)) {
                     damage = Mappers.enemyBullet.get(bullet).getDamage();
                     // Parent gets healed
-                    Mappers.hitbox.get(Mappers.enemyBullet.get(bullet).getEntityToBeHealed()).healWeakestCircle(damage * Mappers.enemyBullet.get(bullet).getLifestealMultiplier());
+                    if(Mappers.enemyBullet.get(bullet).getEntityToBeHealed() != null && Mappers.hitbox.has(Mappers.enemyBullet.get(bullet).getEntityToBeHealed())) {
+                        Mappers.hitbox.get(Mappers.enemyBullet.get(bullet).getEntityToBeHealed()).healWeakestCircle(damage * Mappers.enemyBullet.get(bullet).getLifestealMultiplier());
+                    }
                 } else if (Mappers.playerBullet.has(bullet)) {
                     damage = Mappers.playerBullet.get(bullet).getDamage();
-                    Mappers.hitbox.get(Mappers.playerBullet.get(bullet).getEntityToBeHealed()).healWeakestCircle(damage * Mappers.playerBullet.get(bullet).getLifestealMultiplier());
+                    if(Mappers.playerBullet.get(bullet).getEntityToBeHealed() != null && Mappers.hitbox.has(Mappers.playerBullet.get(bullet).getEntityToBeHealed())) {
+                        Mappers.hitbox.get(Mappers.playerBullet.get(bullet).getEntityToBeHealed()).healWeakestCircle(damage * Mappers.playerBullet.get(bullet).getLifestealMultiplier());
+                    }
                 }
 
                 // Victim takes damage
                 victimCircleHit.setHealth(victimCircleHit.getHealth() - damage);
 
-
                 if (victimCircleHit.getHealth() <= 0) {
                     victimHitbox.queueCircleRemoval(victimCircleHit);
 
                     if (Mappers.enemy.has(victim)) {
-                        Mappers.player.get(player).addPixelPoints(main, victimCircleHit.getPpGain());
-
-                        // TODO: remove this
-                        if (victimCircleHit.getPpGain() <= 0) {
-                            System.out.println("you messed up; a circle has no pp gain for some reason 1374dskjfsd9");
+                        float pp = victimCircleHit.getPpGain();
+                        // Enemy count is not lowered until entityRemovalQueue is processed so == 1 is the same as if all enemies are dead
+                        if(map.getCurrentArea().getEnemyCount() == 1) {
+                            // Bonus pp for killing all enemies
+                            pp += map.getCurrentArea().getOriginalEnemyCount() / ((map.getMinEnemiesPerMapArea() + map.getMaxEnemiesPerMapArea()) / 2f) * map.getMaxPixelPoints() * Options.BONUS_PP_MULTIPLIER * Options.PP_GAIN_MULTIPLIER;
                         }
+
+                        // Spawn white orbs that give player hp
+                        int ppOrbCount;
+                        if(pp < 1f) {
+                            ppOrbCount = MathUtils.random(2, 4);
+                        } else if(pp < 3f) {
+                            ppOrbCount = MathUtils.random(3, 6);
+                        } else if(pp < 6f) {
+                            ppOrbCount = MathUtils.random(4, 8);
+                        } else {
+                            ppOrbCount = MathUtils.random(6, 10);
+                        }
+                        Utils.spawnPpOrbs(engine, victimHitbox.getOrigin().x + victimCircleHit.x, victimHitbox.getOrigin().y + victimCircleHit.y,
+                                victimHitbox.getGravitationalRadius(), ppOrbCount, pp);
                     }
 
                     // All hit circles considered dead when number of circles is 1 because size() is not updated until
@@ -217,13 +234,15 @@ public class MovementSystem extends EntitySystem {
         Point vel = new Point(0, 0);
 
         if(!Mappers.hitbox.get(entity).isIgnoreGravity()) {
+            float entityGravitationalRadius = Mappers.hitbox.get(entity).getGravitationalRadius();
+
             for (Entity e : entities) {
                 if (!e.equals(entity)) {
                     HitboxComponent hitbox = Mappers.hitbox.get(e);
                     if (!hitbox.isIgnoreGravity()) {
                         Point origin = hitbox.getOrigin();
                         float distance = Utils.getDistance(origin, entityOrigin);
-                        if (distance < Options.GRAVITY_DROP_OFF_DISTANCE + hitbox.getGravitationalRadius()) {
+                        if (distance < Options.GRAVITY_DROP_OFF_DISTANCE + hitbox.getGravitationalRadius() + entityGravitationalRadius) {
                             float angle = MathUtils.atan2(entityOrigin.y - origin.y, entityOrigin.x - origin.x);
 
                             // Prevent division by 0
@@ -241,7 +260,7 @@ public class MovementSystem extends EntitySystem {
             }
 
             float distanceFromMapAreaCenter = Utils.getDistance(entityOrigin, 0, 0);
-            if (distanceFromMapAreaCenter > map.getCurrentArea().getRadius() - Options.GRAVITY_DROP_OFF_DISTANCE) {
+            if (distanceFromMapAreaCenter > map.getCurrentArea().getRadius() - Options.GRAVITY_DROP_OFF_DISTANCE - entityGravitationalRadius) {
                 float angle = MathUtils.atan2(entityOrigin.y, entityOrigin.x);
                 float magnitude;
 
@@ -249,7 +268,73 @@ public class MovementSystem extends EntitySystem {
                     magnitude = Options.GRAVITATIONAL_CONSTANT / (float) Math.pow(map.getCurrentArea().getRadius() - distanceFromMapAreaCenter, 1.2);
                 } else {
                     // Treat being outside the map area border as being repelled with the same force as being 1m away from the border
-                    magnitude = Options.GRAVITATIONAL_CONSTANT / (float) Math.pow(1f, 1.2);
+                    magnitude = Options.GRAVITATIONAL_CONSTANT;
+                }
+
+                vel.x -= magnitude * MathUtils.cos(angle);
+                vel.y -= magnitude * MathUtils.sin(angle);
+            }
+
+            if (vel.x > 0) {
+                vel.x = Math.min(Options.GRAVITY_SPEED_CAP, vel.x);
+            } else {
+                vel.x = Math.max(-Options.GRAVITY_SPEED_CAP, vel.x);
+            }
+            if (vel.y > 0) {
+                vel.y = Math.min(Options.GRAVITY_SPEED_CAP, vel.y);
+            } else {
+                vel.y = Math.max(-Options.GRAVITY_SPEED_CAP, vel.y);
+            }
+        }
+
+        return vel;
+    }
+
+    /**
+     * Returns the change in velocity due to a pp orb's proximity to players and the map area border
+     * @param entity - the entity whose velocity's change is being calculated for
+     * @param entityOrigin - origin of e
+     */
+    private Point calculatePpOrbVelocityAdditionDueToGravity(Entity entity, Point entityOrigin) {
+        Point vel = new Point(0, 0);
+
+        if(!Mappers.hitbox.get(entity).isIgnoreGravity()) {
+            float entityGravitationalRadius = Mappers.hitbox.get(entity).getGravitationalRadius();
+
+            for (Entity e : players) {
+                if (!e.equals(entity)) {
+                    HitboxComponent hitbox = Mappers.hitbox.get(e);
+                    if (!hitbox.isIgnoreGravity()) {
+                        Point origin = hitbox.getOrigin();
+                        float distance = Utils.getDistance(origin, entityOrigin);
+                        if (distance < Options.GRAVITY_DROP_OFF_DISTANCE + hitbox.getGravitationalRadius() + entityGravitationalRadius) {
+                            float angle = MathUtils.atan2(entityOrigin.y - origin.y, entityOrigin.x - origin.x);
+
+                            // Prevent division by 0 in really really rare cases
+                            // Calculations are thrown off for only a frame so it's not really important
+                            if (distance == 0) {
+                                distance = 1f;
+                            }
+
+                            float magnitude = Options.GRAVITATIONAL_CONSTANT * Options.PP_ORB_GRAVITATIONAL_CONSTANT_MULTIPLIER / (float) Math.pow(distance, 1.2);
+
+                            vel.x -= magnitude * MathUtils.cos(angle);
+                            vel.y -= magnitude * MathUtils.sin(angle);
+                        }
+                    }
+                }
+            }
+
+            float distanceFromMapAreaCenter = Utils.getDistance(entityOrigin, 0, 0);
+            if (distanceFromMapAreaCenter > map.getCurrentArea().getRadius() - Options.GRAVITY_DROP_OFF_DISTANCE - entityGravitationalRadius) {
+                float angle = MathUtils.atan2(entityOrigin.y, entityOrigin.x);
+                float magnitude;
+
+                if (distanceFromMapAreaCenter < map.getCurrentArea().getRadius() && distanceFromMapAreaCenter != map.getCurrentArea().getRadius()) {
+                    magnitude = Options.GRAVITATIONAL_CONSTANT / (float) Math.pow(map.getCurrentArea().getRadius() - distanceFromMapAreaCenter, 1.2);
+                } else {
+                    // Treat being outside the map area border as being repelled with the same force as being 1m away from the border
+                    magnitude = Options.GRAVITATIONAL_CONSTANT;
                 }
 
                 vel.x -= magnitude * MathUtils.cos(angle);
@@ -296,24 +381,35 @@ public class MovementSystem extends EntitySystem {
                         // Check against enemy bullets
                         checkForCollision(origin, c, enemyBullets);
                         for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
-                            isValidMovement = false;
                             handleBulletCollision(e, c, collisionEntitiesToHandle.get(i));
                         }
                     }
                 }
-                // If entity is an enemy, check for collisions against the edges of the MapArea, players, player bullets
                 else if (Mappers.enemy.has(e)) {
                     for (CircleHitbox c : hitbox.getCircles()) {
                         // Against player bullets
                         checkForCollision(origin, c, playerBullets);
                         for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
-                            isValidMovement = false;
                             handleBulletCollision(e, c, collisionEntitiesToHandle.get(i));
                         }
                     }
 
                     // Calculate effect of gravity
                     velocityAdditionDueToGravity = calculateVelocityAdditionDueToGravity(enemiesAndPlayers, e, origin);
+                }
+                else if(Mappers.ppOrb.has(e)) {
+                    velocityAdditionDueToGravity = calculatePpOrbVelocityAdditionDueToGravity(e, origin);
+
+                    for (CircleHitbox c : hitbox.getCircles()) {
+                        checkForCollision(origin, c, players);
+                        for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
+                            isValidMovement = false;
+                            Mappers.player.get(collisionEntitiesToHandle.get(i)).addPixelPoints(main, c.getPpGain());
+                        }
+                        if(collisionEntitiesToHandle.size() > 0) {
+                            entityRemovalQueue.add(e);
+                        }
+                    }
                 }
                 // If entity is a player bullet, check for collisions against the square boundaries of the MapArea, enemies
                 else if (Mappers.playerBullet.has(e)) {
@@ -427,9 +523,32 @@ public class MovementSystem extends EntitySystem {
                 if(velocityAdditionDueToGravity == null) {
                     hitbox.setOrigin(origin.x + deltaX, origin.y + deltaY);
                 } else {
-                    hitbox.setOrigin(origin.x + velocity.x + velocityAdditionDueToGravity.x, origin.y + velocity.y + velocityAdditionDueToGravity.y);
+                    hitbox.setOrigin(origin.x + deltaX + velocityAdditionDueToGravity.x*deltaTime*Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER, origin.y + deltaY + velocityAdditionDueToGravity.y*deltaTime*Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER);
                 }
-                hitbox.setVelocity(velocity.x + hitbox.getAcceleration().x, velocity.y + hitbox.getAcceleration().y);
+                if(hitbox.getAccelerationTime() > 0) {
+                    if(Mappers.ppOrb.has(e)) {
+                        hitbox.setVelocity(velocity.x + hitbox.getAcceleration().x*deltaTime, velocity.y + hitbox.getAcceleration().y*deltaTime);
+                        hitbox.setAccelerationTime(hitbox.getAccelerationTime() - deltaTime);
+
+                        // Pp orb stops moving after deceleration
+                        if(hitbox.getAccelerationTime() <= 0) {
+                            hitbox.setVelocity(0, 0);
+                        } else if(Utils.getDistance(0, 0, origin.x, origin.y) > mapArea.getRadius() - hitbox.getGravitationalRadius()) {
+                            hitbox.setAcceleration(0, 0, 0);
+                        } else {
+                            // If one of x/y components of velocity reverses signs after adding acceleration, set that component to 0
+                            if((velocity.x - hitbox.getAcceleration().x*deltaTime < 0 && velocity.x > 0) || (velocity.x - hitbox.getAcceleration().x*deltaTime > 0 && velocity.x < 0)) {
+                                hitbox.setAcceleration(0, hitbox.getAcceleration().y, hitbox.getAccelerationTime());
+                            }
+                            if((velocity.y - hitbox.getAcceleration().y*deltaTime < 0 && velocity.y > 0) || (velocity.y - hitbox.getAcceleration().y*deltaTime > 0 && velocity.y < 0)) {
+                                hitbox.setAcceleration(hitbox.getAcceleration().x, 0, hitbox.getAccelerationTime());
+                            }
+                        }
+                    } else {
+                        hitbox.setVelocity(velocity.x + hitbox.getAcceleration().x*deltaTime, velocity.y + hitbox.getAcceleration().y*deltaTime);
+                        hitbox.setAccelerationTime(hitbox.getAccelerationTime() - deltaTime);
+                    }
+                }
             }
 
             // Remove circles in hitbox circle removal queue from array list of circles in the hitbox component
@@ -458,14 +577,11 @@ public class MovementSystem extends EntitySystem {
             if(Mappers.player.has(e)) {
                 map.getMain().onPlayerDeath();
             } else if(Mappers.enemy.has(e)) {
+                // Setting enemy count and saving done in the entity removal queue processing to avoid the extremely rare
+                // case of the user killing an enemy and exiting the game before the enemy is removed from the engine
                 map.getCurrentArea().setEnemyCount(main, engine, players.first(), map, map.getCurrentArea().getEnemyCount() - 1);
 
                 if(map.getCurrentArea().getEnemyCount() == 0) {
-                    // Bonus pp for killing all enemies
-                    float bonusPp = map.getCurrentArea().getOriginalEnemyCount()/((map.getMinEnemiesPerMapArea() + map.getMaxEnemiesPerMapArea())/2f) * map.getMaxPixelPoints() * Options.BONUS_PP_MULTIPLIER * Options.PP_GAIN_MULTIPLIER;
-                    Mappers.player.get(player).addPixelPoints(main, bonusPp);
-
-                    // Save
                     main.save();
                 }
             }

@@ -6,6 +6,7 @@ import components.AIComponent;
 import components.BossComponent;
 import components.EnemyBulletComponent;
 import components.EnemyComponent;
+import components.PpOrbComponent;
 import components.HitboxComponent;
 import components.PlayerBulletComponent;
 import components.PlayerComponent;
@@ -21,4 +22,5 @@ public class Mappers {
     public static ComponentMapper<PlayerBulletComponent> playerBullet = ComponentMapper.getFor(PlayerBulletComponent.class);
     public static ComponentMapper<PlayerComponent> player = ComponentMapper.getFor(PlayerComponent.class);
     public static ComponentMapper<AIComponent> ai = ComponentMapper.getFor(AIComponent.class);
+    public static ComponentMapper<PpOrbComponent> ppOrb = ComponentMapper.getFor(PpOrbComponent.class);
 }

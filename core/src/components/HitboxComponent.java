@@ -45,6 +45,8 @@ public class HitboxComponent implements Component, Pool.Poolable {
     private Vector2 velocity;
     // Acceleration of hitbox, in meters/frame^2
     private Vector2 acceleration;
+    // Time until acceleration stops
+    private float accelerationTime;
     // Circle positions are relative to components.HitboxComponent#origin
     private ArrayList<CircleHitbox> circles;
     // If true, the hitbox will not make contact with anything
@@ -102,6 +104,7 @@ public class HitboxComponent implements Component, Pool.Poolable {
         origin.y = 0;
         velocity.set(0, 0);
         acceleration.set(0, 0);
+        accelerationTime = 0;
         circles.clear();
         gravitationalRadius = 0;
         circleRemovalQueue.clear();
@@ -388,8 +391,17 @@ public class HitboxComponent implements Component, Pool.Poolable {
         return acceleration;
     }
 
-    public void setAcceleration(float x, float y) {
+    public void setAcceleration(float x, float y, float time) {
         acceleration.set(x, y);
+        accelerationTime = time;
+    }
+
+    public float getAccelerationTime() {
+        return accelerationTime;
+    }
+
+    public void setAccelerationTime(float accelerationTime) {
+        this.accelerationTime = accelerationTime;
     }
 
     public boolean isIntangible() {

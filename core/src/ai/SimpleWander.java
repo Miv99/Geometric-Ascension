@@ -57,9 +57,9 @@ public class SimpleWander extends AI {
 
             float accelerationMagnitude = MathUtils.random(minAcceleration, maxAcceleration);
 
-            selfHitbox.setAcceleration(accelerationMagnitude * MathUtils.cos(angle), accelerationMagnitude * MathUtils.sin(angle));
-
             interval = MathUtils.random(minInterval, maxInterval);
+            selfHitbox.setAcceleration(accelerationMagnitude * MathUtils.cos(angle), accelerationMagnitude * MathUtils.sin(angle), interval);
+
             waitingForReset = false;
         }
 
