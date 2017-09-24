@@ -315,6 +315,16 @@ public class HitboxComponent implements Component, Pool.Poolable {
         weakest.setHealth(weakest.getHealth() + health);
     }
 
+    public void healWeakestCircleByPp(float pp) {
+        CircleHitbox weakest = circles.get(0);
+        for(CircleHitbox c : circles) {
+            if(c.getHealth() < weakest.getHealth()) {
+                weakest = c;
+            }
+        }
+        heal(weakest, pp);
+    }
+
     /**
      * @param pp amount of pp put into healing
      * @return the leftover pp

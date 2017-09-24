@@ -403,6 +403,7 @@ public class MovementSystem extends EntitySystem {
                         for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
                             isValidMovement = false;
                             Mappers.player.get(collisionEntitiesToHandle.get(i)).addPixelPoints(main, c.getPpGain());
+                            Mappers.hitbox.get(collisionEntitiesToHandle.get(i)).healWeakestCircleByPp(c.getPpGain());
                         }
                         if(collisionEntitiesToHandle.size() > 0) {
                             entityRemovalQueue.add(e);
