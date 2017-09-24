@@ -63,7 +63,7 @@ public class EntityActions {
         Mappers.hitbox.get(player).setTravellingMapAreaDestination(destination);
     }
 
-    public static void playerEnterNewFloor(final PooledEngine engine, final Entity player, final Map map, final int newFloor) {
+    public static void playerEnterNewFloor(final Entity player, final Map map, final int newFloor) {
         // Make player invincible
         Mappers.hitbox.get(player).setIntangible(true);
 

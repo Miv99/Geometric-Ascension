@@ -21,6 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Timer;
 import com.miv.AudioPlayer;
+import com.miv.EntityActions;
 import com.miv.GestureListener;
 import com.miv.Main;
 import com.miv.Mappers;
@@ -57,6 +58,10 @@ public class HUD implements Screen {
 
     private ImageButton customizeButton;
     private ImageButton mapButton;
+    /**
+     * Visibility is set in {@link map.MapArea#setEnemyCount(Main, int)} and in its click listener
+     */
+    private ImageButton moveToNextFloorButton;
 
     private ShapeRenderer shapeRenderer;
     private Color screenOverlayColor;
@@ -159,6 +164,22 @@ public class HUD implements Screen {
         });
         stage.addActor(customizeButton);
 
+        Texture moveToNextFloorButtonUp = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.NEXT_BUTTON_UP_PATH).path());
+        Texture moveToNextFloorButtonDown = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.NEXT_BUTTON_DOWN_PATH).path());
+        ImageButton.ImageButtonStyle moveToNextFloorButtonStyle = new ImageButton.ImageButtonStyle(new TextureRegionDrawable(new TextureRegion(moveToNextFloorButtonUp)), new TextureRegionDrawable(new TextureRegion(moveToNextFloorButtonDown)), null, null, null, null);
+        moveToNextFloorButton = new ImageButton(moveToNextFloorButtonStyle);
+        moveToNextFloorButton.setSize(SMALL_BUTTON_SIZE, SMALL_BUTTON_SIZE);
+        moveToNextFloorButton.setPosition(Gdx.graphics.getWidth() - moveToNextFloorButton.getWidth() - SMALL_BUTTON_PADDING, SMALL_BUTTON_PADDING);
+        moveToNextFloorButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                EntityActions.playerEnterNewFloor(player, map, map.getCurrentArea().getStairsDestination());
+                moveToNextFloorButton.setVisible(false);
+            }
+        });
+        moveToNextFloorButton.setVisible(false);
+        stage.addActor(moveToNextFloorButton);
+
         ppY = screenHeight - 80f;
 
         pp = new Label(Math.round(Mappers.player.get(player).getPixelPoints()) + "pp", skin, "big");
@@ -182,7 +203,6 @@ public class HUD implements Screen {
         pp.setText(PlayerBuilder.formatNumber(pixelPoints) + "pp");
         pp.setPosition(PP_LABEL_X, ppY);
 
-        // Update customize but ton
         if(main.getMap().getCurrentArea().getEnemyCount() == 0) {
             customizeButton.setDisabled(false);
             mapButton.setDisabled(false);
@@ -311,5 +331,9 @@ public class HUD implements Screen {
 
     public void setPlayer(Entity player) {
         this.player = player;
+    }
+
+    public ImageButton getMoveToNextFloorButton() {
+        return moveToNextFloorButton;
     }
 }

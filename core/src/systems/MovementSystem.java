@@ -36,8 +36,6 @@ import utils.Utils;
  * Created by Miv on 5/25/2017.
  */
 public class MovementSystem extends EntitySystem {
-    // Time after leaving map area that new map area begins loading
-    private static final float NEW_MAP_AREA_LEAVE_TRAVEL_TIME = 1.25f;
     // Time after new map area loads until player enters bounds of new area
     private static final float NEW_MAP_AREA_ENTER_TRAVEL_TIME = 0.75f;
 
@@ -579,7 +577,7 @@ public class MovementSystem extends EntitySystem {
             } else if(Mappers.enemy.has(e)) {
                 // Setting enemy count and saving done in the entity removal queue processing to avoid the extremely rare
                 // case of the user killing an enemy and exiting the game before the enemy is removed from the engine
-                map.getCurrentArea().setEnemyCount(main, engine, players.first(), map, map.getCurrentArea().getEnemyCount() - 1);
+                map.getCurrentArea().setEnemyCount(main, map.getCurrentArea().getEnemyCount() - 1);
 
                 if(map.getCurrentArea().getEnemyCount() == 0) {
                     main.save();

@@ -122,24 +122,6 @@ public class Map {
         maxEnemiesPerMapArea = MAX_ENEMIES_PER_MAP_AREA;
     }
 
-    public static void clearBullets(PooledEngine engine) {
-        for (Entity e : engine.getEntitiesFor(Family.one(EnemyBulletComponent.class, PlayerBulletComponent.class).get())) {
-            engine.removeEntity(e);
-        }
-    }
-
-    public static void clearPpOrbs(PooledEngine engine) {
-        for (Entity e : engine.getEntitiesFor(Family.one(PpOrbComponent.class).get())) {
-            engine.removeEntity(e);
-        }
-    }
-
-    public static void clearEnemies(PooledEngine engine) {
-        for (Entity e : engine.getEntitiesFor(Family.one(EnemyComponent.class).get())) {
-            engine.removeEntity(e);
-        }
-    }
-
     public void enterNewFloor(int floor) {
         this.floor = floor;
         setFocus(0, 0);
@@ -207,8 +189,10 @@ public class Map {
             oldMapArea.storeExistingEnemies(engine, true);
         }
 
-        clearBullets(engine);
-        clearPpOrbs(engine);
+        ArrayList<Entity> entitiesToBeRemoved = new ArrayList<Entity>();
+        for (Entity e : engine.getEntitiesFor(Family.one(EnemyBulletComponent.class, PlayerBulletComponent.class, PpOrbComponent.class).get())) {
+            entitiesToBeRemoved.add(e);
+        }
 
         newMapArea.spawnEntities(engine, player, clearNewMapAreaEntityCreationDataAfterSpawningEnemies);
 
@@ -222,6 +206,11 @@ public class Map {
         }
 
         main.updateScreenActors();
+
+        // Entities being removed later fixes bug where they weren't actually being removed somehow
+        for(Entity e : entitiesToBeRemoved) {
+            engine.removeEntity(e);
+        }
     }
 
     private MapArea generateRandomMapArea(Point pos) {

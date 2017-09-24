@@ -147,13 +147,13 @@ public class MapArea {
     /**
      * Used for when killing enemies
      */
-    public void setEnemyCount(Main main, PooledEngine engine, Entity player, Map map, int enemyCount) {
+    public void setEnemyCount(Main main, int enemyCount) {
         this.enemyCount = enemyCount;
         main.updateScreenActors();
 
         if(enemyCount == 0) {
             if(stairsDestination != -1) {
-                EntityActions.playerEnterNewFloor(engine, player, map, stairsDestination);
+                main.getHud().getMoveToNextFloorButton().setVisible(false);
             }
         }
     }
