@@ -12,12 +12,23 @@ public class PlayerBulletComponent implements Component, Pool.Poolable {
     // For lifesteal
     private Entity entityToBeHealed;
     private float lifestealMultiplier;
+    private float playerAttractionLerpFactor;
 
     @Override
     public void reset() {
         damage = 0;
         entityToBeHealed = null;
         lifestealMultiplier = 0;
+        playerAttractionLerpFactor = 0;
+    }
+
+    public float getPlayerAttractionLerpFactor() {
+        return playerAttractionLerpFactor;
+    }
+
+    public PlayerBulletComponent setPlayerAttractionLerpFactor(float playerAttractionLerpFactor) {
+        this.playerAttractionLerpFactor = playerAttractionLerpFactor;
+        return this;
     }
 
     public float getDamage() {

@@ -9,16 +9,19 @@ import com.badlogic.ashley.utils.ImmutableArray;
 import com.miv.Mappers;
 
 import components.HitboxComponent;
+import map.Map;
 
 /**
  * Created by Miv on 6/17/2017.
  */
 public class ShootingSystem extends EntitySystem {
+    private Map map;
     private PooledEngine engine;
     private Entity player;
     private ImmutableArray<Entity> entities;
 
-    public ShootingSystem(PooledEngine engine) {
+    public ShootingSystem(Map map, PooledEngine engine) {
+        this.map = map;
         this.engine = engine;
     }
 
@@ -37,12 +40,16 @@ public class ShootingSystem extends EntitySystem {
         for(Entity e : entities) {
             HitboxComponent hitbox = Mappers.hitbox.get(e);
             if(hitbox.isShooting() && !hitbox.isTravelling()) {
-                hitbox.update(engine, e, player, deltaTime);
+                hitbox.update(engine, e, player, map.getCurrentArea().getRadius(), deltaTime);
             }
         }
     }
 
     public void setPlayer(Entity player) {
         this.player = player;
+    }
+
+    public void setMap(Map map) {
+        this.map = map;
     }
 }

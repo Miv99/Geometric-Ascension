@@ -5,6 +5,7 @@ import com.badlogic.ashley.core.PooledEngine;
 import com.badlogic.gdx.math.MathUtils;
 
 import components.EnemyBulletComponent;
+import components.ExpirationComponent;
 import components.HitboxComponent;
 import components.PlayerBulletComponent;
 import systems.RenderSystem;
@@ -35,6 +36,8 @@ public class AttackPart {
     private float radius;
     private float damage;
     private float lifestealPercent;
+    // Determines strength of attraction to player entities
+    private float playerAttractionLerpFactor;
 
     private float originalDelay;
     private float originalSpeed;
@@ -58,15 +61,15 @@ public class AttackPart {
     /**
      * @param originAngle - The lastFacedAngle of the parent's hitbox, in radians
      */
-    public void fire(PooledEngine engine, Entity parent, Entity player, float originX, float originY, float originAngle) {
+    public void fire(PooledEngine engine, Entity parent, Entity player, float originX, float originY, float originAngle, float mapAreaRadius) {
         RenderSystem.HitboxTextureType hitboxTextureType;
 
         Entity e = engine.createEntity();
         if(Mappers.player.has(parent)) {
-            e.add(engine.createComponent(PlayerBulletComponent.class).setDamage(damage).setLifestealMultiplier(parent, lifestealPercent));
+            e.add(engine.createComponent(PlayerBulletComponent.class).setDamage(damage).setLifestealMultiplier(parent, lifestealPercent).setPlayerAttractionLerpFactor(playerAttractionLerpFactor));
             hitboxTextureType = RenderSystem.HitboxTextureType.PLAYER_BULLET;
         } else {
-            e.add(engine.createComponent(EnemyBulletComponent.class).setDamage(damage).setLifestealMultiplier(parent, lifestealPercent));
+            e.add(engine.createComponent(EnemyBulletComponent.class).setDamage(damage).setLifestealMultiplier(parent, lifestealPercent).setPlayerAttractionLerpFactor(playerAttractionLerpFactor));
             hitboxTextureType = RenderSystem.HitboxTextureType.ENEMY_BULLET;
         }
 
@@ -105,6 +108,9 @@ public class AttackPart {
         hitbox.addCircle(circleHitbox, true);
         e.add(hitbox);
 
+        // Bullet expires in the time it takes to travel 2.5x the radius of the map area
+        e.add(engine.createComponent(ExpirationComponent.class).setTime((mapAreaRadius * 2.5f)/speed));
+
         engine.addEntity(e);
     }
 
@@ -127,16 +133,25 @@ public class AttackPart {
         ap.originalSpeed = originalSpeed;
         ap.lifestealPercent = lifestealPercent;
         ap.color = color;
+        ap.playerAttractionLerpFactor = playerAttractionLerpFactor;
         return ap;
     }
 
     @Override
     public boolean equals(Object obj) {
         // Compares stats before modifications
-
         AttackPart ap = (AttackPart)obj;
-        if(ap.originalSpeed != originalSpeed || ap.originalRadius != originalRadius || ap.originalDelay != originalDelay || ap.originalDamage != originalDamage || ap.originX != originX || ap.originY != originY) return false;
+        if(ap.originalSpeed != originalSpeed || ap.originalRadius != originalRadius || ap.originalDelay != originalDelay
+                || ap.originalDamage != originalDamage || ap.originX != originX || ap.originY != originY || ap.playerAttractionLerpFactor != playerAttractionLerpFactor) return false;
         return true;
+    }
+
+    public float getPlayerAttractionLerpFactor() {
+        return playerAttractionLerpFactor;
+    }
+
+    public void setPlayerAttractionLerpFactor(float playerAttractionLerpFactor) {
+        this.playerAttractionLerpFactor = playerAttractionLerpFactor;
     }
 
     public float getDelay() {
