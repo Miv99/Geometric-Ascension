@@ -14,9 +14,12 @@ public class PlayerComponent implements Component, Pool.Poolable {
     private float customizationRadius = Options.INITIAL_PLAYER_CUSTOMIZATION_RADIUS;
     private float pixelPoints;
 
+    private float score;
+
     @Override
     public void reset() {
         pixelPoints = 0;
+        score = 0;
         customizationRadius = Options.INITIAL_PLAYER_CUSTOMIZATION_RADIUS;
     }
 
@@ -24,7 +27,7 @@ public class PlayerComponent implements Component, Pool.Poolable {
         return pixelPoints;
     }
 
-    public void addPixelPoints(Main main, float pixelPoints) {
+    public void addPixelPoints(Main main, float pixelPoints, boolean contributesToScore) {
         this.pixelPoints += pixelPoints;
         main.updateScreenActors();
 
@@ -48,10 +51,14 @@ public class PlayerComponent implements Component, Pool.Poolable {
                 }
             }
         }
+
+        if(contributesToScore && pixelPoints > 0) {
+            score += pixelPoints;
+        }
     }
 
-    public void setPixelPoints(Main main, float pixelPoints) {
-        addPixelPoints(main, pixelPoints - this.pixelPoints);
+    public void setPixelPoints(Main main, float pixelPoints, boolean contributesToScore) {
+        addPixelPoints(main, pixelPoints - this.pixelPoints, contributesToScore);
     }
 
     public float getCustomizationRadius() {
@@ -60,5 +67,9 @@ public class PlayerComponent implements Component, Pool.Poolable {
 
     public void setCustomizationRadius(float customizationRadius) {
         this.customizationRadius = customizationRadius;
+    }
+
+    public float getScore() {
+        return score;
     }
 }

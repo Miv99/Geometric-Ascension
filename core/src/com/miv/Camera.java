@@ -19,6 +19,8 @@ public class Camera extends OrthographicCamera {
     private Point focus;
     private RenderSystem renderSystem;
 
+    private boolean lockedPosition;
+
     public Camera(RenderSystem renderSystem) {
         this.renderSystem = renderSystem;
     }
@@ -31,7 +33,7 @@ public class Camera extends OrthographicCamera {
 
     @Override
     public void update() {
-        if(focus != null) {
+        if(focus != null && !lockedPosition) {
             position.scl(ispeed);
             position.add(focus.x * speed, focus.y * speed, 0);
         }
@@ -47,5 +49,9 @@ public class Camera extends OrthographicCamera {
 
     public void setFocus(Entity focus) {
         this.focus = Mappers.hitbox.get(focus).getOrigin();
+    }
+
+    public void setLockedPosition(boolean lockedPosition) {
+        this.lockedPosition = lockedPosition;
     }
 }

@@ -112,11 +112,13 @@ public class Save {
 
     public static void save(Main session) {
         // TODO: auto save every time player kills all enemies in MapArea or enters new floor
-        SaveData saveData = new SaveData(Mappers.hitbox.get(session.getPlayer()).getCircles(), Mappers.hitbox.get(session.getPlayer()).getMaxSpeed(),
-                Mappers.player.get(session.getPlayer()), session.getMap(), Mappers.hitbox.get(session.getPlayer()).getOrigin());
+        if(!session.isPlayerDead()) {
+            SaveData saveData = new SaveData(Mappers.hitbox.get(session.getPlayer()).getCircles(), Mappers.hitbox.get(session.getPlayer()).getMaxSpeed(),
+                    Mappers.player.get(session.getPlayer()), session.getMap(), Mappers.hitbox.get(session.getPlayer()).getOrigin());
 
-        Json save = new Json();
-        Gdx.files.local(SAVE_DATA_PATH).writeString(save.toJson(saveData), false);
-        System.out.println("SAVED");
+            Json save = new Json();
+            Gdx.files.local(SAVE_DATA_PATH).writeString(save.toJson(saveData), false);
+            System.out.println("SAVED");
+        }
     }
 }

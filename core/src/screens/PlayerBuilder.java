@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -342,8 +343,8 @@ public class PlayerBuilder implements Screen {
         }
     }
 
+    public static final float BODY_LABEL_FONT_SCALE = 2f;
     private static final float TITLE_LABEL_FONT_SCALE = 2.5f;
-    private static final float BODY_LABEL_FONT_SCALE = 2f;
 
     private static final float PLAYER_RENDER_ANGLE = MathUtils.PI/2f;
     private static final Color RIGHT_HALF_OF_SCREEN_COLOR = new Color(225/255f, 225/255f, 225/255f, 0.5f);
@@ -446,6 +447,10 @@ public class PlayerBuilder implements Screen {
     private float oldScale;
     private boolean isPinching;
 
+    private Sound upgrade1;
+    private Sound upgrade2;
+    private Sound upgrade3;
+
     public PlayerBuilder(final Main main, InputMultiplexer inputMultiplexer, AssetManager assetManager, final Entity player) {
         this.main = main;
         this.inputMultiplexer = inputMultiplexer;
@@ -493,7 +498,7 @@ public class PlayerBuilder implements Screen {
         editableAreaRightXBound = screenWidth - LEFT_PADDING*2f - 450;
 
         pp.setFontScale(1f);
-        pp.setText(Math.round(Mappers.player.get(player).getPixelPoints()) + "pp");
+        pp.setText(formatNumber(Mappers.player.get(player).getPixelPoints()) + "pp");
         pp.pack();
         pp.setPosition(LEFT_PADDING, screenHeight - TOP_PADDING - 55f);
         pp.setColor(Color.BLACK);
@@ -646,6 +651,14 @@ public class PlayerBuilder implements Screen {
         updateActors();
         // Fixes random bug with positioning
         attackPatternDisplayToggle.setPosition(attackPatternInfo.getX() + attackPatternInfo.getWidth() - 14f, attackPatternInfo.getY() + (attackPatternInfo.getHeight() - attackPatternDisplayToggle.getHeight()) / 2f);
+
+        loadSounds(assetManager);
+    }
+
+    private void loadSounds(AssetManager assetManager) {
+        upgrade1 = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.UPGRADE_1_SOUND_PATH).path());
+        upgrade2 = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.UPGRADE_2_SOUND_PATH).path());
+        upgrade3 = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.UPGRADE_3_SOUND_PATH).path());
     }
 
     public void touchDown(float x, float y) {
@@ -1017,6 +1030,16 @@ public class PlayerBuilder implements Screen {
 
     public void upgradeCircle(CircleHitbox c) {
         saveStateToUndoStack();
+
+        int depth = c.getSpecialization().getDepth();
+        if(depth == 0) {
+            upgrade1.play(Options.MASTER_VOLUME * Options.SOUND_VOLUME);
+        } else if(depth == 1) {
+            upgrade2.play(Options.MASTER_VOLUME * Options.SOUND_VOLUME);
+        } else {
+            upgrade3.play(Options.MASTER_VOLUME * Options.SOUND_VOLUME);
+        }
+
         c.upgrade();
         onCircleModification(c);
     }
@@ -1350,7 +1373,7 @@ public class PlayerBuilder implements Screen {
     @Override
     public void show() {
         //TODO remove this
-        Mappers.player.get(player).setPixelPoints(main, 5000);
+        Mappers.player.get(player).setPixelPoints(main, 5000, false);
         inputMultiplexer.addProcessor(0, stage);
 
         disableTouch = false;
@@ -1766,7 +1789,7 @@ public class PlayerBuilder implements Screen {
 
         // Set player pp in hide() to avoid multiple +pp float text appearing if
         // making multiple changes in one session
-        Mappers.player.get(player).setPixelPoints(main, lastSavedPp);
+        Mappers.player.get(player).setPixelPoints(main, lastSavedPp, false);
 
         playerRender.clear();
         unsavedCircles.clear();

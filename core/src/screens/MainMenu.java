@@ -76,7 +76,7 @@ public class MainMenu implements Screen {
 
 		// New game button that covers almost entire screen
 		Button newGameButton = new Button(invisibleButtonStyle);
-		newGameButton.setSize(Main.SCREEN_WIDTH, Main.SCREEN_HEIGHT);
+		newGameButton.setSize(screenWidth, screenHeight);
 		newGameButton.setPosition(0, 0);
 		newGameButton.addListener(new ClickListener() {
 			@Override

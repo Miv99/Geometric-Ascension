@@ -182,7 +182,7 @@ public class HUD implements Screen {
 
         ppY = screenHeight - 80f;
 
-        pp = new Label(Math.round(Mappers.player.get(player).getPixelPoints()) + "pp", skin, "big");
+        pp = new Label(PlayerBuilder.formatNumber(Mappers.player.get(player).getPixelPoints()) + "pp", skin, "big");
         pp.setFontScale(1f);
         pp.setAlignment(Align.left);
         pp.setColor(Color.BLACK);
@@ -335,5 +335,9 @@ public class HUD implements Screen {
 
     public ImageButton getMoveToNextFloorButton() {
         return moveToNextFloorButton;
+    }
+
+    public AudioPlayer getAudioPlayer() {
+        return audioPlayer;
     }
 }

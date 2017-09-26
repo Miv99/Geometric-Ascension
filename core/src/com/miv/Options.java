@@ -59,12 +59,6 @@ public class Options {
     public static final float INITIAL_PLAYER_CUSTOMIZATION_RADIUS = 250f;
     public static final float DEFAULT_NEW_CIRCLE_RADIUS = 40f;
     public static final float DEFAULT_NEW_CIRCLE_MAX_HEALTH = 25f;
-
-    // How much max health is gained per pp put into the stat when customizing player
-    // Should be less than HEALTH_PER_PP_HEALING_COST_RATIO
-    public static final float MAX_HEALTH_PER_PP_CUSTOMIZATION_COST_RATIO = 2f;
-    // How much radius changes by (in terms of +/- % of original) per pp put into the stat
-    public static final float RADIUS_PERCENT_PER_PP_CUSTOMIZATION_COST_RATIO = 3f;
     // --------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -76,6 +70,8 @@ public class Options {
     public static final String SHOW_PLAYER_HEALTH_BARS_STRING = "showPlayerHealthBars";
     public static final String SHOW_ENEMY_HEALTH_BARS_STRING = "showEnemyHealthBars";
     public static final String SHOW_PP_GAIN_FLOATING_TEXT_STRING = "showPpGainFloatingText";
+    // Used for high score preferences file
+    public static final String HIGH_SCORE_STRING = "highScore";
 
     public static float MUSIC_VOLUME = 0.5f;
     public static float SOUND_VOLUME = 0.5f;

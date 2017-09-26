@@ -55,6 +55,7 @@ public class MovementSystem extends EntitySystem {
     private Entity player;
 
     private Array<Sound> popSounds;
+    private Sound gainPpSound;
 
     public MovementSystem(Main main, PooledEngine engine, Map map, Entity player) {
         this.main = main;
@@ -73,6 +74,8 @@ public class MovementSystem extends EntitySystem {
             Sound sound = assetManager.get(assetManager.getFileHandleResolver().resolve(s).path());
             popSounds.add(sound);
         }
+
+        gainPpSound = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.GAIN_PP_SOUND_PATH).path());
     }
 
     @Override
@@ -402,8 +405,9 @@ public class MovementSystem extends EntitySystem {
                         checkForCollision(origin, c, players);
                         for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
                             isValidMovement = false;
-                            Mappers.player.get(collisionEntitiesToHandle.get(i)).addPixelPoints(main, c.getPpGain());
+                            Mappers.player.get(collisionEntitiesToHandle.get(i)).addPixelPoints(main, c.getPpGain(), true);
                             Mappers.hitbox.get(collisionEntitiesToHandle.get(i)).healWeakestCircleByPp(c.getPpGain());
+                            gainPpSound.play(Options.MASTER_VOLUME * Options.SOUND_VOLUME);
                         }
                         if(collisionEntitiesToHandle.size() > 0) {
                             entityRemovalQueue.add(e);
@@ -553,9 +557,9 @@ public class MovementSystem extends EntitySystem {
             // Remove circles in hitbox circle removal queue from array list of circles in the hitbox component
             for(CircleHitbox c : hitbox.getCircleRemovalQueue()) {
                 if(Mappers.player.has(e)) {
-                    popSounds.random().play(Options.PLAYER_BUBBLE_POP_VOLUME);
+                    popSounds.random().play(Options.PLAYER_BUBBLE_POP_VOLUME * Options.MASTER_VOLUME * Options.SOUND_VOLUME);
                 } else if(Mappers.enemy.has(e)) {
-                    popSounds.random().play(Options.ENEMY_BUBBLE_POP_VOLUME);
+                    popSounds.random().play(Options.ENEMY_BUBBLE_POP_VOLUME * Options.MASTER_VOLUME * Options.SOUND_VOLUME);
                 }
 
                 ArrayList<Entity> subEntities = hitbox.removeCircle(engine, e, c, (map.getCurrentArea().isBossArea() && Mappers.boss.has(e)));
@@ -571,10 +575,13 @@ public class MovementSystem extends EntitySystem {
 
         // Remove entities in entity removal queue from engine
         for(Entity e : entityRemovalQueue) {
-            engine.removeEntity(e);
+            if(!Mappers.player.has(e)) {
+                engine.removeEntity(e);
+            }
 
             if(Mappers.player.has(e)) {
-                map.getMain().onPlayerDeath();
+                map.getMain().onPlayerDeath(Mappers.player.get(player).getScore());
+                engine.removeEntity(e);
             } else if(Mappers.enemy.has(e)) {
                 // Setting enemy count and saving done in the entity removal queue processing to avoid the extremely rare
                 // case of the user killing an enemy and exiting the game before the enemy is removed from the engine

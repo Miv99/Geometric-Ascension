@@ -3,6 +3,7 @@ package com.miv;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.utils.Timer;
 
 import java.util.Random;
 
@@ -15,6 +16,8 @@ public class AudioPlayer {
     private boolean[] played;
     private boolean isPlaying;
 
+    private float fadeOutVolume;
+
     public AudioPlayer(AssetManager assetManager, String[] songPaths) {
         songs = new Music[songPaths.length];
         played = new boolean[songPaths.length];
@@ -23,6 +26,19 @@ public class AudioPlayer {
             songs[i] = assetManager.get(assetManager.getFileHandleResolver().resolve(songPaths[i]).path());
         }
         onVolumeChange();
+    }
+
+    public void fadeOut(float time) {
+        final int songIndex = lastPlayed;
+        final float originalVolume = songs[songIndex].getVolume();
+        fadeOutVolume = songs[songIndex].getVolume();
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                songs[songIndex].setVolume(fadeOutVolume);
+                fadeOutVolume -= originalVolume/100f;
+            }
+        }, 0f, time/100f);
     }
 
     public void pause() {

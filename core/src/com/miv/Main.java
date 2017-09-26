@@ -25,6 +25,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 
 import components.HitboxComponent;
 import map.Map;
+import screens.DeathScreen;
 import screens.HUD;
 import screens.MainMenu;
 import screens.MapScreen;
@@ -40,7 +41,8 @@ public class Main extends Game {
 		MAIN_GAME,
 		MAP,
 		CUSTOMIZE,
-		OPTIONS
+		OPTIONS,
+		DEATH_SCREEN
 	}
 
 	public static final int SCREEN_WIDTH = 1600;
@@ -58,6 +60,11 @@ public class Main extends Game {
 			"sound_effects\\pop_1.ogg"
 	};
 	public static final String MAIN_MENU_MUSIC_1_PATH = "music\\main_menu1.ogg";
+	public static final String GAME_OVER_SOUND_PATH = "sound_effects\\game_over.wav";
+	public static final String UPGRADE_1_SOUND_PATH = "sound_effects\\upgrade_1.ogg";
+	public static final String UPGRADE_2_SOUND_PATH = "sound_effects\\upgrade_2.ogg";
+	public static final String UPGRADE_3_SOUND_PATH = "sound_effects\\upgrade_3.ogg";
+	public static final String GAIN_PP_SOUND_PATH = "sound_effects\\gain_pp.ogg";
 	public static final String MOVEMENT_ARROW_TAIL_PATH = "movement_arrow_tail.png";
 	public static final String MOVEMENT_ARROW_BODY_PATH = "movement_arrow_body.png";
 	public static final String MOVEMENT_ARROW_HEAD_PATH = "movement_arrow_head.png";
@@ -127,6 +134,7 @@ public class Main extends Game {
 		Gdx.input.setInputProcessor(inputMultiplexer);
 
 		preferences = Gdx.app.getPreferences("Geometric Ascension");
+		highScores = Gdx.app.getPreferences("Geometric Ascension High Scores");
 		loadPreferences();
 		savePreferences();
 		loadAssets();
@@ -185,6 +193,7 @@ public class Main extends Game {
 		playerDead = false;
 		map.enterNewArea(engine, player, (int) map.getFocus().x, (int) map.getFocus().y, true);
 		if(camera != null) {
+			camera.setLockedPosition(false);
 			camera.setFocus(player);
 			camera.teleportTo(player);
 		}
@@ -235,6 +244,11 @@ public class Main extends Game {
 		state = GameState.MAIN_GAME;
 	}
 
+	public void loadDeathScreen(float score, boolean newHighScore) {
+		setScreen(new DeathScreen(this, inputMultiplexer, assetManager, score, map, newHighScore));
+		state = GameState.DEATH_SCREEN;
+	}
+
 	public void loadAssets() {
 		InternalFileHandleResolver fileHandler = new InternalFileHandleResolver();
 		assetManager = new AssetManager(fileHandler);
@@ -249,6 +263,13 @@ public class Main extends Game {
 			assetManager.load(s, Sound.class);
 		}
 		assetManager.load(MAIN_MENU_MUSIC_1_PATH, Music.class);
+
+		assetManager.load(GAME_OVER_SOUND_PATH, Sound.class);
+		assetManager.load(UPGRADE_1_SOUND_PATH, Sound.class);
+		assetManager.load(UPGRADE_2_SOUND_PATH, Sound.class);
+		assetManager.load(UPGRADE_3_SOUND_PATH, Sound.class);
+		assetManager.load(GAIN_PP_SOUND_PATH, Sound.class);
+
 		assetManager.load(MOVEMENT_ARROW_TAIL_PATH, Texture.class);
 		assetManager.load(MOVEMENT_ARROW_BODY_PATH, Texture.class);
 		assetManager.load(MOVEMENT_ARROW_HEAD_PATH, Texture.class);
@@ -328,12 +349,13 @@ public class Main extends Game {
 
 		}
 		Mappers.hitbox.get(player).setLastFacedAngle(MathUtils.PI / 2f);
-		Mappers.hitbox.get(player).setTargetAngle(MathUtils.PI/2f);
+		Mappers.hitbox.get(player).setTargetAngle(MathUtils.PI / 2f);
 		gestureListener.setPlayer(player);
 		hud = new HUD(Main.this, assetManager, inputMultiplexer, gestureListener, player, map);
 		setScreen(hud);
 		state = GameState.MAIN_GAME;
 		camera.setFocus(player);
+		camera.setLockedPosition(false);
 		shootingSystem.setPlayer(player);
 	}
 
@@ -387,19 +409,38 @@ public class Main extends Game {
 
 	}
 
-	public void onPlayerDeath() {
+	public void onPlayerDeath(final float score) {
 		playerDead = true;
+		camera.setLockedPosition(true);
 
-		//TODO: death screen --> wait a bit
+		hud.getAudioPlayer().fadeOut(2.5f);
 
-		//TODO: save high score
+		// Save high score
+		if(score > highScores.getFloat(Options.HIGH_SCORE_STRING, 0f)) {
+			highScores.putFloat(Options.HIGH_SCORE_STRING, Mappers.player.get(player).getScore());
+			highScores.flush();
 
-		deleteSave();
+			hud.fadeToColor(new Color(1f, 1f, 1f, 1f), 3.5f, new Timer.Task() {
+				@Override
+				public void run() {
+					loadDeathScreen(score, true);
+					Save.deleteSave();
+				}
+			});
+		} else {
+			hud.fadeToColor(new Color(1f, 1f, 1f, 1f), 3.5f, new Timer.Task() {
+				@Override
+				public void run() {
+					loadDeathScreen(score, false);
+					Save.deleteSave();
+				}
+			});
+		}
 	}
 
 	public void save() {
-        Save.save(this);
-    }
+		Save.save(this);
+	}
 
 	public AssetManager getAssetManager() {
 		return assetManager;
