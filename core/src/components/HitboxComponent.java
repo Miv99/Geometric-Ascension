@@ -123,7 +123,7 @@ public class HitboxComponent implements Component, Pool.Poolable {
         travellingMapAreaDestination = null;
     }
 
-    public void update(PooledEngine engine, Entity parent, Entity player, float deltaTime) {
+    public void update(PooledEngine engine, Entity parent, Entity player, float mapAreaRadius, float deltaTime) {
         for (CircleHitbox c : circles) {
             AttackPattern attackPattern = c.getAttackPattern();
             if (attackPattern != null) {
@@ -133,7 +133,7 @@ public class HitboxComponent implements Component, Pool.Poolable {
                 int index = 0;
                 for (AttackPart ap : attackPattern.getAttackParts()) {
                     if (!fired[index] && c.getTime() >= ap.getDelay()) {
-                        ap.fire(engine, parent, player, origin.x + c.x, origin.y + c.y, aimingAngle + attackPattern.getAngleOffset());
+                        ap.fire(engine, parent, player, origin.x + c.x, origin.y + c.y, aimingAngle + attackPattern.getAngleOffset(), mapAreaRadius);
                         fired[index] = true;
                     } else {
                         break;

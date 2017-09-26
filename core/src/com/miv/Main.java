@@ -31,6 +31,7 @@ import screens.MainMenu;
 import screens.MapScreen;
 import screens.PlayerBuilder;
 import systems.AISystem;
+import systems.ExpirationSystem;
 import systems.MovementSystem;
 import systems.RenderSystem;
 import systems.ShootingSystem;
@@ -147,9 +148,10 @@ public class Main extends Game {
 		engine.addSystem(new AISystem());
 		movementSystem = new MovementSystem(this, engine, map, player);
 		engine.addSystem(movementSystem);
-		shootingSystem = new ShootingSystem(engine);
+		shootingSystem = new ShootingSystem(map, engine);
 		engine.addSystem(shootingSystem);
 		engine.addSystem(renderSystem);
+		engine.addSystem(new ExpirationSystem());
 
 		camera = new Camera(renderSystem);
 		camera.resetViewport();
@@ -170,6 +172,7 @@ public class Main extends Game {
 		renderSystem.setMap(map);
 		movementSystem.setMap(map);
 		movementSystem.setPlayer(player);
+		shootingSystem.setMap(map);
 
 		loadMainMenu();
 	}
@@ -501,6 +504,9 @@ public class Main extends Game {
 		}
 		if(mapScreen != null) {
 			mapScreen.setMap(map);
+		}
+		if(shootingSystem != null) {
+			shootingSystem.setMap(map);
 		}
 		this.map = map;
 	}

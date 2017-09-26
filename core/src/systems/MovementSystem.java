@@ -292,6 +292,47 @@ public class MovementSystem extends EntitySystem {
     }
 
     /**
+     * For bullets that curve towards player
+     */
+    private Point calculateEnemyBulletVelocityDueToGravity(Entity entity, Point entityOrigin, Vector2 entityVelocity, float deltaTime) {
+        Point vel = null;
+
+        if((Mappers.playerBullet.has(entity) && Mappers.playerBullet.get(entity).getPlayerAttractionLerpFactor() == 0) || (Mappers.enemyBullet.has(entity) && Mappers.enemyBullet.get(entity).getPlayerAttractionLerpFactor() == 0)) {
+            return vel;
+        }
+        if (!Mappers.hitbox.get(entity).isIgnoreGravity()) {
+            vel = new Point(0, 0);
+
+            float entityGravitationalRadius = Mappers.hitbox.get(entity).getGravitationalRadius();
+            float entityVelocityAngle = MathUtils.atan2(entityVelocity.y, entityVelocity.x);
+            float playerAttractionLerpFactor = 0;
+            if(Mappers.playerBullet.has(entity)) {
+                playerAttractionLerpFactor = Mappers.playerBullet.get(entity).getPlayerAttractionLerpFactor();
+            } else if(Mappers.enemyBullet.has(entity)) {
+                playerAttractionLerpFactor = Mappers.enemyBullet.get(entity).getPlayerAttractionLerpFactor();
+            }
+
+            HitboxComponent hitbox = Mappers.hitbox.get(player);
+            if (!hitbox.isIgnoreGravity()) {
+                Point origin = hitbox.getOrigin();
+                float distance = Utils.getDistance(origin, entityOrigin);
+                if (distance < Options.GRAVITY_DROP_OFF_DISTANCE + hitbox.getGravitationalRadius() + entityGravitationalRadius) {
+                    float angleToTarget = MathUtils.atan2(entityOrigin.y - origin.y, entityOrigin.x - origin.x);
+                    entityVelocityAngle += angleToTarget * deltaTime * playerAttractionLerpFactor;
+
+                    // Change this to len2 if things get too laggy
+                    float magnitude = Mappers.hitbox.get(entity).getVelocity().len();
+
+                    vel.x = magnitude * MathUtils.cos(entityVelocityAngle);
+                    vel.y = magnitude * MathUtils.sin(entityVelocityAngle);
+                }
+            }
+        }
+
+        return vel;
+    }
+
+    /**
      * Returns the change in velocity due to a pp orb's proximity to players and the map area border
      * @param entity - the entity whose velocity's change is being calculated for
      * @param entityOrigin - origin of e
@@ -450,6 +491,9 @@ public class MovementSystem extends EntitySystem {
                             handleBulletCollision(collisionEntitiesToHandle.get(i), collisionCirclesToHandle.get(i), e);
                         }
                     }
+
+                    Point newVelocity = calculateEnemyBulletVelocityDueToGravity(e, origin, hitbox.getVelocity(), deltaTime);
+                    hitbox.setVelocity(newVelocity.x, newVelocity.y);
                 }
             } else if(hitbox.isTravelling()) {
                 // I already know this is bad code; it's used only for player travelling
