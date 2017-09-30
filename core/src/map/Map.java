@@ -11,6 +11,7 @@ import com.miv.Mappers;
 import com.miv.Options;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Set;
@@ -205,6 +206,11 @@ public class Map {
             newMapAreasUntilBoss--;
         }
 
+        newMapArea.onEntityEnter(player);
+        if(oldMapArea != null) {
+            oldMapArea.onPlayerLeave();
+        }
+
         main.updateScreenActors();
 
         // Entities being removed later fixes bug where they weren't actually being removed somehow
@@ -224,6 +230,7 @@ public class Map {
                 populateWithBoss(mapArea);
             } else {
                 mapArea = new MapArea(MathUtils.random(MapArea.MAP_AREA_MIN_SIZE, MapArea.MAP_AREA_MAX_SIZE));
+                mapArea.randomizeRarity(main.getAssetManager(), main.getPlayer());
                 // Populate map area with enemies
                 randomlyPopulate(mapArea);
             }
@@ -364,6 +371,7 @@ public class Map {
             circles.add(c1);
 
             mapArea.entityCreationDataArrayList.add(ecd);
+            mapArea.onEnemyDataCreation(ecd);
         }
     }
 
@@ -482,6 +490,10 @@ public class Map {
 
     public float getMaxEnemiesPerMapArea() {
         return maxEnemiesPerMapArea;
+    }
+
+    public Collection<MapArea> getAllSavedMapAreas() {
+        return areas.values();
     }
 
     public HashMap<Point, MapScreen.MapScreenArea> getDiscoveredAreaPositions() {

@@ -3,16 +3,24 @@ package map;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.core.PooledEngine;
-import com.miv.EntityActions;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.math.MathUtils;
 import com.miv.Main;
 import com.miv.Mappers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 import components.AIComponent;
 import components.BossComponent;
 import components.EnemyComponent;
 import components.HitboxComponent;
+import map.mods.MapAreaModifier;
+import map.mods.Mod;
+import map.mods.Windy;
 import utils.CircleHitbox;
 
 /**
@@ -25,11 +33,18 @@ public class MapArea {
 
     public static final float BOSS_MAP_AREA_SIZE = 1500f;
 
+    private static final float CHANCE_OF_RARE_MAP = 0.04f;
+    private static final float CHANCE_OF_UNCOMMON_MAP = 0.08f;
+
     public ArrayList<EntityCreationData> entityCreationDataArrayList;
     private float radius;
 
     private int enemyCount;
     private int originalEnemyCount;
+
+    private ArrayList<MapAreaModifier> mods;
+
+    private transient ArrayList<Entity> enemies;
 
     /**
      * Set to -1 if no stairs exist in this MapArea. Otherwise, an entity with an OnCollision event will be spawned in the middle of the MapArea
@@ -45,6 +60,8 @@ public class MapArea {
     public MapArea(float radius) {
         this.radius = radius;
         entityCreationDataArrayList = new ArrayList<EntityCreationData>();
+        enemies = new ArrayList<Entity>();
+        mods = new ArrayList<MapAreaModifier>();
     }
 
     public void addStairs(int destinationFloor) {
@@ -55,6 +72,8 @@ public class MapArea {
      * Spawns all entities in {@link map.MapArea#entityCreationDataArrayList}
      */
     public void spawnEntities(final PooledEngine engine, Entity player, boolean clearEntityCreationDataAfterSpawning) {
+        enemies.clear();
+
         enemyCount = entityCreationDataArrayList.size();
 
         // Entities from entityCreationDataArrayList
@@ -91,11 +110,42 @@ public class MapArea {
             }
 
             engine.addEntity(e);
+            if(ecd.isEnemy()) {
+                enemies.add(e);
+            }
+            onEntityEnter(e);
         }
 
         if(clearEntityCreationDataAfterSpawning && !isBossArea()) {
             entityCreationDataArrayList.clear();
         }
+    }
+
+    public void randomizeRarity(AssetManager assetManager, Entity player) {
+        List<Mod> mods = null;
+        float rand = MathUtils.random();
+        if(rand < CHANCE_OF_RARE_MAP) { // Rare map area
+            mods = pickNRandomMods(Arrays.asList(Mod.values()), MathUtils.random(3, 4));
+        } else if(rand < CHANCE_OF_UNCOMMON_MAP + CHANCE_OF_RARE_MAP) { // Uncommon map area
+            mods = pickNRandomMods(Arrays.asList(Mod.values()), MathUtils.random(2, 3));
+        }
+
+        if(mods != null) {
+            for(Mod mod : mods) {
+                try {
+                    MapAreaModifier m = mod.getImpl().getConstructor(AssetManager.class, MapArea.class, Entity.class).newInstance(new Object[]{assetManager, this, player});
+                    this.mods.add(m);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private static List<Mod> pickNRandomMods(List<Mod> list, int n) {
+        List<Mod> copy = new LinkedList<Mod>(list);
+        Collections.shuffle(copy);
+        return copy.subList(0, n);
     }
 
     public void storeExistingEnemies(PooledEngine engine, boolean deleteEntitiesAfterwards) {
@@ -132,6 +182,61 @@ public class MapArea {
             if(deleteEntitiesAfterwards) {
                 engine.removeEntity(e);
             }
+        }
+    }
+
+    /**
+     * Called from {@link Map#randomlyPopulate(MapArea)}
+     */
+    public void onEnemyDataCreation(EntityCreationData ecd) {
+        for(MapAreaModifier m : mods) {
+            m.onEnemyDataCreation(ecd);
+        }
+    }
+
+    /**
+     * Called from {@link systems.MovementSystem#handleBulletCollision(Entity, CircleHitbox, Entity)}
+     */
+    public void onEnemyDeath(Entity enemy) {
+        enemies.remove(enemy);
+        for(MapAreaModifier m : mods) {
+            m.onEnemyDeath(enemy);
+        }
+    }
+
+    /**
+     * Called from {@link #spawnEntities(PooledEngine, Entity, boolean)} (for enemies) and {@link Map#enterNewArea(PooledEngine, Entity, int, int, boolean)} (for player)
+     */
+    public void onEntityEnter(Entity entity) {
+        for(MapAreaModifier m : mods) {
+            m.onEntityEnter(entity);
+        }
+    }
+
+    /**
+     * Called from {@link Map#enterNewArea(PooledEngine, Entity, int, int, boolean)} (for player)
+     */
+    public void onPlayerLeave() {
+        for(MapAreaModifier m : mods) {
+            m.onPlayerLeave();
+        }
+    }
+
+    /**
+     * Called from {@link systems.MovementSystem#handleBulletCollision(Entity, CircleHitbox, Entity)}
+     */
+    public void onEnemyCircleDeath(Entity enemy, CircleHitbox circle) {
+        for(MapAreaModifier m : mods) {
+            m.onEnemyCircleDeath(enemy, circle);
+        }
+    }
+
+    /**
+     * Called from {@link Main#render()}
+     */
+    public void update(float deltaTime) {
+        for(MapAreaModifier m : mods) {
+            m.update(deltaTime);
         }
     }
 
@@ -179,5 +284,13 @@ public class MapArea {
 
     public boolean isBossArea() {
         return stairsDestination != -1;
+    }
+
+    public ArrayList<Entity> getEnemies() {
+        return enemies;
+    }
+
+    public ArrayList<MapAreaModifier> getMods() {
+        return mods;
     }
 }

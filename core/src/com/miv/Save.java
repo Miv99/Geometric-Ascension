@@ -47,8 +47,9 @@ public class Save {
     /**
      * Loads the saved player entity and map data into {@link Main#player} and {@link Main#map}.
      * If no save data exists, the default player and map are loaded.
+     * @return True if a new save file was created; false if a pre-existing one was loaded
      */
-    public static void load(Main main) {
+    public static boolean load(Main main) {
         PooledEngine engine = main.getEngine();
         engine.removeAllEntities();
 
@@ -63,7 +64,7 @@ public class Save {
                 for (CircleHitbox c : data.playerCircles) {
                     hitbox.addCircle(c, false);
                 }
-                hitbox.setLastFacedAngle(MathUtils.PI/2f);
+                hitbox.setLastFacedAngle(MathUtils.PI / 2f);
                 hitbox.recenterOriginalCirclePositions();
                 hitbox.setMaxSpeed(data.playerMaxSpeed);
                 hitbox.setOrigin(data.playerOrigin.x, data.playerOrigin.y);
@@ -73,11 +74,15 @@ public class Save {
 
                 // Load map
                 main.setMap(data.map);
+
+                return false;
             } catch(Exception e) {
                 createNewSave(engine, main);
+                return true;
             }
         } else {
             createNewSave(engine, main);
+            return true;
         }
     }
 
@@ -117,6 +122,7 @@ public class Save {
                     Mappers.player.get(session.getPlayer()), session.getMap(), Mappers.hitbox.get(session.getPlayer()).getOrigin());
 
             Json save = new Json();
+            System.out.println(save.toJson(saveData));
             Gdx.files.local(SAVE_DATA_PATH).writeString(save.toJson(saveData), false);
             System.out.println("SAVED");
         }

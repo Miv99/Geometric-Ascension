@@ -473,7 +473,7 @@ public class CircleHitbox extends Circle {
 
     /**
      * True if the attack part has been fired off.
-     * Is reset (all fields set to false) by {@link components.HitboxComponent#update(PooledEngine, Entity, Entity, float)}
+     * Is reset (all fields set to false) by {@link components.HitboxComponent#update(PooledEngine, Entity, Entity, float, float)}
      * after each iteration of the attack pattern
      */
     private boolean[] fired;

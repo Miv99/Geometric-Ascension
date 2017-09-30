@@ -41,9 +41,11 @@ public class HitboxComponent implements Component, Pool.Poolable {
 
     // Position of hitbox
     private Point origin;
-    // Velocity of hitbox, in meters/frame
+    // Velocity of hitbox, in meters/sec
     private Vector2 velocity;
-    // Acceleration of hitbox, in meters/frame^2
+    // Secondary velocity (added to primary) from environment
+    private Vector2 velocity2;
+    // Acceleration of hitbox, in meters/sec^2
     private Vector2 acceleration;
     // Time until acceleration stops
     private float accelerationTime;
@@ -93,6 +95,7 @@ public class HitboxComponent implements Component, Pool.Poolable {
     public HitboxComponent() {
         origin = new Point();
         velocity = new Vector2();
+        velocity2 = new Vector2();
         acceleration = new Vector2();
         circles = new ArrayList<CircleHitbox>();
         circleRemovalQueue = new ArrayList<CircleHitbox>();
@@ -103,6 +106,7 @@ public class HitboxComponent implements Component, Pool.Poolable {
         origin.x = 0;
         origin.y = 0;
         velocity.set(0, 0);
+        velocity2.set(0, 0);
         acceleration.set(0, 0);
         accelerationTime = 0;
         circles.clear();
@@ -389,12 +393,20 @@ public class HitboxComponent implements Component, Pool.Poolable {
         return velocity;
     }
 
+    public Vector2 getVelocity2() {
+        return velocity2;
+    }
+
     public void setVelocity(float x, float y) {
         velocity.set(x, y);
 
         if(!ignoreSpeedLimit) {
             velocity.limit(maxSpeed);
         }
+    }
+
+    public void setVelocity2(float x, float y) {
+        velocity2.set(x, y);
     }
 
     public Vector2 getAcceleration() {

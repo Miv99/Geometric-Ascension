@@ -75,9 +75,9 @@ public class AttackPattern {
     }
 
     private void calculateAndSetModificationMultipliers() {
-        float fireIntervalMultiplier = totalPpInStatModifiers / Map.INITIAL_MAP_AREA_PIXEL_POINTS * fireIntervalPpMultiplier;
         float bulletDamageMultiplier = totalPpInStatModifiers / Map.INITIAL_MAP_AREA_PIXEL_POINTS * bulletDamagePpMultiplier;
-        // Bullet radius and speed not scaled to pp
+        // Fire interval and bullet radius and speed not scaled to pp
+        float fireIntervalMultiplier = fireIntervalPpMultiplier;
         float bulletRadiusMultiplier = bulletRadiusPpMultiplier;
         float speedMultiplier = speedPpMultiplier;
 
@@ -85,7 +85,6 @@ public class AttackPattern {
     }
 
     private void modify(float speedMultiplier, float fireIntervalMultiplier, float bulletDamageMultiplier, float bulletRadiusMultiplier) {
-        // Modify the attack pattern according to pp distribution
         for(AttackPart a : attackParts) {
             a.setSpeed(a.getOriginalSpeed() * speedMultiplier, false);
             a.setDelay(a.getOriginalDelay() * fireIntervalMultiplier, false);
@@ -96,7 +95,6 @@ public class AttackPattern {
     }
 
     private void modify(float speedMultiplier, float fireIntervalMultiplier, float bulletDamageMultiplier, float bulletRadiusMultiplier, float lifestealMultiplier) {
-        // Modify the attack pattern according to pp distribution
         for(AttackPart a : attackParts) {
             a.setSpeed(a.getOriginalSpeed() * speedMultiplier, false);
             a.setDelay(a.getOriginalDelay() * fireIntervalMultiplier, false);
@@ -308,5 +306,25 @@ public class AttackPattern {
 
     public void setAngleOffset(float angleOffset) {
         this.angleOffset = angleOffset;
+    }
+
+    public void setSpeedPpMultiplier(float speedPpMultiplier) {
+        this.speedPpMultiplier = speedPpMultiplier;
+        calculateAndSetModificationMultipliers();
+    }
+
+    public void setFireIntervalPpMultiplier(float fireIntervalPpMultiplier) {
+        this.fireIntervalPpMultiplier = fireIntervalPpMultiplier;
+        calculateAndSetModificationMultipliers();
+    }
+
+    public void setBulletDamagePpMultiplier(float bulletDamagePpMultiplier) {
+        this.bulletDamagePpMultiplier = bulletDamagePpMultiplier;
+        calculateAndSetModificationMultipliers();
+    }
+
+    public void setBulletRadiusPpMultiplier(float bulletRadiusPpMultiplier) {
+        this.bulletRadiusPpMultiplier = bulletRadiusPpMultiplier;
+        calculateAndSetModificationMultipliers();
     }
 }

@@ -25,6 +25,8 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 
 import components.HitboxComponent;
 import map.Map;
+import map.MapArea;
+import map.mods.MapAreaModifier;
 import screens.DeathScreen;
 import screens.HUD;
 import screens.MainMenu;
@@ -66,6 +68,7 @@ public class Main extends Game {
 	public static final String UPGRADE_2_SOUND_PATH = "sound_effects\\upgrade_2.ogg";
 	public static final String UPGRADE_3_SOUND_PATH = "sound_effects\\upgrade_3.ogg";
 	public static final String GAIN_PP_SOUND_PATH = "sound_effects\\gain_pp.ogg";
+	public static final String WIND_WOOSH_SOUND_PATH = "sound_effects\\wind_woosh.wav";
 	public static final String MOVEMENT_ARROW_TAIL_PATH = "movement_arrow_tail.png";
 	public static final String MOVEMENT_ARROW_BODY_PATH = "movement_arrow_body.png";
 	public static final String MOVEMENT_ARROW_HEAD_PATH = "movement_arrow_head.png";
@@ -189,7 +192,17 @@ public class Main extends Game {
 	}
 
 	public void loadMainMenuMapPreview() {
-		Save.load(this);
+		boolean newSaveCreated = Save.load(this);
+		if(!newSaveCreated) {
+			for(MapArea area : map.getAllSavedMapAreas()) {
+				for(MapAreaModifier mod : area.getMods()) {
+					mod.setPlayer(player);
+					mod.setAssetManager(assetManager);
+					mod.setMapArea(area);
+				}
+			}
+		}
+
 		engine.addEntity(player);
 		Mappers.hitbox.get(player).setLastFacedAngle(MathUtils.PI / 2f);
 		Mappers.hitbox.get(player).setTargetAngle(MathUtils.PI / 2f);
@@ -272,6 +285,7 @@ public class Main extends Game {
 		assetManager.load(UPGRADE_2_SOUND_PATH, Sound.class);
 		assetManager.load(UPGRADE_3_SOUND_PATH, Sound.class);
 		assetManager.load(GAIN_PP_SOUND_PATH, Sound.class);
+		assetManager.load(WIND_WOOSH_SOUND_PATH, Sound.class);
 
 		assetManager.load(MOVEMENT_ARROW_TAIL_PATH, Texture.class);
 		assetManager.load(MOVEMENT_ARROW_BODY_PATH, Texture.class);
@@ -393,6 +407,7 @@ public class Main extends Game {
 			if (!playerDead) {
 				playerHitboxComponent.update(deltaTime);
 				engine.update(deltaTime);
+				map.getCurrentArea().update(deltaTime);
 			} else {
 				// Update all systems except for ShootingSystem
 				engine.getSystem(AISystem.class).update(deltaTime);
@@ -491,6 +506,13 @@ public class Main extends Game {
 		}
 		if(mapScreen != null) {
 			mapScreen.setPlayer(player);
+		}
+		if(map != null) {
+			for(MapArea area : map.getAllSavedMapAreas()) {
+				for(MapAreaModifier mod : area.getMods()) {
+					mod.setPlayer(player);
+				}
+			}
 		}
 	}
 

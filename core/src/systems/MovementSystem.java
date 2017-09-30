@@ -142,6 +142,8 @@ public class MovementSystem extends EntitySystem {
                     victimHitbox.queueCircleRemoval(victimCircleHit);
 
                     if (Mappers.enemy.has(victim)) {
+                        map.getCurrentArea().onEnemyCircleDeath(victim, victimCircleHit);
+
                         float pp = victimCircleHit.getPpGain();
                         // Enemy count is not lowered until entityRemovalQueue is processed so == 1 is the same as if all enemies are dead
                         if(map.getCurrentArea().getEnemyCount() == 1) {
@@ -167,6 +169,8 @@ public class MovementSystem extends EntitySystem {
                     // All hit circles considered dead when number of circles is 1 because size() is not updated until
                     // the circle removal queue is fired.
                     if (victimHitbox.getCircles().size() == 1) {
+                        map.getCurrentArea().onEnemyDeath(victim);
+
                         // Queue entity removal from engine
                         entityRemovalQueue.add(victim);
                     }
@@ -185,10 +189,10 @@ public class MovementSystem extends EntitySystem {
         return Math.abs(origin.x) > Math.abs(boundary) || Math.abs(origin.y) > Math.abs(boundary);
     }
 
-    private boolean checkIfOutsideCurrentMapArea(Entity e, Point origin, Vector2 velocity, float boundary) {
+    private boolean checkIfOutsideCurrentMapArea(Entity e, Point origin, Vector2 velocity, Vector2 velocity2, float boundary) {
         if(origin.x*origin.x + origin.y*origin.y > boundary*boundary) {
             // Angle depends on direction the entity is currently travelling in
-            float angle = Utils.normalizeAngle(MathUtils.atan2(velocity.y, velocity.x));
+            float angle = Utils.normalizeAngle(MathUtils.atan2(velocity.y + velocity2.y, velocity.x + velocity2.x));
             if (angle >= Math.PI / 4f && angle <= 3f * Math.PI / 4f) {
                 EntityActions.playerEnterNewMapArea(e, MathUtils.cos(angle), MathUtils.sin(angle), new Point(map.getFocus().x, map.getFocus().y + 1));
             } else if (angle >= 3f * Math.PI / 4f && angle <= 5f * Math.PI / 4f) {
@@ -406,6 +410,7 @@ public class MovementSystem extends EntitySystem {
             HitboxComponent hitbox = Mappers.hitbox.get(e);
             Point origin = hitbox.getOrigin();
             Vector2 velocity = hitbox.getVelocity();
+            Vector2 velocity2 = hitbox.getVelocity2();
             Point velocityAdditionDueToGravity = null;
 
             boolean isValidMovement = true;
@@ -416,7 +421,7 @@ public class MovementSystem extends EntitySystem {
                     // Check if circle is outside map area radius
                     if(mapArea != null) {
                         // Player cannot leave boss area
-                        checkIfOutsideCurrentMapArea(e, origin, hitbox.getVelocity(), mapArea.getRadius());
+                        checkIfOutsideCurrentMapArea(e, origin, hitbox.getVelocity(), hitbox.getVelocity2(), mapArea.getRadius());
                     }
 
                     for (CircleHitbox c : hitbox.getCircles()) {
@@ -493,7 +498,9 @@ public class MovementSystem extends EntitySystem {
                     }
 
                     Point newVelocity = calculateEnemyBulletVelocityDueToGravity(e, origin, hitbox.getVelocity(), deltaTime);
-                    hitbox.setVelocity(newVelocity.x, newVelocity.y);
+                    if(newVelocity != null) {
+                        hitbox.setVelocity(newVelocity.x, newVelocity.y);
+                    }
                 }
             } else if(hitbox.isTravelling()) {
                 // I already know this is bad code; it's used only for player travelling
@@ -564,8 +571,8 @@ public class MovementSystem extends EntitySystem {
             }
 
             if (isValidMovement) {
-                float deltaX = velocity.x * deltaTime * Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER;
-                float deltaY = velocity.y * deltaTime * Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER;
+                float deltaX = (velocity.x + velocity2.x) * deltaTime * Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER;
+                float deltaY = (velocity.y + velocity2.y) * deltaTime * Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER;
 
                 if(velocityAdditionDueToGravity == null) {
                     hitbox.setOrigin(origin.x + deltaX, origin.y + deltaY);
