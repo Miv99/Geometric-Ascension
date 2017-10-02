@@ -28,7 +28,6 @@ import components.PlayerComponent;
 import map.Map;
 import map.MapArea;
 import utils.CircleHitbox;
-import utils.OnCollisionEvent;
 import utils.Point;
 import utils.Utils;
 
@@ -53,6 +52,7 @@ public class MovementSystem extends EntitySystem {
     private Main main;
 
     private Entity player;
+    private HitboxComponent playerHitbox;
 
     private Array<Sound> popSounds;
     private Sound gainPpSound;
@@ -62,6 +62,7 @@ public class MovementSystem extends EntitySystem {
         this.engine = engine;
         this.map = map;
         this.player = player;
+        playerHitbox = Mappers.hitbox.get(player);
         collisionCirclesToHandle = new ArrayList<CircleHitbox>();
         collisionEntitiesToHandle = new ArrayList<Entity>();
         entityRemovalQueue = new ArrayList<Entity>();
@@ -181,8 +182,24 @@ public class MovementSystem extends EntitySystem {
             entityRemovalQueue.add(bullet);
 
             // Play pop sound
-            popSounds.random().play(Options.BULLET_BUBBLE_POP_VOLUME);
+            Point origin = Mappers.hitbox.get(bullet).getOrigin();
+            playRandomPopSound(Options.BULLET_BUBBLE_POP_VOLUME, origin.x + victimCircleHit.x, origin.y + victimCircleHit.y, playerHitbox.getOrigin());
         }
+    }
+
+    private void playRandomPopSound(float volume, float soundOriginX, float soundOriginY, Point playerPos) {
+        float distance = Utils.getDistance(playerPos, soundOriginX, soundOriginY);
+        System.out.println("Dist: " + distance);
+        float distanceVolume = 0;
+        if(distance < Options.MIN_BUBBLE_POP_VOLUME_DROP_OFF_DISTANCE) {
+            distanceVolume = 1f;
+        } else if(distanceVolume < Options.MAX_BUBBLE_POP_VOLUME_DROP_OFF_DISTANCE) {
+            distanceVolume = 1f - (distance - Options.MIN_BUBBLE_POP_VOLUME_DROP_OFF_DISTANCE)/(Options.MAX_BUBBLE_POP_VOLUME_DROP_OFF_DISTANCE - Options.MIN_BUBBLE_POP_VOLUME_DROP_OFF_DISTANCE);
+        } else {
+            return;
+        }
+        System.out.println("vol: " + distanceVolume);
+        popSounds.random().play(distanceVolume * volume * Options.MASTER_VOLUME * Options.SOUND_VOLUME);
     }
 
     private boolean bulletIsOutsideBoundary(Entity e, Point origin, float boundary) {
@@ -316,11 +333,10 @@ public class MovementSystem extends EntitySystem {
                 playerAttractionLerpFactor = Mappers.enemyBullet.get(entity).getPlayerAttractionLerpFactor();
             }
 
-            HitboxComponent hitbox = Mappers.hitbox.get(player);
-            if (!hitbox.isIgnoreGravity()) {
-                Point origin = hitbox.getOrigin();
+            if (!playerHitbox.isIgnoreGravity()) {
+                Point origin = playerHitbox.getOrigin();
                 float distance = Utils.getDistance(origin, entityOrigin);
-                if (distance < Options.GRAVITY_DROP_OFF_DISTANCE + hitbox.getGravitationalRadius() + entityGravitationalRadius) {
+                if (distance < Options.GRAVITY_DROP_OFF_DISTANCE + playerHitbox.getGravitationalRadius() + entityGravitationalRadius) {
                     float angleToTarget = MathUtils.atan2(entityOrigin.y - origin.y, entityOrigin.x - origin.x);
                     entityVelocityAngle += angleToTarget * deltaTime * playerAttractionLerpFactor;
 
@@ -608,9 +624,9 @@ public class MovementSystem extends EntitySystem {
             // Remove circles in hitbox circle removal queue from array list of circles in the hitbox component
             for(CircleHitbox c : hitbox.getCircleRemovalQueue()) {
                 if(Mappers.player.has(e)) {
-                    popSounds.random().play(Options.PLAYER_BUBBLE_POP_VOLUME * Options.MASTER_VOLUME * Options.SOUND_VOLUME);
+                    playRandomPopSound(Options.PLAYER_BUBBLE_POP_VOLUME, origin.x + c.x, origin.y + c.y, playerHitbox.getOrigin());
                 } else if(Mappers.enemy.has(e)) {
-                    popSounds.random().play(Options.ENEMY_BUBBLE_POP_VOLUME * Options.MASTER_VOLUME * Options.SOUND_VOLUME);
+                    playRandomPopSound(Options.ENEMY_BUBBLE_POP_VOLUME, origin.x + c.x, origin.y + c.y, playerHitbox.getOrigin());
                 }
 
                 ArrayList<Entity> subEntities = hitbox.removeCircle(engine, e, c, (map.getCurrentArea().isBossArea() && Mappers.boss.has(e)));
@@ -657,5 +673,6 @@ public class MovementSystem extends EntitySystem {
 
     public void setPlayer(Entity player) {
         this.player = player;
+        playerHitbox = Mappers.hitbox.get(player);
     }
 }

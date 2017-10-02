@@ -55,6 +55,11 @@ public class Options {
     public static final float PLAYER_BUBBLE_POP_VOLUME = 3f;
     public static final float ENEMY_BUBBLE_POP_VOLUME = 3f;
 
+    // Distance before sound begins to diminish as distance increases
+    public static final float MIN_BUBBLE_POP_VOLUME_DROP_OFF_DISTANCE = 300f;
+    // Distance before sound volume is 0
+    public static final float MAX_BUBBLE_POP_VOLUME_DROP_OFF_DISTANCE = 1600f;
+
     // -----------------------------------------------------------------------------Player customization------------------------------------------------------
     public static final float INITIAL_PLAYER_CUSTOMIZATION_RADIUS = 250f;
     public static final float DEFAULT_NEW_CIRCLE_RADIUS = 40f;
