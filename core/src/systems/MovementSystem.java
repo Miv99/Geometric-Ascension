@@ -189,10 +189,10 @@ public class MovementSystem extends EntitySystem {
         return Math.abs(origin.x) > Math.abs(boundary) || Math.abs(origin.y) > Math.abs(boundary);
     }
 
-    private boolean checkIfOutsideCurrentMapArea(Entity e, Point origin, Vector2 velocity, Vector2 velocity2, float boundary) {
+    private boolean checkIfOutsideCurrentMapArea(Entity e, Point origin, float boundary) {
         if(origin.x*origin.x + origin.y*origin.y > boundary*boundary) {
-            // Angle depends on direction the entity is currently travelling in
-            float angle = Utils.normalizeAngle(MathUtils.atan2(velocity.y + velocity2.y, velocity.x + velocity2.x));
+            // Angle depends on position in map
+            float angle = Utils.normalizeAngle(MathUtils.atan2(origin.y, origin.y));
             if (angle >= Math.PI / 4f && angle <= 3f * Math.PI / 4f) {
                 EntityActions.playerEnterNewMapArea(e, MathUtils.cos(angle), MathUtils.sin(angle), new Point(map.getFocus().x, map.getFocus().y + 1));
             } else if (angle >= 3f * Math.PI / 4f && angle <= 5f * Math.PI / 4f) {
@@ -421,7 +421,7 @@ public class MovementSystem extends EntitySystem {
                     // Check if circle is outside map area radius
                     if(mapArea != null) {
                         // Player cannot leave boss area
-                        checkIfOutsideCurrentMapArea(e, origin, hitbox.getVelocity(), hitbox.getVelocity2(), mapArea.getRadius());
+                        checkIfOutsideCurrentMapArea(e, origin, mapArea.getRadius());
                     }
 
                     for (CircleHitbox c : hitbox.getCircles()) {

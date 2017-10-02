@@ -6,6 +6,8 @@ import com.badlogic.gdx.utils.Pool;
 import com.miv.Main;
 import com.miv.Options;
 
+import systems.RenderSystem;
+
 /**
  * Created by Miv on 5/23/2017.
  */
@@ -15,6 +17,8 @@ public class PlayerComponent implements Component, Pool.Poolable {
     private float pixelPoints;
 
     private float score;
+
+    private transient RenderSystem.FloatingText lastPpFloatingText;
 
     @Override
     public void reset() {
@@ -33,21 +37,30 @@ public class PlayerComponent implements Component, Pool.Poolable {
 
         // Create text from the player that displays gain in pp
         if(Options.SHOW_PP_GAIN_FLOATING_TEXT && pixelPoints != 0) {
-            if(pixelPoints > 0) {
-                if (pixelPoints < 10) {
-                    main.getRenderSystem().addFloatingText(main.getPlayer(), "+" + String.format("%.2f", pixelPoints) + "pp", Color.BLACK);
-                } else if (pixelPoints < 100) {
-                    main.getRenderSystem().addFloatingText(main.getPlayer(), "+" + String.format("%.1f", pixelPoints) + "pp", Color.BLACK);
+            if(main.getRenderSystem().containsFloatingText(lastPpFloatingText)) {
+                float newPp = (Float)(lastPpFloatingText.getUserObject()) + pixelPoints;
+                if (newPp > 0) {
+                    lastPpFloatingText.setText("+" + String.format("%.2f", newPp) + "pp");
                 } else {
-                    main.getRenderSystem().addFloatingText(main.getPlayer(), "+" + String.valueOf(Math.round(pixelPoints)) + "pp", Color.BLACK);
+                    lastPpFloatingText.setText(String.format("%.2f", newPp) + "pp");
                 }
             } else {
-                if (pixelPoints > -10) {
-                    main.getRenderSystem().addFloatingText(main.getPlayer(), String.format("%.2f", pixelPoints) + "pp", Color.BLACK);
-                } else if (pixelPoints > -100) {
-                    main.getRenderSystem().addFloatingText(main.getPlayer(), String.format("%.1f", pixelPoints) + "pp", Color.BLACK);
+                if (pixelPoints > 0) {
+                    if (pixelPoints < 10) {
+                        lastPpFloatingText = main.getRenderSystem().addFloatingText(main.getPlayer(), "+" + String.format("%.2f", pixelPoints) + "pp", Color.BLACK).setUserObject((Float)pixelPoints);
+                    } else if (pixelPoints < 100) {
+                        lastPpFloatingText = main.getRenderSystem().addFloatingText(main.getPlayer(), "+" + String.format("%.1f", pixelPoints) + "pp", Color.BLACK).setUserObject((Float)pixelPoints);
+                    } else {
+                        lastPpFloatingText = main.getRenderSystem().addFloatingText(main.getPlayer(), "+" + String.valueOf(Math.round(pixelPoints)) + "pp", Color.BLACK).setUserObject((Float)pixelPoints);
+                    }
                 } else {
-                    main.getRenderSystem().addFloatingText(main.getPlayer(), String.valueOf(Math.round(pixelPoints)) + "pp", Color.BLACK);
+                    if (pixelPoints > -10) {
+                        lastPpFloatingText = main.getRenderSystem().addFloatingText(main.getPlayer(), String.format("%.2f", pixelPoints) + "pp", Color.BLACK).setUserObject((Float)pixelPoints);
+                    } else if (pixelPoints > -100) {
+                        lastPpFloatingText = main.getRenderSystem().addFloatingText(main.getPlayer(), String.format("%.1f", pixelPoints) + "pp", Color.BLACK).setUserObject((Float)pixelPoints);
+                    } else {
+                        lastPpFloatingText = main.getRenderSystem().addFloatingText(main.getPlayer(), String.valueOf(Math.round(pixelPoints)) + "pp", Color.BLACK).setUserObject((Float)pixelPoints);
+                    }
                 }
             }
         }

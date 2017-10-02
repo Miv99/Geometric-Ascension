@@ -35,7 +35,7 @@ import utils.Point;
  * Created by Miv on 5/25/2017.
  */
 public class RenderSystem extends EntitySystem {
-    private static class FloatingText {
+    public static class FloatingText {
         private String text;
         private Color textColor;
         private float x;
@@ -47,6 +47,8 @@ public class RenderSystem extends EntitySystem {
         private float width;
         private float height;
 
+        private Object userObject;
+
         private FloatingText(float x, float y, String text, Color textColor, float time) {
             this.x = x;
             this.y = y;
@@ -54,6 +56,23 @@ public class RenderSystem extends EntitySystem {
             this.textColor = new Color(textColor);
             timeLeft = time;
             deltaAlpha = textColor.a/time;
+        }
+
+        public Object getUserObject() {
+            return userObject;
+        }
+
+        public FloatingText setUserObject(Object userObject) {
+            this.userObject = userObject;
+            return this;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public void setText(String text) {
+            this.text = text;
         }
     }
 
@@ -305,7 +324,7 @@ public class RenderSystem extends EntitySystem {
      * @param text Text to be shown
      * @param color Color of text
      */
-    public void addFloatingText(float x, float y, String text, Color color) {
+    public FloatingText addFloatingText(float x, float y, String text, Color color) {
         FloatingText ft = new FloatingText(x, y, text, color, 1.5f);
         layout.setText(floatingTextFont, text);
         ft.width = layout.width;
@@ -317,6 +336,8 @@ public class RenderSystem extends EntitySystem {
         floatingTexts.add(ft);
 
         checkOverlappingTexts(ft);
+
+        return ft;
     }
 
     private void checkOverlappingTexts(FloatingText f1) {
@@ -342,9 +363,9 @@ public class RenderSystem extends EntitySystem {
         return f1.x < f2.x + f2.width && f1.x + f1.width > f2.x && f1.y < f2.y + f2.height && f1.y + f1.height > f2.y;
     }
 
-    public void addFloatingText(Entity origin, String text, Color color) {
+    public FloatingText addFloatingText(Entity origin, String text, Color color) {
         Point p = Mappers.hitbox.get(origin).getOrigin();
-        addFloatingText(p.x, p.y, text, color);
+        return addFloatingText(p.x, p.y, text, color);
     }
 
     public void clearFloatingTexts() {
@@ -361,5 +382,9 @@ public class RenderSystem extends EntitySystem {
 
     public void setMap(Map map) {
         this.map = map;
+    }
+
+    public boolean containsFloatingText(FloatingText ft) {
+        return floatingTexts.contains(ft);
     }
 }
