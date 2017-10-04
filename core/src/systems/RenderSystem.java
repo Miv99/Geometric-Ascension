@@ -95,7 +95,8 @@ public class RenderSystem extends EntitySystem {
         PLAYER_LIFESTEAL_AURA_SPECIALIZATION(11, new Color(0f, 127/255f, 0f, 0.3f), new Color(0f, 163/255f, 33/255f, 1f)),
         PLAYER_UTILITY_SPECIALIZATION(12, new Color(Color.WHITE.r, Color.WHITE.g, Color.WHITE.b, 0.3f), new Color(0f, 163/255f, 33/255f, 1f)),
 
-        PP_ORB(13, new Color(Color.WHITE.r, Color.WHITE.g, Color.WHITE.b, 0.3f), new Color(Color.RED));
+        PP_ORB(13, new Color(Color.WHITE.r, Color.WHITE.g, Color.WHITE.b, 0.3f), new Color(Color.RED)),
+        OBSTACLE(14, new Color(240/255f, 1f, 1f, 0.3f), new Color(Color.RED));
 
         private int id;
         private Color color;
@@ -124,10 +125,16 @@ public class RenderSystem extends EntitySystem {
     // Health bar y-axis offset from center of circle
     private static final float HEALTH_BAR_Y = -20f;
     public static final Color NORMAL_MAP_AREA_BACKGROUND_COLOR = new Color(224/255f, 1f, 1f, 1f);
+    public static final Color UNCOMMON_MAP_AREA_BACKGROUND_COLOR = new Color(168/255f, 253/255f, 166/255f, 1f);
+    public static final Color RARE_MAP_AREA_BACKGROUND_COLOR = new Color(252/255f, 184/255f, 254/255f, 1f);
     public static final Color STAIRS_MAP_AREA_BACKGROUND_COLOR = new Color(1f, 237/255f, 147/255f, 1f);
     public static final Color NORMAL_MAP_AREA_BORDER_COLOR = new Color(NORMAL_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.5f);
+    public static final Color UNCOMMON_MAP_AREA_BORDER_COLOR = new Color(UNCOMMON_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.5f);
+    public static final Color RARE_MAP_AREA_BORDER_COLOR = new Color(RARE_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.5f);
     public static final Color STAIRS_MAP_AREA_BORDER_COLOR = new Color(STAIRS_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.5f);
     public static final Color NORMAL_MAP_AREA_GRID_LINE_COLOR = new Color(NORMAL_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.2f);
+    public static final Color UNCOMMON_MAP_AREA_GRID_LINE_COLOR = new Color(UNCOMMON_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.2f);
+    public static final Color RARE_MAP_AREA_GRID_LINE_COLOR = new Color(RARE_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.2f);
     private static final Color STAIRS_MAP_AREA_GRID_LINE_COLOR = new Color(STAIRS_MAP_AREA_BACKGROUND_COLOR).lerp(0f, 0f, 0f, 1f, 0.2f);
 
     private Main main;
@@ -196,12 +203,25 @@ public class RenderSystem extends EntitySystem {
         if(map != null) {
             // Color inside of map area
             Color gridLineColor;
+            Color borderColor;
             if(map.getCurrentArea().getStairsDestination() == -1) {
-                shapeRenderer.setColor(NORMAL_MAP_AREA_BACKGROUND_COLOR);
-                gridLineColor = NORMAL_MAP_AREA_GRID_LINE_COLOR;
+                if(map.getCurrentArea().isUncommon()) {
+                    shapeRenderer.setColor(UNCOMMON_MAP_AREA_BACKGROUND_COLOR);
+                    gridLineColor = UNCOMMON_MAP_AREA_GRID_LINE_COLOR;
+                    borderColor = UNCOMMON_MAP_AREA_BORDER_COLOR;
+                } else if(map.getCurrentArea().isRare()) {
+                    shapeRenderer.setColor(RARE_MAP_AREA_BACKGROUND_COLOR);
+                    gridLineColor = RARE_MAP_AREA_GRID_LINE_COLOR;
+                    borderColor = RARE_MAP_AREA_BORDER_COLOR;
+                } else {
+                    shapeRenderer.setColor(NORMAL_MAP_AREA_BACKGROUND_COLOR);
+                    gridLineColor = NORMAL_MAP_AREA_GRID_LINE_COLOR;
+                    borderColor = NORMAL_MAP_AREA_BORDER_COLOR;
+                }
             } else {
                 shapeRenderer.setColor(STAIRS_MAP_AREA_BACKGROUND_COLOR);
                 gridLineColor = STAIRS_MAP_AREA_GRID_LINE_COLOR;
+                borderColor = STAIRS_MAP_AREA_BORDER_COLOR;
             }
             shapeRenderer.set(ShapeRenderer.ShapeType.Filled);
             shapeRenderer.circle(0, 0, map.getCurrentArea().getRadius());
@@ -217,11 +237,7 @@ public class RenderSystem extends EntitySystem {
             // Draw border
             Gdx.gl.glLineWidth(20);
             shapeRenderer.set(ShapeRenderer.ShapeType.Line);
-            if(map.getCurrentArea().getStairsDestination() == -1) {
-                shapeRenderer.setColor(NORMAL_MAP_AREA_BORDER_COLOR);
-            } else {
-                shapeRenderer.setColor(STAIRS_MAP_AREA_BORDER_COLOR);
-            }
+            shapeRenderer.setColor(borderColor);
             shapeRenderer.circle(0, 0, map.getCurrentArea().getRadius());
         }
         shapeRenderer.end();

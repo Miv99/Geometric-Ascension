@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import components.EnemyBulletComponent;
 import components.EnemyComponent;
 import components.HitboxComponent;
+import components.ObstacleComponent;
 import components.PlayerBulletComponent;
 import components.PlayerComponent;
 import map.Map;
@@ -47,6 +48,8 @@ public class MovementSystem extends EntitySystem {
     private ImmutableArray<Entity> enemies;
     private ImmutableArray<Entity> enemyBullets;
     private ImmutableArray<Entity> enemiesAndPlayers;
+    private ImmutableArray<Entity> playersAndObstacles;
+    private ImmutableArray<Entity> enemiesAndObstacles;
     private PooledEngine engine;
     private Map map;
     private Main main;
@@ -87,6 +90,8 @@ public class MovementSystem extends EntitySystem {
         enemies = engine.getEntitiesFor(Family.all(EnemyComponent.class).get());
         enemyBullets = engine.getEntitiesFor(Family.all(EnemyBulletComponent.class).get());
         enemiesAndPlayers = engine.getEntitiesFor(Family.one(EnemyComponent.class, PlayerComponent.class).get());
+        playersAndObstacles = engine.getEntitiesFor(Family.one(ObstacleComponent.class, PlayerComponent.class).get());
+        enemiesAndObstacles = engine.getEntitiesFor(Family.one(ObstacleComponent.class, EnemyComponent.class).get());
     }
 
     @Override
@@ -97,6 +102,8 @@ public class MovementSystem extends EntitySystem {
         enemies = engine.getEntitiesFor(Family.all(EnemyComponent.class).get());
         enemyBullets = engine.getEntitiesFor(Family.all(EnemyBulletComponent.class).get());
         enemiesAndPlayers = engine.getEntitiesFor(Family.one(EnemyComponent.class, PlayerComponent.class).get());
+        playersAndObstacles = engine.getEntitiesFor(Family.one(ObstacleComponent.class, PlayerComponent.class).get());
+        enemiesAndObstacles = engine.getEntitiesFor(Family.one(ObstacleComponent.class, EnemyComponent.class).get());
     }
 
     /**
@@ -137,7 +144,7 @@ public class MovementSystem extends EntitySystem {
                 }
 
                 // Victim takes damage
-                victimCircleHit.setHealth(victimCircleHit.getHealth() - damage);
+                victimCircleHit.takeDamage(damage);
 
                 if (victimCircleHit.getHealth() <= 0) {
                     victimHitbox.queueCircleRemoval(victimCircleHit);
@@ -488,7 +495,7 @@ public class MovementSystem extends EntitySystem {
                         }
 
                         // Against enemies
-                        checkForCollision(origin, c, enemies);
+                        checkForCollision(origin, c, enemiesAndObstacles);
                         for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
                             isValidMovement = false;
                             handleBulletCollision(collisionEntitiesToHandle.get(i), collisionCirclesToHandle.get(i), e);
@@ -506,7 +513,7 @@ public class MovementSystem extends EntitySystem {
                         }
 
                         // Check for collision against the players
-                        checkForCollision(origin, c, players);
+                        checkForCollision(origin, c, playersAndObstacles);
                         for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
                             isValidMovement = false;
                             handleBulletCollision(collisionEntitiesToHandle.get(i), collisionCirclesToHandle.get(i), e);

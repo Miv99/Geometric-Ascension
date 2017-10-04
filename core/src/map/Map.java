@@ -79,6 +79,17 @@ public class Map {
 
     private static final int MIN_ENEMIES_PER_MAP_AREA = 3;
     private static final int MAX_ENEMIES_PER_MAP_AREA = 8;
+
+    private static final int MIN_OBSTACLES = 1;
+    private static final int MAX_OBSTACLES = 5;
+
+    private static final float MIN_OBSTACLE_RADIUS = 25f;
+    private static final float MAX_OBSTACLE_RADIUS = 125f;
+
+    private static final float MIN_OBSTACLE_HEALTH_MULTIPLIER = 0.7f;
+    private static final float MAX_OBSTACLE_HEALTH_MULTIPLIER = 2f;
+
+    private static final float OBSTACLE_HEALTH_PP_SCALE = 4f;
     //-----------------------------------------------------------------------------------------------------
 
     private static final float GRID_LINE_SEPARATION_DISTANCE = 150f;
@@ -369,6 +380,32 @@ public class Map {
             c1.setRadius(c1Radius);
             c1.setAttackPattern(attackPattern);
             circles.add(c1);
+
+            mapArea.entityCreationDataArrayList.add(ecd);
+            mapArea.onEnemyDataCreation(ecd);
+        }
+
+        for(int i = 0; i < MathUtils.random(MIN_OBSTACLES, MAX_OBSTACLES); i++) {
+            float radius = MathUtils.random(MIN_OBSTACLE_RADIUS, MAX_OBSTACLE_RADIUS);
+
+            EntityCreationData ecd = new EntityCreationData();
+            ecd.setIsEnemy(false);
+            ecd.setObstacle(true);
+
+            CircleHitbox c = new CircleHitbox();
+            // Set health to be > 0 to prevent death instantly
+            float hp = maxPixelPoints * OBSTACLE_HEALTH_PP_SCALE * MathUtils.random(MIN_OBSTACLE_HEALTH_MULTIPLIER, MAX_OBSTACLE_HEALTH_MULTIPLIER);
+            c.setMaxHealth(hp);
+            c.setHealth(hp);
+            c.setRadius(radius);
+            c.setHitboxTextureType(RenderSystem.HitboxTextureType.OBSTACLE);
+            ecd.getCircleHitboxes().add(c);
+
+            float angle = MathUtils.random(MathUtils.PI2);
+            float distance = MathUtils.random(radius, mapArea.getRadius() - radius);
+            c.setInvincible(true);
+
+            ecd.setSpawnPosition(distance * MathUtils.cos(angle), distance * MathUtils.sin(angle));
 
             mapArea.entityCreationDataArrayList.add(ecd);
             mapArea.onEnemyDataCreation(ecd);

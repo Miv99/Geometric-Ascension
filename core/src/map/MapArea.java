@@ -18,6 +18,7 @@ import components.AIComponent;
 import components.BossComponent;
 import components.EnemyComponent;
 import components.HitboxComponent;
+import components.ObstacleComponent;
 import map.mods.MapAreaModifier;
 import map.mods.Mod;
 import map.mods.Windy;
@@ -45,6 +46,9 @@ public class MapArea {
     private ArrayList<MapAreaModifier> mods;
 
     private transient ArrayList<Entity> enemies;
+
+    private boolean isUncommon;
+    private boolean isRare;
 
     /**
      * Set to -1 if no stairs exist in this MapArea. Otherwise, an entity with an OnCollision event will be spawned in the middle of the MapArea
@@ -74,46 +78,25 @@ public class MapArea {
     public void spawnEntities(final PooledEngine engine, Entity player, boolean clearEntityCreationDataAfterSpawning) {
         enemies.clear();
 
-        enemyCount = entityCreationDataArrayList.size();
+        enemyCount = 0;
 
         // Entities from entityCreationDataArrayList
+        // Spawn enemies first and obstacles last to avoid layering issues
         for(EntityCreationData ecd : entityCreationDataArrayList) {
-            Entity e = engine.createEntity();
+            if(ecd.isObstacle()) {
+                continue;
+            }
 
+            spawnEntity(engine, player, ecd);
+        }
+
+        // Spawn obstacles
+        for(EntityCreationData ecd : entityCreationDataArrayList) {
             if(ecd.isEnemy()) {
-                e.add(engine.createComponent(EnemyComponent.class));
+                continue;
             }
 
-            if(ecd.isBoss()) {
-                e.add(engine.createComponent(BossComponent.class));
-            }
-
-            HitboxComponent hitbox = engine.createComponent(HitboxComponent.class);
-            for(CircleHitbox c : ecd.getCircleHitboxes()) {
-                c.randomizeAttackPatternTime();
-                hitbox.addCircle(c, true);
-            }
-            hitbox.recenterOriginalCirclePositions();
-            hitbox.setOrigin(ecd.getSpawnX(), ecd.getSpawnY());
-            hitbox.setMaxSpeed(ecd.getMaxSpeed());
-            // Have enemy always be shooting
-            hitbox.setIsShooting(true);
-            e.add(hitbox);
-
-            if(ecd.getSubEntityStats() != null) {
-                hitbox.setSubEntityStats(ecd.getSubEntityStats());
-            }
-
-            AIComponent aiComponent = Map.createAIComponent(engine, e, ecd, player);
-            if(aiComponent != null) {
-                e.add(aiComponent);
-            }
-
-            engine.addEntity(e);
-            if(ecd.isEnemy()) {
-                enemies.add(e);
-            }
-            onEntityEnter(e);
+            spawnEntity(engine, player, ecd);
         }
 
         if(clearEntityCreationDataAfterSpawning && !isBossArea()) {
@@ -121,12 +104,56 @@ public class MapArea {
         }
     }
 
+    private void spawnEntity(PooledEngine engine, Entity player, EntityCreationData ecd) {
+        Entity e = engine.createEntity();
+
+        enemyCount++;
+        e.add(engine.createComponent(EnemyComponent.class));
+
+        if(ecd.isBoss()) {
+            e.add(engine.createComponent(BossComponent.class));
+        }
+
+        if(ecd.isObstacle()) {
+            e.add(engine.createComponent(ObstacleComponent.class));
+        }
+
+        HitboxComponent hitbox = engine.createComponent(HitboxComponent.class);
+        for(CircleHitbox c : ecd.getCircleHitboxes()) {
+            c.randomizeAttackPatternTime();
+            hitbox.addCircle(c, true);
+        }
+        hitbox.recenterOriginalCirclePositions();
+        hitbox.setOrigin(ecd.getSpawnX(), ecd.getSpawnY());
+        hitbox.setMaxSpeed(ecd.getMaxSpeed());
+        // Have enemy always be shooting
+        hitbox.setIsShooting(true);
+        e.add(hitbox);
+
+        if(ecd.getSubEntityStats() != null) {
+            hitbox.setSubEntityStats(ecd.getSubEntityStats());
+        }
+
+        AIComponent aiComponent = Map.createAIComponent(engine, e, ecd, player);
+        if(aiComponent != null) {
+            e.add(aiComponent);
+        }
+
+        engine.addEntity(e);
+        if(ecd.isEnemy()) {
+            enemies.add(e);
+        }
+        onEntityEnter(e);
+    }
+
     public void randomizeRarity(AssetManager assetManager, Entity player) {
         List<Mod> mods = null;
         float rand = MathUtils.random();
         if(rand < CHANCE_OF_RARE_MAP) { // Rare map area
+            isRare = true;
             mods = pickNRandomMods(Arrays.asList(Mod.values()), MathUtils.random(3, 4));
         } else if(rand < CHANCE_OF_UNCOMMON_MAP + CHANCE_OF_RARE_MAP) { // Uncommon map area
+            isUncommon = true;
             mods = pickNRandomMods(Arrays.asList(Mod.values()), MathUtils.random(2, 3));
         }
 
@@ -292,5 +319,13 @@ public class MapArea {
 
     public ArrayList<MapAreaModifier> getMods() {
         return mods;
+    }
+
+    public boolean isUncommon() {
+        return isUncommon;
+    }
+
+    public boolean isRare() {
+        return isRare;
     }
 }

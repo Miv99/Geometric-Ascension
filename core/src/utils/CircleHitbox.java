@@ -459,6 +459,8 @@ public class CircleHitbox extends Circle {
     // How much pp the player gains by killing this circle
     private float ppGain;
 
+    private boolean isInvincible;
+
     public CircleHitbox() {}
 
     public CircleHitbox(RenderSystem.HitboxTextureType textureType, AttackPattern attackPattern, float x, float y, float radius, float health, float ppGain) {
@@ -479,13 +481,15 @@ public class CircleHitbox extends Circle {
     private boolean[] fired;
 
     public void randomizeAttackPatternTime() {
-        resetAttackPattern();
-        time = MathUtils.random(0, attackPattern.getDuration());
+        if(attackPattern != null) {
+            resetAttackPattern();
+            time = MathUtils.random(0, attackPattern.getDuration());
 
-        ArrayList<AttackPart> aps = attackPattern.getAttackParts();
-        for(int i = 0; i < attackPattern.getAttackParts().size(); i++) {
-            if(aps.get(i).getDelay() <= time) {
-                fired[i] = true;
+            ArrayList<AttackPart> aps = attackPattern.getAttackParts();
+            for (int i = 0; i < attackPattern.getAttackParts().size(); i++) {
+                if (aps.get(i).getDelay() <= time) {
+                    fired[i] = true;
+                }
             }
         }
     }
@@ -539,6 +543,7 @@ public class CircleHitbox extends Circle {
         c.lifestealMultiplierFromAura = lifestealMultiplierFromAura;
         c.maxHealthMultiplierFromAura = maxHealthMultiplierFromAura;
         c.color = color;
+        c.isInvincible = isInvincible;
         return c;
     }
 
@@ -744,6 +749,12 @@ public class CircleHitbox extends Circle {
         return health;
     }
 
+    public void takeDamage(float damage) {
+        if(!isInvincible) {
+            setHealth(health - damage);
+        }
+    }
+
     public void setHealth(float health) {
         this.health = health;
         if(this.health > maxHealth) {
@@ -830,5 +841,13 @@ public class CircleHitbox extends Circle {
 
     public RenderSystem.HitboxTextureType getColor() {
         return color;
+    }
+
+    public boolean isInvincible() {
+        return isInvincible;
+    }
+
+    public void setInvincible(boolean invincible) {
+        isInvincible = invincible;
     }
 }
