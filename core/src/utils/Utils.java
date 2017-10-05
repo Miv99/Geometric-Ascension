@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import components.AIComponent;
 import components.BossComponent;
 import components.EnemyComponent;
+import components.ObstacleComponent;
 import components.PpOrbComponent;
 import components.HitboxComponent;
 import systems.RenderSystem;
@@ -143,6 +144,10 @@ public class Utils {
 
         if(Mappers.boss.has(e)) {
             e.add(engine.createComponent(BossComponent.class));
+        }
+
+        if(Mappers.obstacle.has(e)) {
+            e.add(engine.createComponent(ObstacleComponent.class));
         }
 
         return e;

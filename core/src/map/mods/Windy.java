@@ -34,7 +34,6 @@ public class Windy extends MapAreaModifier {
 
     @Override
     public void onEntityEnter(Entity entity) {
-        // remember to ADD TO velocity2, not set it
         Vector2 vel2 = Mappers.hitbox.get(entity).getVelocity2();
         Mappers.hitbox.get(entity).setVelocity2(vel2.x + windX, vel2.y + windY);
     }

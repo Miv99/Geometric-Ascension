@@ -79,6 +79,14 @@ public class Map {
 
     private static final int MIN_ENEMIES_PER_MAP_AREA = 3;
     private static final int MAX_ENEMIES_PER_MAP_AREA = 8;
+
+    private static final float MIN_OBSTACLE_RADIUS = 25f;
+    private static final float MAX_OBSTACLE_RADIUS = 125f;
+
+    private static final float MIN_OBSTACLE_HEALTH_MULTIPLIER = 0.8f;
+    private static final float MAX_OBSTACLE_HEALTH_MULTIPLIER = 1.6f;
+
+    private static final float OBSTACLE_HEALTH_PP_SCALE = 2f;
     //-----------------------------------------------------------------------------------------------------
 
     private static final float GRID_LINE_SEPARATION_DISTANCE = 150f;
@@ -195,6 +203,9 @@ public class Map {
             entitiesToBeRemoved.add(e);
         }
 
+        if(!(x == 0 && y == 0) && !newMapArea.isBossArea()) {
+            populateWithObstacles(newMapArea);
+        }
         newMapArea.spawnEntities(engine, player, clearNewMapAreaEntityCreationDataAfterSpawningEnemies);
 
         focus.x = x;
@@ -202,7 +213,7 @@ public class Map {
 
         // Increase chance of next area having stairs after autosaving to avoid the user entering new areas and
         // reloading the game to avoid all enemies and quickly enter new floors
-        if(increaseChanceOfNextAreaHavingStairs && (x != 0 && y != 0)) {
+        if(increaseChanceOfNextAreaHavingStairs && !(x == 0 && y == 0)) {
             newMapAreasUntilBoss--;
         }
 
@@ -372,6 +383,49 @@ public class Map {
 
             mapArea.entityCreationDataArrayList.add(ecd);
             mapArea.onEnemyDataCreation(ecd);
+        }
+    }
+
+    private void populateWithObstacles(MapArea mapArea) {
+        for(int i = 0; i < getRandomObstaclesCount(); i++) {
+            float radius = MathUtils.random(MIN_OBSTACLE_RADIUS, MAX_OBSTACLE_RADIUS);
+
+            EntityCreationData ecd = new EntityCreationData();
+            ecd.setIsEnemy(false);
+            ecd.setObstacle(true);
+
+            CircleHitbox c = new CircleHitbox();
+            // Set health to be > 0 to prevent death instantly
+            float hp = maxPixelPoints * OBSTACLE_HEALTH_PP_SCALE * MathUtils.random(MIN_OBSTACLE_HEALTH_MULTIPLIER, MAX_OBSTACLE_HEALTH_MULTIPLIER);
+            c.setMaxHealth(hp);
+            c.setHealth(hp);
+            c.setRadius(radius);
+            c.setHitboxTextureType(RenderSystem.HitboxTextureType.OBSTACLE);
+            ecd.getCircleHitboxes().add(c);
+
+            float angle = MathUtils.random(MathUtils.PI2);
+            float distance = MathUtils.random(radius, mapArea.getRadius() - radius);
+            ecd.setSpawnPosition(distance * MathUtils.cos(angle), distance * MathUtils.sin(angle));
+
+            mapArea.entityCreationDataArrayList.add(ecd);
+            mapArea.onEnemyDataCreation(ecd);
+        }
+    }
+
+    private int getRandomObstaclesCount() {
+        float rand = MathUtils.random();
+        if(rand < 0.1f) {
+            return 5;
+        } else if(rand < 0.2f) {
+            return 4;
+        } else if(rand < 0.35f) {
+            return 3;
+        } else if(rand < 0.7f) {
+            return 2;
+        } else if(rand < 0.9f) {
+            return 1;
+        } else {
+            return 0;
         }
     }
 

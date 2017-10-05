@@ -21,14 +21,16 @@ public class Oversized extends MapAreaModifier {
 
     @Override
     public void onEnemyDataCreation(EntityCreationData ecd) {
-        // Every enemy's circle radius and attack pattern bullets' radii gets multiplied by a random number
-        float sizeMultiplier = MathUtils.random(1.5f, 2.5f);
-        for(CircleHitbox c : ecd.getCircleHitboxes()) {
-            c.setOriginalPosX(c.getOriginalPosX() * sizeMultiplier);
-            c.setOriginalPosY(c.getOriginalPosY() * sizeMultiplier);
-            c.set(c.x * sizeMultiplier, c.y * sizeMultiplier, c.radius * sizeMultiplier);
+        if(ecd.isEnemy()) {
+            // Every enemy's circle radius and attack pattern bullets' radii gets multiplied by a random number
+            float sizeMultiplier = MathUtils.random(1.5f, 2.5f);
+            for (CircleHitbox c : ecd.getCircleHitboxes()) {
+                c.setOriginalPosX(c.getOriginalPosX() * sizeMultiplier);
+                c.setOriginalPosY(c.getOriginalPosY() * sizeMultiplier);
+                c.set(c.x * sizeMultiplier, c.y * sizeMultiplier, c.radius * sizeMultiplier);
 
-            c.getAttackPattern().setBulletRadiusPpMultiplier(c.getAttackPattern().getBulletRadiusPpMultiplier() * sizeMultiplier);
+                c.getAttackPattern().setBulletRadiusPpMultiplier(c.getAttackPattern().getBulletRadiusPpMultiplier() * sizeMultiplier);
+            }
         }
     }
 

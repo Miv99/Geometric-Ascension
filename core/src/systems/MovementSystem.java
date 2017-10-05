@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import components.EnemyBulletComponent;
 import components.EnemyComponent;
 import components.HitboxComponent;
+import components.ObstacleComponent;
 import components.PlayerBulletComponent;
 import components.PlayerComponent;
 import map.Map;
@@ -47,6 +48,8 @@ public class MovementSystem extends EntitySystem {
     private ImmutableArray<Entity> enemies;
     private ImmutableArray<Entity> enemyBullets;
     private ImmutableArray<Entity> enemiesAndPlayers;
+    private ImmutableArray<Entity> playersAndObstacles;
+    private ImmutableArray<Entity> enemiesAndObstacles;
     private PooledEngine engine;
     private Map map;
     private Main main;
@@ -87,6 +90,8 @@ public class MovementSystem extends EntitySystem {
         enemies = engine.getEntitiesFor(Family.all(EnemyComponent.class).get());
         enemyBullets = engine.getEntitiesFor(Family.all(EnemyBulletComponent.class).get());
         enemiesAndPlayers = engine.getEntitiesFor(Family.one(EnemyComponent.class, PlayerComponent.class).get());
+        playersAndObstacles = engine.getEntitiesFor(Family.one(ObstacleComponent.class, PlayerComponent.class).get());
+        enemiesAndObstacles = engine.getEntitiesFor(Family.one(ObstacleComponent.class, EnemyComponent.class).get());
     }
 
     @Override
@@ -97,6 +102,8 @@ public class MovementSystem extends EntitySystem {
         enemies = engine.getEntitiesFor(Family.all(EnemyComponent.class).get());
         enemyBullets = engine.getEntitiesFor(Family.all(EnemyBulletComponent.class).get());
         enemiesAndPlayers = engine.getEntitiesFor(Family.one(EnemyComponent.class, PlayerComponent.class).get());
+        playersAndObstacles = engine.getEntitiesFor(Family.one(ObstacleComponent.class, PlayerComponent.class).get());
+        enemiesAndObstacles = engine.getEntitiesFor(Family.one(ObstacleComponent.class, EnemyComponent.class).get());
     }
 
     /**
@@ -123,6 +130,7 @@ public class MovementSystem extends EntitySystem {
             HitboxComponent victimHitbox = Mappers.hitbox.get(victim);
             if(!victimHitbox.isIntangible()) {
                 float damage = 0;
+                // Lifesteal heals source of bullet
                 if (Mappers.enemyBullet.has(bullet)) {
                     damage = Mappers.enemyBullet.get(bullet).getDamage();
                     // Parent gets healed
@@ -137,7 +145,7 @@ public class MovementSystem extends EntitySystem {
                 }
 
                 // Victim takes damage
-                victimCircleHit.setHealth(victimCircleHit.getHealth() - damage);
+                System.out.println(victimCircleHit.getHealth());
 
                 if (victimCircleHit.getHealth() <= 0) {
                     victimHitbox.queueCircleRemoval(victimCircleHit);
@@ -170,7 +178,9 @@ public class MovementSystem extends EntitySystem {
                     // All hit circles considered dead when number of circles is 1 because size() is not updated until
                     // the circle removal queue is fired.
                     if (victimHitbox.getCircles().size() == 1) {
-                        map.getCurrentArea().onEnemyDeath(victim);
+                        if(Mappers.enemy.has(victim)) {
+                            map.getCurrentArea().onEnemyDeath(victim);
+                        }
 
                         // Queue entity removal from engine
                         entityRemovalQueue.add(victim);
@@ -209,7 +219,7 @@ public class MovementSystem extends EntitySystem {
     private boolean checkIfOutsideCurrentMapArea(Entity e, Point origin, float boundary) {
         if(origin.x*origin.x + origin.y*origin.y > boundary*boundary) {
             // Angle depends on position in map
-            float angle = Utils.normalizeAngle(MathUtils.atan2(origin.y, origin.y));
+            float angle = Utils.normalizeAngle(MathUtils.atan2(origin.y, origin.x));
             if (angle >= Math.PI / 4f && angle <= 3f * Math.PI / 4f) {
                 EntityActions.playerEnterNewMapArea(e, MathUtils.cos(angle), MathUtils.sin(angle), new Point(map.getFocus().x, map.getFocus().y + 1));
             } else if (angle >= 3f * Math.PI / 4f && angle <= 5f * Math.PI / 4f) {
@@ -460,6 +470,9 @@ public class MovementSystem extends EntitySystem {
                     // Calculate effect of gravity
                     velocityAdditionDueToGravity = calculateVelocityAdditionDueToGravity(enemiesAndPlayers, e, origin);
                 }
+                else if(Mappers.obstacle.has(e)) {
+                    velocityAdditionDueToGravity = calculateVelocityAdditionDueToGravity(enemiesAndObstacles, e, origin);
+                }
                 else if(Mappers.ppOrb.has(e)) {
                     velocityAdditionDueToGravity = calculatePpOrbVelocityAdditionDueToGravity(e, origin);
 
@@ -488,7 +501,7 @@ public class MovementSystem extends EntitySystem {
                         }
 
                         // Against enemies
-                        checkForCollision(origin, c, enemies);
+                        checkForCollision(origin, c, enemiesAndObstacles);
                         for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
                             isValidMovement = false;
                             handleBulletCollision(collisionEntitiesToHandle.get(i), collisionCirclesToHandle.get(i), e);
@@ -506,7 +519,7 @@ public class MovementSystem extends EntitySystem {
                         }
 
                         // Check for collision against the players
-                        checkForCollision(origin, c, players);
+                        checkForCollision(origin, c, playersAndObstacles);
                         for(int i = 0; i < collisionEntitiesToHandle.size(); i++) {
                             isValidMovement = false;
                             handleBulletCollision(collisionEntitiesToHandle.get(i), collisionCirclesToHandle.get(i), e);

@@ -21,9 +21,11 @@ public class Strong extends MapAreaModifier {
 
     @Override
     public void onEnemyDataCreation(EntityCreationData ecd) {
-        for(CircleHitbox c : ecd.getCircleHitboxes()) {
-            AttackPattern ap = c.getAttackPattern();
-            ap.setBulletDamagePpMultiplier(ap.getBulletDamagePpMultiplier() * 2f);
+        if(ecd.isEnemy()) {
+            for (CircleHitbox c : ecd.getCircleHitboxes()) {
+                AttackPattern ap = c.getAttackPattern();
+                ap.setBulletDamagePpMultiplier(ap.getBulletDamagePpMultiplier() * 2f);
+            }
         }
     }
 

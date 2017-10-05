@@ -21,6 +21,7 @@ import utils.CircleHitbox;
 public class EntityCreationData {
     private float maxHealth;
     private boolean isEnemy;
+    private boolean isObstacle;
     private boolean isBoss;
     private ArrayList<CircleHitbox> circleHitboxes;
     private float spawnX;
@@ -196,5 +197,13 @@ public class EntityCreationData {
 
     public void setGravitationalRadius(float gravitationalRadius) {
         this.gravitationalRadius = gravitationalRadius;
+    }
+
+    public boolean isObstacle() {
+        return isObstacle;
+    }
+
+    public void setObstacle(boolean obstacle) {
+        isObstacle = obstacle;
     }
 }

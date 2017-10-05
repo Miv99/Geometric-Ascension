@@ -21,7 +21,9 @@ public class Aggressive extends MapAreaModifier {
 
     @Override
     public void onEnemyDataCreation(EntityCreationData ecd) {
-        ecd.setAiType(AI.AIType.SIMPLE_FOLLOW_TARGET);
+        if(ecd.getAiType() != AI.AIType.NONE) {
+            ecd.setAiType(AI.AIType.SIMPLE_FOLLOW_TARGET);
+        }
     }
 
     @Override
