@@ -168,6 +168,10 @@ public class Utils {
     }
 
     public static void spawnPpOrbs(PooledEngine engine, float x, float y, float maxExplosionRange, int orbCount, float totalPp) {
+        if(totalPp == 0) {
+            return;
+        }
+
         float totalOrbsRadii = 25f * orbCount;
 
         // Generate array of floats of size orbCount that determines how much of total pp each orb is worth
@@ -207,8 +211,7 @@ public class Utils {
             float angle = MathUtils.random(MathUtils.PI2);
             float timeToDestination = MathUtils.random(1f, 2f);
             float initialSpeed = MathUtils.random(30, 65);
-            hitbox.setMaxSpeed(9999f);
-            hitbox.setVelocity(initialSpeed * MathUtils.cos(angle), initialSpeed * MathUtils.sin(angle));
+            hitbox.setVelocity(initialSpeed * MathUtils.cos(angle), initialSpeed * MathUtils.sin(angle), true);
             float acceleration = (2f * (travelDistance - (initialSpeed * timeToDestination)))/(timeToDestination * timeToDestination);
 
             // Ensure acceleration is always in the opposite direction of velocity

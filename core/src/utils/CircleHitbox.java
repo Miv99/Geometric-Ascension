@@ -459,6 +459,10 @@ public class CircleHitbox extends Circle {
     // How much pp the player gains by killing this circle
     private float ppGain;
 
+    // For use by the Fracture map area mod
+    // Whether or not this circle is the result of a fracture (to prevent infinite fracturing)
+    private boolean isResultOfFracture;
+
     public CircleHitbox() {}
 
     public CircleHitbox(RenderSystem.HitboxTextureType textureType, AttackPattern attackPattern, float x, float y, float radius, float health, float ppGain) {
@@ -539,6 +543,7 @@ public class CircleHitbox extends Circle {
         c.lifestealMultiplierFromAura = lifestealMultiplierFromAura;
         c.maxHealthMultiplierFromAura = maxHealthMultiplierFromAura;
         c.color = color;
+        c.isResultOfFracture = isResultOfFracture;
         return c;
     }
 
@@ -830,5 +835,13 @@ public class CircleHitbox extends Circle {
 
     public RenderSystem.HitboxTextureType getColor() {
         return color;
+    }
+
+    public boolean isResultOfFracture() {
+        return isResultOfFracture;
+    }
+
+    public void setIsResultOfFracture(boolean isResultOfFracture) {
+        this.isResultOfFracture = isResultOfFracture;
     }
 }

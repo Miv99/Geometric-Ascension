@@ -405,6 +405,14 @@ public class HitboxComponent implements Component, Pool.Poolable {
         }
     }
 
+    public void setVelocity(float x, float y, boolean ignoreSpeedLimit) {
+        velocity.set(x, y);
+
+        if(!ignoreSpeedLimit) {
+            velocity.limit(maxSpeed);
+        }
+    }
+
     public void setVelocity2(float x, float y) {
         velocity2.set(x, y);
     }

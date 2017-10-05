@@ -1,6 +1,7 @@
 package map.mods;
 
 import com.badlogic.ashley.core.Entity;
+import com.badlogic.ashley.core.PooledEngine;
 import com.badlogic.gdx.assets.AssetManager;
 
 import map.EntityCreationData;
@@ -11,12 +12,14 @@ import utils.CircleHitbox;
  * Created by Miv on 9/28/2017.
  */
 public abstract class MapAreaModifier {
+    protected transient PooledEngine engine;
     protected transient AssetManager assetManager;
     protected transient MapArea mapArea;
     protected transient Entity player;
     protected String displayName;
 
-    public MapAreaModifier(AssetManager assetManager, MapArea mapArea, Entity player) {
+    public MapAreaModifier(PooledEngine engine, AssetManager assetManager, MapArea mapArea, Entity player) {
+        this.engine = engine;
         this.assetManager = assetManager;
         this.mapArea = mapArea;
         this.player = player;

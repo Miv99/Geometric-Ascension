@@ -1,6 +1,7 @@
 package map.mods;
 
 import com.badlogic.ashley.core.Entity;
+import com.badlogic.ashley.core.PooledEngine;
 import com.badlogic.gdx.assets.AssetManager;
 
 import ai.AI;
@@ -9,11 +10,12 @@ import map.MapArea;
 import utils.CircleHitbox;
 
 /**
+ * All enemies have SIMPLE_FOLLOW_TARGET AI
  * Created by Miv on 9/29/2017.
  */
 public class Aggressive extends MapAreaModifier {
-    public Aggressive(AssetManager assetManager, MapArea mapArea, Entity player) {
-        super(assetManager, mapArea, player);
+    public Aggressive(PooledEngine engine, AssetManager assetManager, MapArea mapArea, Entity player) {
+        super(engine, assetManager, mapArea, player);
         displayName = "Aggressive";
     }
 

@@ -4,6 +4,7 @@ package map.mods;
  * Created by Miv on 9/28/2017.
  */
 public enum Mod {
+    FRACTURE(Fracture.class),
     WINDY(Windy.class),
     OVERSIZED(Oversized.class),
     STRONG(Strong.class),

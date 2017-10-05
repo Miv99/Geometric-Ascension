@@ -1,6 +1,7 @@
 package map.mods;
 
 import com.badlogic.ashley.core.Entity;
+import com.badlogic.ashley.core.PooledEngine;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.math.MathUtils;
 
@@ -9,11 +10,12 @@ import map.MapArea;
 import utils.CircleHitbox;
 
 /**
+ * All enemy circles and bullets are larger than normal
  * Created by Miv on 9/29/2017.
  */
 public class Oversized extends MapAreaModifier {
-    public Oversized(AssetManager assetManager, MapArea mapArea, Entity player) {
-        super(assetManager, mapArea, player);
+    public Oversized(PooledEngine engine, AssetManager assetManager, MapArea mapArea, Entity player) {
+        super(engine, assetManager, mapArea, player);
         displayName = "Oversized";
     }
 

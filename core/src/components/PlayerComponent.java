@@ -40,13 +40,31 @@ public class PlayerComponent implements Component, Pool.Poolable {
             if(main.getRenderSystem().containsFloatingText(lastPpFloatingText)) {
                 float newPp = (Float)(lastPpFloatingText.getUserObject()) + pixelPoints;
                 if (newPp > 0) {
-                    lastPpFloatingText.setText("+" + String.format("%.2f", newPp) + "pp");
+                    if (pixelPoints < 0.1f) {
+                        lastPpFloatingText.setText("+" + String.format("%.3f", newPp) + "pp");
+                    } else if (pixelPoints < 10) {
+                        lastPpFloatingText.setText("+" + String.format("%.2f", newPp) + "pp");
+                    } else if (pixelPoints < 100) {
+                        lastPpFloatingText.setText("+" + String.format("%.1f", newPp) + "pp");
+                    } else {
+                        lastPpFloatingText.setText("+" + String.valueOf(Math.round(pixelPoints)) + "pp");
+                    }
                 } else {
-                    lastPpFloatingText.setText(String.format("%.2f", newPp) + "pp");
+                    if (pixelPoints > -0.1f) {
+                        lastPpFloatingText.setText(String.format("%.3f", newPp) + "pp");
+                    } else if (pixelPoints > -10) {
+                        lastPpFloatingText.setText(String.format("%.2f", newPp) + "pp");
+                    } else if (pixelPoints > -100) {
+                        lastPpFloatingText.setText(String.format("%.1f", newPp) + "pp");
+                    } else {
+                        lastPpFloatingText.setText(String.valueOf(Math.round(pixelPoints)) + "pp");
+                    }
                 }
             } else {
                 if (pixelPoints > 0) {
-                    if (pixelPoints < 10) {
+                    if (pixelPoints < 0.1f) {
+                        lastPpFloatingText = main.getRenderSystem().addFloatingText(main.getPlayer(), "+" + String.format("%.3f", pixelPoints) + "pp", Color.BLACK).setUserObject((Float)pixelPoints);
+                    } else if (pixelPoints < 10) {
                         lastPpFloatingText = main.getRenderSystem().addFloatingText(main.getPlayer(), "+" + String.format("%.2f", pixelPoints) + "pp", Color.BLACK).setUserObject((Float)pixelPoints);
                     } else if (pixelPoints < 100) {
                         lastPpFloatingText = main.getRenderSystem().addFloatingText(main.getPlayer(), "+" + String.format("%.1f", pixelPoints) + "pp", Color.BLACK).setUserObject((Float)pixelPoints);
@@ -54,7 +72,9 @@ public class PlayerComponent implements Component, Pool.Poolable {
                         lastPpFloatingText = main.getRenderSystem().addFloatingText(main.getPlayer(), "+" + String.valueOf(Math.round(pixelPoints)) + "pp", Color.BLACK).setUserObject((Float)pixelPoints);
                     }
                 } else {
-                    if (pixelPoints > -10) {
+                    if (pixelPoints > -0.1f) {
+                        lastPpFloatingText = main.getRenderSystem().addFloatingText(main.getPlayer(), String.format("%.3f", pixelPoints) + "pp", Color.BLACK).setUserObject((Float)pixelPoints);
+                    } else if (pixelPoints > -10) {
                         lastPpFloatingText = main.getRenderSystem().addFloatingText(main.getPlayer(), String.format("%.2f", pixelPoints) + "pp", Color.BLACK).setUserObject((Float)pixelPoints);
                     } else if (pixelPoints > -100) {
                         lastPpFloatingText = main.getRenderSystem().addFloatingText(main.getPlayer(), String.format("%.1f", pixelPoints) + "pp", Color.BLACK).setUserObject((Float)pixelPoints);

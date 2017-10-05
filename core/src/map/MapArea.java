@@ -121,11 +121,11 @@ public class MapArea {
         }
     }
 
-    public void randomizeRarity(AssetManager assetManager, Entity player) {
+    public void randomizeRarity(PooledEngine engine, AssetManager assetManager, Entity player) {
         List<Mod> mods = null;
         float rand = MathUtils.random();
-        if(rand < CHANCE_OF_RARE_MAP) { // Rare map area
-            mods = pickNRandomMods(Arrays.asList(Mod.values()), MathUtils.random(3, 4));
+        if(rand < 1f) { // Rare map area
+            mods = pickNRandomMods(Arrays.asList(Mod.values()), 5);
         } else if(rand < CHANCE_OF_UNCOMMON_MAP + CHANCE_OF_RARE_MAP) { // Uncommon map area
             mods = pickNRandomMods(Arrays.asList(Mod.values()), MathUtils.random(2, 3));
         }
@@ -133,7 +133,7 @@ public class MapArea {
         if(mods != null) {
             for(Mod mod : mods) {
                 try {
-                    MapAreaModifier m = mod.getImpl().getConstructor(AssetManager.class, MapArea.class, Entity.class).newInstance(new Object[]{assetManager, this, player});
+                    MapAreaModifier m = mod.getImpl().getConstructor(PooledEngine.class, AssetManager.class, MapArea.class, Entity.class).newInstance(new Object[]{engine, assetManager, this, player});
                     this.mods.add(m);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -248,6 +248,9 @@ public class MapArea {
         return enemyCount;
     }
 
+    public void addEnemy(Entity e) {
+        enemies.add(e);
+    }
 
     /**
      * Used for when killing enemies

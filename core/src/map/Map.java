@@ -230,7 +230,7 @@ public class Map {
                 populateWithBoss(mapArea);
             } else {
                 mapArea = new MapArea(MathUtils.random(MapArea.MAP_AREA_MIN_SIZE, MapArea.MAP_AREA_MAX_SIZE));
-                mapArea.randomizeRarity(main.getAssetManager(), main.getPlayer());
+                mapArea.randomizeRarity(main.getEngine(), main.getAssetManager(), main.getPlayer());
                 // Populate map area with enemies
                 randomlyPopulate(mapArea);
             }

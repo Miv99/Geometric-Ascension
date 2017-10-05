@@ -1,6 +1,7 @@
 package map.mods;
 
 import com.badlogic.ashley.core.Entity;
+import com.badlogic.ashley.core.PooledEngine;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.math.MathUtils;
@@ -15,6 +16,7 @@ import map.MapArea;
 import utils.CircleHitbox;
 
 /**
+ * A wind current blowing at a random angle with a random magnitude appears every few seconds, pushing the player and all enemies
  * Created by Miv on 9/29/2017.
  */
 public class Windy extends MapAreaModifier {
@@ -23,8 +25,8 @@ public class Windy extends MapAreaModifier {
     private float windY;
     private transient Sound windWooshSound;
 
-    public Windy(AssetManager assetManager, MapArea mapArea, Entity player) {
-        super(assetManager, mapArea, player);
+    public Windy(PooledEngine engine, AssetManager assetManager, MapArea mapArea, Entity player) {
+        super(engine, assetManager, mapArea, player);
         displayName = "Windy";
         windWooshSound = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.WIND_WOOSH_SOUND_PATH).path());
         newWindCurrent();

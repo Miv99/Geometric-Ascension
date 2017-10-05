@@ -192,26 +192,32 @@ public class Main extends Game {
 	}
 
 	public void loadMainMenuMapPreview() {
-		boolean newSaveCreated = Save.load(this);
-		if(!newSaveCreated) {
-			for(MapArea area : map.getAllSavedMapAreas()) {
-				for(MapAreaModifier mod : area.getMods()) {
-					mod.setPlayer(player);
-					mod.setAssetManager(assetManager);
-					mod.setMapArea(area);
+		try {
+			boolean newSaveCreated = Save.load(this);
+			if (!newSaveCreated) {
+				for (MapArea area : map.getAllSavedMapAreas()) {
+					for (MapAreaModifier mod : area.getMods()) {
+						mod.setPlayer(player);
+						mod.setAssetManager(assetManager);
+						mod.setMapArea(area);
+					}
 				}
 			}
-		}
 
-		engine.addEntity(player);
-		Mappers.hitbox.get(player).setLastFacedAngle(MathUtils.PI / 2f);
-		Mappers.hitbox.get(player).setTargetAngle(MathUtils.PI / 2f);
-		playerDead = false;
-		map.enterNewArea(engine, player, (int) map.getFocus().x, (int) map.getFocus().y, true);
-		if(camera != null) {
-			camera.setLockedPosition(false);
-			camera.setFocus(player);
-			camera.teleportTo(player);
+			engine.addEntity(player);
+			Mappers.hitbox.get(player).setLastFacedAngle(MathUtils.PI / 2f);
+			Mappers.hitbox.get(player).setTargetAngle(MathUtils.PI / 2f);
+			playerDead = false;
+			map.enterNewArea(engine, player, (int) map.getFocus().x, (int) map.getFocus().y, true);
+			if (camera != null) {
+				camera.setLockedPosition(false);
+				camera.setFocus(player);
+				camera.teleportTo(player);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			Save.deleteSave();
+			loadMainMenuMapPreview();
 		}
 	}
 
