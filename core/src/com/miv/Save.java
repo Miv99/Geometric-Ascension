@@ -24,7 +24,7 @@ import utils.Point;
 public class Save {
     private static final String SAVE_DATA_PATH = "Geometric Ascension\\save_data.json";
 
-    private static class SaveData {
+    public static class SaveData {
         private ArrayList<CircleHitbox> playerCircles;
         private PlayerComponent playerPlayerComponent;
         private Map map;
@@ -35,7 +35,7 @@ public class Save {
 
         }
 
-        private SaveData(ArrayList<CircleHitbox> playerCircles, float playerMaxSpeed, PlayerComponent playerPlayerComponent, Map map, Point playerOrigin) {
+        public SaveData(ArrayList<CircleHitbox> playerCircles, float playerMaxSpeed, PlayerComponent playerPlayerComponent, Map map, Point playerOrigin) {
             this.playerCircles = playerCircles;
             this.playerMaxSpeed = playerMaxSpeed;
             this.playerPlayerComponent = playerPlayerComponent;

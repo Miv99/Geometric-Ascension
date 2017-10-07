@@ -20,10 +20,14 @@ import utils.CircleHitbox;
  * Created by Miv on 9/29/2017.
  */
 public class Windy extends MapAreaModifier {
-    private float timeUntilNewWindCurrent;
-    private float windX;
-    private float windY;
+    private transient float timeUntilNewWindCurrent;
+    private transient float windX;
+    private transient float windY;
     private transient Sound windWooshSound;
+
+    public Windy() {
+
+    }
 
     public Windy(PooledEngine engine, AssetManager assetManager, MapArea mapArea, Entity player) {
         super(engine, assetManager, mapArea, player);

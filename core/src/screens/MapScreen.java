@@ -90,6 +90,10 @@ public class MapScreen implements Screen {
     public static final Color NORMAL_MAP_AREA_BORDER_COLOR = new Color(NORMAL_MAP_AREA_COLOR).lerp(0, 0, 0, 1f, 0.5f);
     public static final Color STAIRS_MAP_AREA_COLOR = new Color(1f, 227/255f, 71/255f, 0.3f);
     public static final Color STAIRS_MAP_AREA_BORDER_COLOR = new Color(STAIRS_MAP_AREA_COLOR).lerp(0, 0, 0, 1f, 0.5f);
+    public static final Color RARE_MAP_AREA_COLOR = new Color(252/255f, 184/255f, 254/255f, 0.3f);
+    public static final Color RARE_MAP_AREA_BORDER_COLOR = new Color(RARE_MAP_AREA_COLOR).lerp(0, 0, 0, 1f, 0.5f);
+    public static final Color UNCOMMON_MAP_AREA_COLOR = new Color(168/255f, 253/255f, 166/255f, 0.3f);
+    public static final Color UNCOMMON_MAP_AREA_BORDER_COLOR = new Color(UNCOMMON_MAP_AREA_COLOR).lerp(0, 0, 0, 1f, 0.5f);
     private static final Color GRID_LINE_COLOR = new Color(172/255f, 239/255f, 239/255f, 1f);
 
     private ImageButton.ImageButtonStyle mapAreaButtonStyle;
@@ -175,11 +179,15 @@ public class MapScreen implements Screen {
         // Load bubble textures
         Texture bubbleTexture = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.BUBBLE_DEFAULT_PATH).path());
         TextureRegionDrawable bubbleTextureDrawable = new TextureRegionDrawable(new TextureRegion(bubbleTexture));
-        bubbleDrawables = new SpriteDrawable[2];
+        bubbleDrawables = new SpriteDrawable[4];
         // Index 0 = normal map area
         bubbleDrawables[0] = bubbleTextureDrawable.tint(NORMAL_MAP_AREA_COLOR);
         // Index 1 = boss map area
         bubbleDrawables[1] = bubbleTextureDrawable.tint(STAIRS_MAP_AREA_COLOR);
+        // Index 2 = rare map area
+        bubbleDrawables[2] = bubbleTextureDrawable.tint(RARE_MAP_AREA_COLOR);
+        // Index 3 = uncommon map area
+        bubbleDrawables[3] = bubbleTextureDrawable.tint(UNCOMMON_MAP_AREA_COLOR);
     }
 
     public void createMap() {

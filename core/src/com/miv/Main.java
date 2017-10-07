@@ -144,6 +144,7 @@ public class Main extends Game {
 		loadAssets();
 
 		renderSystem = new RenderSystem(this);
+		assetManager.finishLoading();
 		loadMainMenuMapPreview();
 		renderSystem.setMap(map);
 
@@ -161,7 +162,6 @@ public class Main extends Game {
 		camera.position.set(0, 0, 0);
 		camera.setFocus(player);
 
-		assetManager.finishLoading();
 		movementSystem.loadAssets(assetManager);
 		renderSystem.loadTextures(assetManager);
 		loadMainMenu();
@@ -192,32 +192,16 @@ public class Main extends Game {
 	}
 
 	public void loadMainMenuMapPreview() {
-		try {
-			boolean newSaveCreated = Save.load(this);
-			if (!newSaveCreated) {
-				for (MapArea area : map.getAllSavedMapAreas()) {
-					for (MapAreaModifier mod : area.getMods()) {
-						mod.setPlayer(player);
-						mod.setAssetManager(assetManager);
-						mod.setMapArea(area);
-					}
-				}
-			}
-
-			engine.addEntity(player);
-			Mappers.hitbox.get(player).setLastFacedAngle(MathUtils.PI / 2f);
-			Mappers.hitbox.get(player).setTargetAngle(MathUtils.PI / 2f);
-			playerDead = false;
-			map.enterNewArea(engine, player, (int) map.getFocus().x, (int) map.getFocus().y, true);
-			if (camera != null) {
-				camera.setLockedPosition(false);
-				camera.setFocus(player);
-				camera.teleportTo(player);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			Save.deleteSave();
-			loadMainMenuMapPreview();
+		Save.load(this);
+		engine.addEntity(player);
+		Mappers.hitbox.get(player).setLastFacedAngle(MathUtils.PI / 2f);
+		Mappers.hitbox.get(player).setTargetAngle(MathUtils.PI / 2f);
+		playerDead = false;
+		map.enterNewArea(engine, player, (int) map.getFocus().x, (int) map.getFocus().y, true);
+		if (camera != null) {
+			camera.setLockedPosition(false);
+			camera.setFocus(player);
+			camera.teleportTo(player);
 		}
 	}
 
@@ -515,8 +499,10 @@ public class Main extends Game {
 		}
 		if(map != null) {
 			for(MapArea area : map.getAllSavedMapAreas()) {
-				for(MapAreaModifier mod : area.getMods()) {
-					mod.setPlayer(player);
+				if(area.getMods() != null) {
+					for (MapAreaModifier mod : area.getMods()) {
+						mod.setPlayer(player);
+					}
 				}
 			}
 		}

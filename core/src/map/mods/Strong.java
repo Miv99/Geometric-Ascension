@@ -14,6 +14,10 @@ import utils.CircleHitbox;
  * Created by Miv on 9/28/2017.
  */
 public class Strong extends MapAreaModifier {
+    public Strong() {
+
+    }
+
     public Strong(PooledEngine engine, AssetManager assetManager, MapArea mapArea, Entity player) {
         super(engine, assetManager, mapArea, player);
         displayName = "Strong";

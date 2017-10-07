@@ -108,8 +108,10 @@ public class AttackPart {
         hitbox.addCircle(circleHitbox, true);
         e.add(hitbox);
 
-        // Bullet expires in the time it takes to travel 2.5x the radius of the map area
-        e.add(engine.createComponent(ExpirationComponent.class).setTime((mapAreaRadius * 2.5f)/speed));
+        // Bullet expires in the time it takes to travel radius*2 of the map area if it follows the player
+        if(playerAttractionLerpFactor != 0) {
+            e.add(engine.createComponent(ExpirationComponent.class).setTime(mapAreaRadius * 2f / (speed * Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER)));
+        }
 
         engine.addEntity(e);
     }

@@ -24,6 +24,7 @@ import components.AIComponent;
 import components.EnemyBulletComponent;
 import components.EnemyComponent;
 import components.HitboxComponent;
+import components.ObstacleComponent;
 import components.PlayerBulletComponent;
 import components.PpOrbComponent;
 import factories.AttackPatternFactory;
@@ -86,7 +87,7 @@ public class Map {
     private static final float MIN_OBSTACLE_HEALTH_MULTIPLIER = 0.8f;
     private static final float MAX_OBSTACLE_HEALTH_MULTIPLIER = 1.6f;
 
-    private static final float OBSTACLE_HEALTH_PP_SCALE = 2f;
+    private static final float OBSTACLE_HEALTH_PP_SCALE = 0.5f;
     //-----------------------------------------------------------------------------------------------------
 
     private static final float GRID_LINE_SEPARATION_DISTANCE = 150f;
@@ -108,7 +109,7 @@ public class Map {
     private float minEnemiesPerMapArea;
     private float maxEnemiesPerMapArea;
 
-    private MapArea currentArea;
+    private transient MapArea currentArea;
 
     // Positions of grid lines; purely visual effects
     private ArrayList<GridLine> gridLines;
@@ -155,6 +156,9 @@ public class Map {
         main.getRenderSystem().clearFloatingTexts();
 
         MapArea oldMapArea = areas.get(focus.toString());
+        if(oldMapArea != null) {
+            oldMapArea.unloadMods();
+        }
 
         boolean increaseChanceOfNextAreaHavingStairs = false;
 
@@ -166,6 +170,7 @@ public class Map {
             areas.put(newPos.toString(), newMapArea);
         } else {
             newMapArea = areas.get(new Point(x, y).toString());
+            newMapArea.loadMods(main.getEngine(), main.getAssetManager(), main.getPlayer());
         }
         currentArea = newMapArea;
 
@@ -199,7 +204,7 @@ public class Map {
         }
 
         ArrayList<Entity> entitiesToBeRemoved = new ArrayList<Entity>();
-        for (Entity e : engine.getEntitiesFor(Family.one(EnemyBulletComponent.class, PlayerBulletComponent.class, PpOrbComponent.class).get())) {
+        for (Entity e : engine.getEntitiesFor(Family.one(EnemyBulletComponent.class, PlayerBulletComponent.class, PpOrbComponent.class, ObstacleComponent.class).get())) {
             entitiesToBeRemoved.add(e);
         }
 
@@ -218,7 +223,7 @@ public class Map {
         }
 
         newMapArea.onEntityEnter(player);
-        if(oldMapArea != null) {
+        if(oldMapArea != null && !(focus.x == x && focus.y == y)) {
             oldMapArea.onPlayerLeave();
         }
 
@@ -241,7 +246,8 @@ public class Map {
                 populateWithBoss(mapArea);
             } else {
                 mapArea = new MapArea(MathUtils.random(MapArea.MAP_AREA_MIN_SIZE, MapArea.MAP_AREA_MAX_SIZE));
-                mapArea.randomizeRarity(main.getEngine(), main.getAssetManager(), main.getPlayer());
+                mapArea.randomizeRarity();
+                mapArea.loadMods(main.getEngine(), main.getAssetManager(), main.getPlayer());
                 // Populate map area with enemies
                 randomlyPopulate(mapArea);
             }
@@ -467,8 +473,6 @@ public class Map {
             return engine.createComponent(AIComponent.class).setAi(new SimpleStalkTarget(e, player, ecd.getRotationBehaviorParams(), ecd.getSimpleStalkMinSpeedDistance(), ecd.getSimpleStalkMaxSpeedDistance(), 0));
         } else if(ecd.getAiType() == AI.AIType.SIMPLE_WANDER) {
             return engine.createComponent(AIComponent.class).setAi(new SimpleWander(e, ecd.getRotationBehaviorParams(), ecd.getSimpleWanderRadius(), ecd.getSimpleWanderMinInterval(), ecd.getSimpleWanderMaxInterval(), ecd.getSimpleWanderMinAcceleration(), ecd.getSimpleWanderMaxAcceleration()));
-        } else {
-            System.out.println("347SJDFIODS CREATING AI COMPONENT FROM NULL AITYPE ???");
         }
         return null;
     }
@@ -601,8 +605,16 @@ public class Map {
              * See {@link MapScreen#loadBubbleTextures()} for color indexes
              */
             if(mapArea.getStairsDestination() == -1) {
-                area.colorIndex = 0;
-                area.borderColor = MapScreen.NORMAL_MAP_AREA_BORDER_COLOR;
+                if(mapArea.isUncommon()) {
+                    area.colorIndex = 3;
+                    area.borderColor = MapScreen.UNCOMMON_MAP_AREA_BORDER_COLOR;
+                } else if(mapArea.isRare()) {
+                    area.colorIndex = 2;
+                    area.borderColor = MapScreen.RARE_MAP_AREA_BORDER_COLOR;
+                } else {
+                    area.colorIndex = 0;
+                    area.borderColor = MapScreen.NORMAL_MAP_AREA_BORDER_COLOR;
+                }
             } else {
                 area.colorIndex = 1;
                 area.borderColor = MapScreen.STAIRS_MAP_AREA_BORDER_COLOR;

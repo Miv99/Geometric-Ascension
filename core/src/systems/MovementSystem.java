@@ -145,7 +145,7 @@ public class MovementSystem extends EntitySystem {
                 }
 
                 // Victim takes damage
-                System.out.println(victimCircleHit.getHealth());
+                victimCircleHit.takeDamage(damage);
 
                 if (victimCircleHit.getHealth() <= 0) {
                     victimHitbox.queueCircleRemoval(victimCircleHit);
@@ -199,7 +199,6 @@ public class MovementSystem extends EntitySystem {
 
     private void playRandomPopSound(float volume, float soundOriginX, float soundOriginY, Point playerPos) {
         float distance = Utils.getDistance(playerPos, soundOriginX, soundOriginY);
-        System.out.println("Dist: " + distance);
         float distanceVolume = 0;
         if(distance < Options.MIN_BUBBLE_POP_VOLUME_DROP_OFF_DISTANCE) {
             distanceVolume = 1f;
@@ -208,7 +207,6 @@ public class MovementSystem extends EntitySystem {
         } else {
             return;
         }
-        System.out.println("vol: " + distanceVolume);
         popSounds.random().play(distanceVolume * volume * Options.MASTER_VOLUME * Options.SOUND_VOLUME);
     }
 
@@ -221,13 +219,13 @@ public class MovementSystem extends EntitySystem {
             // Angle depends on position in map
             float angle = Utils.normalizeAngle(MathUtils.atan2(origin.y, origin.x));
             if (angle >= Math.PI / 4f && angle <= 3f * Math.PI / 4f) {
-                EntityActions.playerEnterNewMapArea(e, MathUtils.cos(angle), MathUtils.sin(angle), new Point(map.getFocus().x, map.getFocus().y + 1));
+                EntityActions.playerEnterNewMapArea(e, 0, 1, new Point(map.getFocus().x, map.getFocus().y + 1));
             } else if (angle >= 3f * Math.PI / 4f && angle <= 5f * Math.PI / 4f) {
-                EntityActions.playerEnterNewMapArea(e, MathUtils.cos(angle), MathUtils.sin(angle), new Point(map.getFocus().x - 1, map.getFocus().y));
+                EntityActions.playerEnterNewMapArea(e, -1, 0, new Point(map.getFocus().x - 1, map.getFocus().y));
             } else if (angle >= 5f * Math.PI / 4f && angle <= 7f * Math.PI / 4f) {
-                EntityActions.playerEnterNewMapArea(e, MathUtils.cos(angle), MathUtils.sin(angle), new Point(map.getFocus().x, map.getFocus().y - 1));
+                EntityActions.playerEnterNewMapArea(e, 0, -1, new Point(map.getFocus().x, map.getFocus().y - 1));
             } else {
-                EntityActions.playerEnterNewMapArea(e, MathUtils.cos(angle), MathUtils.sin(angle), new Point(map.getFocus().x + 1, map.getFocus().y));
+                EntityActions.playerEnterNewMapArea(e, 1, 0, new Point(map.getFocus().x + 1, map.getFocus().y));
             }
             /**
              * // 4 cardinal directions
@@ -325,16 +323,11 @@ public class MovementSystem extends EntitySystem {
     /**
      * For bullets that curve towards player
      */
-    private Point calculateEnemyBulletVelocityDueToGravity(Entity entity, Point entityOrigin, Vector2 entityVelocity, float deltaTime) {
-        Point vel = null;
-
+    private void calculateAndSetEnemyBulletVelocityDueToGravity(Entity entity, Point entityOrigin, Vector2 entityVelocity, float deltaTime) {
         if((Mappers.playerBullet.has(entity) && Mappers.playerBullet.get(entity).getPlayerAttractionLerpFactor() == 0) || (Mappers.enemyBullet.has(entity) && Mappers.enemyBullet.get(entity).getPlayerAttractionLerpFactor() == 0)) {
-            return vel;
+            return;
         }
-        if (!Mappers.hitbox.get(entity).isIgnoreGravity()) {
-            vel = new Point(0, 0);
-
-            float entityGravitationalRadius = Mappers.hitbox.get(entity).getGravitationalRadius();
+        if (!Mappers.hitbox.get(entity).isIgnoreGravity() && !playerHitbox.isIgnoreGravity()) {
             float entityVelocityAngle = MathUtils.atan2(entityVelocity.y, entityVelocity.x);
             float playerAttractionLerpFactor = 0;
             if(Mappers.playerBullet.has(entity)) {
@@ -343,23 +336,16 @@ public class MovementSystem extends EntitySystem {
                 playerAttractionLerpFactor = Mappers.enemyBullet.get(entity).getPlayerAttractionLerpFactor();
             }
 
-            if (!playerHitbox.isIgnoreGravity()) {
-                Point origin = playerHitbox.getOrigin();
-                float distance = Utils.getDistance(origin, entityOrigin);
-                if (distance < Options.GRAVITY_DROP_OFF_DISTANCE + playerHitbox.getGravitationalRadius() + entityGravitationalRadius) {
-                    float angleToTarget = MathUtils.atan2(entityOrigin.y - origin.y, entityOrigin.x - origin.x);
-                    entityVelocityAngle += angleToTarget * deltaTime * playerAttractionLerpFactor;
+            Point origin = playerHitbox.getOrigin();
+            float angleDifference = Utils.normalizeAngleIn180Range(entityVelocityAngle - MathUtils.atan2(entityOrigin.y - origin.y, entityOrigin.x - origin.x));
+            entityVelocityAngle += angleDifference * deltaTime * playerAttractionLerpFactor;
 
-                    // Change this to len2 if things get too laggy
-                    float magnitude = Mappers.hitbox.get(entity).getVelocity().len();
+            // Change this to len2 if things get too laggy
+            float magnitude = entityVelocity.len();
 
-                    vel.x = magnitude * MathUtils.cos(entityVelocityAngle);
-                    vel.y = magnitude * MathUtils.sin(entityVelocityAngle);
-                }
-            }
+            entityVelocity.x = magnitude * MathUtils.cos(entityVelocityAngle);
+            entityVelocity.y = magnitude * MathUtils.sin(entityVelocityAngle);
         }
-
-        return vel;
     }
 
     /**
@@ -526,10 +512,7 @@ public class MovementSystem extends EntitySystem {
                         }
                     }
 
-                    Point newVelocity = calculateEnemyBulletVelocityDueToGravity(e, origin, hitbox.getVelocity(), deltaTime);
-                    if(newVelocity != null) {
-                        hitbox.setVelocity(newVelocity.x, newVelocity.y);
-                    }
+                    calculateAndSetEnemyBulletVelocityDueToGravity(e, origin, hitbox.getVelocity(), deltaTime);
                 }
             } else if(hitbox.isTravelling()) {
                 // I already know this is bad code; it's used only for player travelling

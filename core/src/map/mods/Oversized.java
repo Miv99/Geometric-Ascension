@@ -14,6 +14,10 @@ import utils.CircleHitbox;
  * Created by Miv on 9/29/2017.
  */
 public class Oversized extends MapAreaModifier {
+    public Oversized() {
+
+    }
+
     public Oversized(PooledEngine engine, AssetManager assetManager, MapArea mapArea, Entity player) {
         super(engine, assetManager, mapArea, player);
         displayName = "Oversized";

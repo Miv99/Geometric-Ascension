@@ -19,6 +19,7 @@ import components.BossComponent;
 import components.EnemyComponent;
 import components.HitboxComponent;
 import components.ObstacleComponent;
+import map.mods.HomingBullets;
 import map.mods.MapAreaModifier;
 import map.mods.Mod;
 import map.mods.Windy;
@@ -43,7 +44,8 @@ public class MapArea {
     private int enemyCount;
     private int originalEnemyCount;
 
-    private ArrayList<MapAreaModifier> mods;
+    private ArrayList<Mod> modTypes;
+    private transient ArrayList<MapAreaModifier> mods;
 
     private transient ArrayList<Entity> enemies;
 
@@ -59,12 +61,15 @@ public class MapArea {
     /**
      * For Json files
      */
-    public MapArea() {}
+    public MapArea() {
+
+    }
 
     public MapArea(float radius) {
         this.radius = radius;
         entityCreationDataArrayList = new ArrayList<EntityCreationData>();
         enemies = new ArrayList<Entity>();
+        modTypes = new ArrayList<Mod>();
         mods = new ArrayList<MapAreaModifier>();
     }
 
@@ -76,7 +81,11 @@ public class MapArea {
      * Spawns all entities in {@link map.MapArea#entityCreationDataArrayList}
      */
     public void spawnEntities(final PooledEngine engine, Entity player, boolean clearEntityCreationDataAfterSpawning) {
-        enemies.clear();
+        if(enemies == null) {
+            enemies = new ArrayList<Entity>();
+        } else {
+            enemies.clear();
+        }
 
         enemyCount = 0;
 
@@ -146,26 +155,45 @@ public class MapArea {
         onEntityEnter(e);
     }
 
-    public void randomizeRarity(PooledEngine engine, AssetManager assetManager, Entity player) {
-        List<Mod> mods = null;
-        float rand = MathUtils.random();
-        if(rand < CHANCE_OF_RARE_MAP) { // Rare map area
-            isRare = true;
-            mods = pickNRandomMods(Arrays.asList(Mod.values()), MathUtils.random(3, 4));
-        } else if(rand < CHANCE_OF_UNCOMMON_MAP + CHANCE_OF_RARE_MAP) { // Uncommon map area
-            isUncommon = true;
-            mods = pickNRandomMods(Arrays.asList(Mod.values()), MathUtils.random(2, 3));
-        }
+    public void randomizeRarity() {
+        modTypes.clear();
 
-        if(mods != null) {
-            for(Mod mod : mods) {
+        float rand = MathUtils.random();
+        // Rare map area
+        if(rand < CHANCE_OF_RARE_MAP) {
+            isRare = true;
+            modTypes.addAll(pickNRandomMods(Arrays.asList(Mod.values()), MathUtils.random(3, 4)));
+        }
+        // Uncommon map area
+        else if(rand < CHANCE_OF_UNCOMMON_MAP + CHANCE_OF_RARE_MAP) {
+            isUncommon = true;
+            modTypes.addAll(pickNRandomMods(Arrays.asList(Mod.values()), MathUtils.random(2, 3)));
+        }
+    }
+
+    public void loadMods(PooledEngine engine, AssetManager assetManager, Entity player) {
+        if(modTypes.size() > 0) {
+            if (mods == null) {
+                mods = new ArrayList<MapAreaModifier>();
+            } else {
+                mods.clear();
+            }
+
+            for (Mod mod : modTypes) {
                 try {
                     MapAreaModifier m = mod.getImpl().getConstructor(PooledEngine.class, AssetManager.class, MapArea.class, Entity.class).newInstance(new Object[]{engine, assetManager, this, player});
-                    this.mods.add(m);
+                    mods.add(m);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+
+    public void unloadMods() {
+        if(mods != null) {
+            mods.clear();
+            mods = null;
         }
     }
 
@@ -216,8 +244,10 @@ public class MapArea {
      * Called from {@link Map#randomlyPopulate(MapArea)}
      */
     public void onEnemyDataCreation(EntityCreationData ecd) {
-        for(MapAreaModifier m : mods) {
-            m.onEnemyDataCreation(ecd);
+        if(mods != null) {
+            for (MapAreaModifier m : mods) {
+                m.onEnemyDataCreation(ecd);
+            }
         }
     }
 
@@ -226,8 +256,11 @@ public class MapArea {
      */
     public void onEnemyDeath(Entity enemy) {
         enemies.remove(enemy);
-        for(MapAreaModifier m : mods) {
-            m.onEnemyDeath(enemy);
+
+        if(mods != null) {
+            for (MapAreaModifier m : mods) {
+                m.onEnemyDeath(enemy);
+            }
         }
     }
 
@@ -235,8 +268,10 @@ public class MapArea {
      * Called from {@link #spawnEntities(PooledEngine, Entity, boolean)} (for enemies) and {@link Map#enterNewArea(PooledEngine, Entity, int, int, boolean)} (for player)
      */
     public void onEntityEnter(Entity entity) {
-        for(MapAreaModifier m : mods) {
-            m.onEntityEnter(entity);
+        if(mods != null) {
+            for (MapAreaModifier m : mods) {
+                m.onEntityEnter(entity);
+            }
         }
     }
 
@@ -244,8 +279,10 @@ public class MapArea {
      * Called from {@link Map#enterNewArea(PooledEngine, Entity, int, int, boolean)} (for player)
      */
     public void onPlayerLeave() {
-        for(MapAreaModifier m : mods) {
-            m.onPlayerLeave();
+        if(mods != null) {
+            for (MapAreaModifier m : mods) {
+                m.onPlayerLeave();
+            }
         }
     }
 
@@ -253,8 +290,10 @@ public class MapArea {
      * Called from {@link systems.MovementSystem#handleBulletCollision(Entity, CircleHitbox, Entity)}
      */
     public void onEnemyCircleDeath(Entity enemy, CircleHitbox circle) {
-        for(MapAreaModifier m : mods) {
-            m.onEnemyCircleDeath(enemy, circle);
+        if(mods != null) {
+            for (MapAreaModifier m : mods) {
+                m.onEnemyCircleDeath(enemy, circle);
+            }
         }
     }
 
@@ -262,8 +301,10 @@ public class MapArea {
      * Called from {@link Main#render()}
      */
     public void update(float deltaTime) {
-        for(MapAreaModifier m : mods) {
-            m.update(deltaTime);
+        if(mods != null) {
+            for (MapAreaModifier m : mods) {
+                m.update(deltaTime);
+            }
         }
     }
 

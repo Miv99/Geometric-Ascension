@@ -18,6 +18,11 @@ public abstract class MapAreaModifier {
     protected transient Entity player;
     protected String displayName;
 
+    // For Json
+    public MapAreaModifier() {
+
+    }
+
     public MapAreaModifier(PooledEngine engine, AssetManager assetManager, MapArea mapArea, Entity player) {
         this.engine = engine;
         this.assetManager = assetManager;

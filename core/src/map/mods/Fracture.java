@@ -22,6 +22,10 @@ import utils.Point;
  * Created by Miv on 10/1/2017.
  */
 public class Fracture extends MapAreaModifier {
+    public Fracture() {
+
+    }
+
     public Fracture(PooledEngine engine, AssetManager assetManager, MapArea mapArea, Entity player) {
         super(engine, assetManager, mapArea, player);
         displayName = "Fracture";
