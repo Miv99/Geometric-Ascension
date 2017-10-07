@@ -30,6 +30,8 @@ public class Strong extends MapAreaModifier {
                 AttackPattern ap = c.getAttackPattern();
                 ap.setBulletDamagePpMultiplier(ap.getBulletDamagePpMultiplier() * 2f);
             }
+
+            ecd.multiplyPpGain(1.3f);
         }
     }
 

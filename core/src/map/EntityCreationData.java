@@ -58,6 +58,12 @@ public class EntityCreationData {
         circleHitboxes = new ArrayList<CircleHitbox>();
     }
 
+    public void multiplyPpGain(float multiplier) {
+        for(CircleHitbox c : circleHitboxes) {
+            c.setPpGain(c.getPpGain() * multiplier);
+        }
+    }
+
     public float getMaxHealth() {
         return maxHealth;
     }

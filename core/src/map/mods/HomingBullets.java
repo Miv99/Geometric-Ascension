@@ -43,6 +43,8 @@ public class HomingBullets extends MapAreaModifier {
                     ap.setPlayerAttractionLerpFactor(MathUtils.random(0.12f, 0.24f));
                 }
             }
+
+            ecd.multiplyPpGain(1.35f);
         }
     }
 

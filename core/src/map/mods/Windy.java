@@ -101,6 +101,6 @@ public class Windy extends MapAreaModifier {
 
     @Override
     public void onEnemyDataCreation(EntityCreationData ecd) {
-
+        ecd.multiplyPpGain(1.25f);
     }
 }

@@ -35,6 +35,8 @@ public class Oversized extends MapAreaModifier {
 
                 c.getAttackPattern().setBulletRadiusPpMultiplier(c.getAttackPattern().getBulletRadiusPpMultiplier() * sizeMultiplier);
             }
+
+            ecd.multiplyPpGain(1.4f);
         }
     }
 

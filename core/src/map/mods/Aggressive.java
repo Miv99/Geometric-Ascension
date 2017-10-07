@@ -3,6 +3,7 @@ package map.mods;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.PooledEngine;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.math.MathUtils;
 
 import ai.AI;
 import map.EntityCreationData;
@@ -27,6 +28,9 @@ public class Aggressive extends MapAreaModifier {
     public void onEnemyDataCreation(EntityCreationData ecd) {
         if(ecd.getAiType() != AI.AIType.NONE) {
             ecd.setAiType(AI.AIType.SIMPLE_FOLLOW_TARGET);
+            ecd.setMaxSpeed(ecd.getMaxSpeed() * MathUtils.random(1.4f, 2.2f));
+
+            ecd.multiplyPpGain(1.15f);
         }
     }
 

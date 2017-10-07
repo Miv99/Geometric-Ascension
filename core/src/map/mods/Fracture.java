@@ -101,7 +101,7 @@ public class Fracture extends MapAreaModifier {
 
     @Override
     public void onEnemyDataCreation(EntityCreationData ecd) {
-
+        // No pp multiplier for this mod because fractured circles already give more pp than the original
     }
 
     @Override
