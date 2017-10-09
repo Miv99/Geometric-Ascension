@@ -55,7 +55,8 @@ public class Fracture extends MapAreaModifier {
                 hitbox.setOrigin(origin.x + circle.x, origin.y + circle.y);
                 CircleHitbox c = circle.clone();
                 c.setRadius(subCircleRadius);
-                c.setMaxHealth(circle.getMaxHealth() / (subCirclesCount * 3f));
+                c.setBaseMaxHealth(circle.getMaxHealth() / (subCirclesCount * 3f));
+                c.setBaseMaxHealth(c.getMaxHealth());
                 c.setHealth(c.getMaxHealth());
                 c.setPpGain(circle.getPpGain()/(2f * subCirclesCount));
                 c.setIsResultOfFracture(true);

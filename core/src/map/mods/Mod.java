@@ -4,6 +4,9 @@ package map.mods;
  * Created by Miv on 9/28/2017.
  */
 public enum Mod {
+    EXPLOSIVE(Explosive.class),
+    BULKY(Bulky.class),
+    SPEEDY(Speedy.class),
     HOMING_BULLETS(HomingBullets.class),
     FRACTURE(Fracture.class),
     WINDY(Windy.class),
