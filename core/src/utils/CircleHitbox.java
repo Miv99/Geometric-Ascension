@@ -472,7 +472,7 @@ public class CircleHitbox extends Circle {
         setAttackPattern(attackPattern);
         setPosition(x, y);
         setRadius(radius);
-        setMaxHealth(health);
+        setBaseMaxHealth(health);
         setHealth(health);
         setPpGain(ppGain);
     }

@@ -96,7 +96,7 @@ public class Save {
         CircleHitbox c = new CircleHitbox();
         c.setHitboxTextureType(RenderSystem.HitboxTextureType.PLAYER);
         c.setRadius(Options.DEFAULT_NEW_CIRCLE_RADIUS);
-        c.setMaxHealth(Options.DEFAULT_NEW_CIRCLE_MAX_HEALTH);
+        c.setBaseMaxHealth(Options.DEFAULT_NEW_CIRCLE_MAX_HEALTH);
         c.setHealth(c.getMaxHealth());
         c.setAttackPattern(AttackPatternFactory.getAttackPattern("PLAYER_DEFAULT_1"));
         hitboxComponent.addCircle(c, true);

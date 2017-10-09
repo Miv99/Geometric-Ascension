@@ -999,7 +999,7 @@ public class PlayerBuilder implements Screen {
         // Set original position to be at if circle was rotated to 0 degrees
         c.setOriginalPosX(c.x * MathUtils.cos(-PLAYER_RENDER_ANGLE) - c.y * MathUtils.sin(-PLAYER_RENDER_ANGLE));
         c.setOriginalPosY(c.x * MathUtils.sin(-PLAYER_RENDER_ANGLE) + c.y * MathUtils.cos(-PLAYER_RENDER_ANGLE));
-        c.setMaxHealth(Options.DEFAULT_NEW_CIRCLE_MAX_HEALTH);
+        c.setBaseMaxHealth(Options.DEFAULT_NEW_CIRCLE_MAX_HEALTH);
         c.setHealth(c.getMaxHealth());
         // Calculate cost of creating new circle
         c.setUnsavedCreationCost((float) Math.pow((playerRender.size() + unsavedCircles.size()), Options.CIRCLE_CREATION_EXPONENT) + map.Map.INITIAL_MAP_AREA_PIXEL_POINTS / 2f);
@@ -1066,10 +1066,10 @@ public class PlayerBuilder implements Screen {
         saveStateToUndoStack();
         if(newMaxHealth > c.getMaxHealth()) {
             float difference = c.getMaxHealth() - c.getHealth();
-            c.setMaxHealth(newMaxHealth);
+            c.setBaseMaxHealth(newMaxHealth);
             c.setHealth(newMaxHealth - difference);
         } else {
-            c.setMaxHealth(newMaxHealth);
+            c.setBaseMaxHealth(newMaxHealth);
         }
         onCircleModification(c);
     }

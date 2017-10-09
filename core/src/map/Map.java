@@ -341,14 +341,14 @@ public class Map {
 
             // Scale circle health to radius
             float c1Health = c1Radius/totalCircleRadius * ecd.getMaxHealth();
-            c1.setMaxHealth(c1Health);
+            c1.setBaseMaxHealth(c1Health);
             c1.setHealth(c1Health);
             for(int a = 0; a < circlesCount - 1; a++) {
                 CircleHitbox c = circles.get(a);
 
                 // Set health
                 float health = c.radius/totalCircleRadius * ecd.getMaxHealth();
-                c.setMaxHealth(health);
+                c.setBaseMaxHealth(health);
                 c.setHealth(health);
             }
 
@@ -403,7 +403,7 @@ public class Map {
             CircleHitbox c = new CircleHitbox();
             // Set health to be > 0 to prevent death instantly
             float hp = maxPixelPoints * OBSTACLE_HEALTH_PP_SCALE * MathUtils.random(MIN_OBSTACLE_HEALTH_MULTIPLIER, MAX_OBSTACLE_HEALTH_MULTIPLIER);
-            c.setMaxHealth(hp);
+            c.setBaseMaxHealth(hp);
             c.setHealth(hp);
             c.setRadius(radius);
             c.setHitboxTextureType(RenderSystem.HitboxTextureType.OBSTACLE);
