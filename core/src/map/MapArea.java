@@ -160,9 +160,10 @@ public class MapArea {
 
         float rand = MathUtils.random();
         // Rare map area
-        if(rand < CHANCE_OF_RARE_MAP) {
+        if(rand < 1f) {
             isRare = true;
-            modTypes.addAll(pickNRandomMods(Arrays.asList(Mod.values()), MathUtils.random(3, 4)));
+            //modTypes.addAll(pickNRandomMods(Arrays.asList(Mod.values()), MathUtils.random(3, 4)));
+            modTypes.add(Mod.EXPLOSIVE);
         }
         // Uncommon map area
         else if(rand < CHANCE_OF_UNCOMMON_MAP + CHANCE_OF_RARE_MAP) {

@@ -310,7 +310,7 @@ public class Map {
             for(int a = 1; a < circlesCount; a++) {
                 CircleHitbox c = new CircleHitbox();
 
-                c.setPpGain(adjustedPpPerEnemy / circlesCount * Options.PP_GAIN_MULTIPLIER);
+                c.setBasePpGain(adjustedPpPerEnemy / circlesCount * Options.PP_GAIN_MULTIPLIER);
 
                 // Set color
                 c.setHitboxTextureType(RenderSystem.HitboxTextureType.ENEMY);
@@ -337,7 +337,7 @@ public class Map {
                 totalCircleRadius += circles.get(a).radius;
             }
 
-            c1.setPpGain(adjustedPpPerEnemy / circlesCount * Options.PP_GAIN_MULTIPLIER);
+            c1.setBasePpGain(adjustedPpPerEnemy / circlesCount * Options.PP_GAIN_MULTIPLIER);
 
             // Scale circle health to radius
             float c1Health = c1Radius/totalCircleRadius * ecd.getMaxHealth();

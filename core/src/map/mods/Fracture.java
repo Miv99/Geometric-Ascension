@@ -58,7 +58,7 @@ public class Fracture extends MapAreaModifier {
                 c.setBaseMaxHealth(circle.getMaxHealth() / (subCirclesCount * 3f));
                 c.setBaseMaxHealth(c.getMaxHealth());
                 c.setHealth(c.getMaxHealth());
-                c.setPpGain(circle.getPpGain()/(2f * subCirclesCount));
+                c.setBasePpGain(circle.getBasePpGain()/(2f * subCirclesCount));
                 c.setIsResultOfFracture(true);
                 hitbox.setMaxSpeed(maxSpeed);
                 hitbox.setIsShooting(true);

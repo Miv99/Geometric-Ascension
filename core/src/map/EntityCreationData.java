@@ -58,9 +58,12 @@ public class EntityCreationData {
         circleHitboxes = new ArrayList<CircleHitbox>();
     }
 
+    /**
+     * Works by multiplying the previous pp multiplier value by the new one, not adding
+     */
     public void multiplyPpGain(float multiplier) {
         for(CircleHitbox c : circleHitboxes) {
-            c.setPpGain(c.getPpGain() * multiplier);
+            c.setPpGainMultiplier(c.getPpGainMultiplier() * multiplier);
         }
     }
 

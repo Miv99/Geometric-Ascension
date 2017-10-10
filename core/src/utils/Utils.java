@@ -205,7 +205,7 @@ public class Utils {
             CircleHitbox c = new CircleHitbox();
             c.setRadius(orbRadius);
             c.setHitboxTextureType(RenderSystem.HitboxTextureType.PP_ORB);
-            c.setPpGain(totalPp * ppPercents[i]);
+            c.setBasePpGain(totalPp * ppPercents[i]);
             hitbox.addCircle(c, true);
             hitbox.calculateGravitationalRadius();
             e.add(hitbox);

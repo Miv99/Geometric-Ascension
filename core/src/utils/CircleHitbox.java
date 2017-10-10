@@ -458,6 +458,8 @@ public class CircleHitbox extends Circle {
 
     // How much pp the player gains by killing this circle
     private float ppGain;
+    private float basePpGain;
+    private float ppGainMultiplier = 1f;
 
     // For use by the Fracture map area mod
     // Whether or not this circle is the result of a fracture (to prevent infinite fracturing)
@@ -467,14 +469,14 @@ public class CircleHitbox extends Circle {
 
     public CircleHitbox() {}
 
-    public CircleHitbox(RenderSystem.HitboxTextureType textureType, AttackPattern attackPattern, float x, float y, float radius, float health, float ppGain) {
+    public CircleHitbox(RenderSystem.HitboxTextureType textureType, AttackPattern attackPattern, float x, float y, float radius, float health, float basePpGain) {
         setHitboxTextureType(textureType);
         setAttackPattern(attackPattern);
         setPosition(x, y);
         setRadius(radius);
         setBaseMaxHealth(health);
         setHealth(health);
-        setPpGain(ppGain);
+        setBasePpGain(basePpGain);
     }
 
     /**
@@ -537,7 +539,8 @@ public class CircleHitbox extends Circle {
         c.setTime(time);
         c.setOriginalPosX(originalPosX);
         c.setOriginalPosY(originalPosY);
-        c.setPpGain(ppGain);
+        c.setPpGainMultiplier(ppGainMultiplier);
+        c.setBasePpGain(basePpGain);
         c.setUnsavedCreationCost(unsavedCreationCost);
         c.setSpecializationAvailable(specializationAvailable);
         c.specialization = specialization;
@@ -787,8 +790,22 @@ public class CircleHitbox extends Circle {
         return ppGain;
     }
 
-    public void setPpGain(float ppGain) {
-        this.ppGain = ppGain;
+    public float getPpGainMultiplier() {
+        return ppGainMultiplier;
+    }
+
+    public void setPpGainMultiplier(float ppGainMultiplier) {
+        this.ppGainMultiplier = ppGainMultiplier;
+        ppGain = basePpGain * ppGainMultiplier;
+    }
+
+    public void setBasePpGain(float basePpGain) {
+        this.basePpGain = basePpGain;
+        ppGain = basePpGain * ppGainMultiplier;
+    }
+
+    public float getBasePpGain() {
+        return basePpGain;
     }
 
     public float getTotalHealingCostInPp() {
