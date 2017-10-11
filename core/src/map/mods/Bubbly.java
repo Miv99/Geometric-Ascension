@@ -40,7 +40,7 @@ public class Bubbly extends MapAreaModifier {
 
     @Override
     public void onEnemyDataCreation(EntityCreationData ecd) {
-
+        ecd.multiplyPpGain(1.15f);
     }
 
     @Override

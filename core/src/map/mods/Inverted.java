@@ -3,7 +3,7 @@ package map.mods;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.PooledEngine;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.math.MathUtils;
+import com.miv.Mappers;
 
 import map.EntityCreationData;
 import map.MapArea;
@@ -13,22 +13,14 @@ import utils.CircleHitbox;
  * Created by Miv on 10/10/2017.
  */
 
-public class ShrinkingMap extends MapAreaModifier {
-    private float minMapAreaRadius;
-    private float time;
-    private float speed;
-
-    public ShrinkingMap() {
+public class Inverted extends MapAreaModifier {
+    public Inverted() {
 
     }
 
-    public ShrinkingMap(PooledEngine engine, AssetManager assetManager, MapArea mapArea, Entity player) {
+    public Inverted(PooledEngine engine, AssetManager assetManager, MapArea mapArea, Entity player) {
         super(engine, assetManager, mapArea, player);
-        displayName = "Shrinking map";
-
-        minMapAreaRadius = mapArea.getRadius()/2f;
-        time = MathUtils.random(30f, 60f);
-        speed = (mapArea.getRadius() - minMapAreaRadius)/time;
+        displayName = "Inverted controls";
     }
 
     @Override
@@ -43,24 +35,23 @@ public class ShrinkingMap extends MapAreaModifier {
 
     @Override
     public void onEnemyDataCreation(EntityCreationData ecd) {
-        ecd.multiplyPpGain(1.25f);
+
     }
 
     @Override
     public void onEntityEnter(Entity entity) {
-
+        if(Mappers.player.has(entity)) {
+            Mappers.hitbox.get(entity).setInvertMovementAndShooting(true);
+        }
     }
 
     @Override
     public void onPlayerLeave() {
-
+        Mappers.hitbox.get(player).setInvertMovementAndShooting(false);
     }
 
     @Override
     public void update(float deltaTime) {
-        if(time > 0) {
-            mapArea.setRadius(mapArea.getRadius() - speed*deltaTime);
-            time -= deltaTime;
-        }
+
     }
 }

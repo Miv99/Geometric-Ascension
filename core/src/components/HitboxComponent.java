@@ -69,6 +69,9 @@ public class HitboxComponent implements Component, Pool.Poolable {
 
     private boolean disabledMovement;
 
+    // Inverts movement and shooting direction
+    private boolean invertMovementAndShooting;
+
     // If true, hitbox will not push away other hitboxes and will not be pushed away by other hitboxes
     private boolean ignoreGravity;
 
@@ -387,6 +390,9 @@ public class HitboxComponent implements Component, Pool.Poolable {
 
     public void setTargetAngle(float targetAngle) {
         this.targetAngle = targetAngle;
+        if(invertMovementAndShooting) {
+            this.targetAngle += MathUtils.PI;
+        }
     }
 
     public Vector2 getVelocity() {
@@ -398,6 +404,10 @@ public class HitboxComponent implements Component, Pool.Poolable {
     }
 
     public void setVelocity(float x, float y) {
+        if(invertMovementAndShooting) {
+            x *= -1f;
+            y *= -1f;
+        }
         velocity.set(x, y);
 
         if(!ignoreSpeedLimit) {
@@ -406,6 +416,10 @@ public class HitboxComponent implements Component, Pool.Poolable {
     }
 
     public void setVelocity(float x, float y, boolean ignoreSpeedLimit) {
+        if(invertMovementAndShooting) {
+            x *= -1f;
+            y *= -1f;
+        }
         velocity.set(x, y);
 
         if(!ignoreSpeedLimit) {
@@ -686,6 +700,9 @@ public class HitboxComponent implements Component, Pool.Poolable {
 
     public void setAimingAngle(float aimingAngle) {
         this.aimingAngle = aimingAngle;
+        if(invertMovementAndShooting) {
+            this.aimingAngle += MathUtils.PI;
+        }
     }
 
     public float getBaseMaxSpeed() {
@@ -695,5 +712,13 @@ public class HitboxComponent implements Component, Pool.Poolable {
     public void setMaxSpeed(float baseMaxSpeed) {
         this.baseMaxSpeed = baseMaxSpeed;
         recalculateSpeedBoost();
+    }
+
+    public boolean isInvertMovementAndShooting() {
+        return invertMovementAndShooting;
+    }
+
+    public void setInvertMovementAndShooting(boolean invertMovementAndShooting) {
+        this.invertMovementAndShooting = invertMovementAndShooting;
     }
 }
