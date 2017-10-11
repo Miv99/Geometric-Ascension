@@ -4,7 +4,13 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.PooledEngine;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.math.MathUtils;
+import com.miv.AttackPart;
+import com.miv.AttackPattern;
+import com.miv.Mappers;
+import com.miv.Options;
 
+import components.ExpirationComponent;
+import components.HitboxComponent;
 import map.EntityCreationData;
 import map.Map;
 import map.MapArea;
@@ -17,6 +23,7 @@ import utils.CircleHitbox;
 
 public class Bubbly extends MapAreaModifier {
     private float time;
+    private AttackPattern attackPattern;
 
     public Bubbly() {
 
@@ -25,7 +32,26 @@ public class Bubbly extends MapAreaModifier {
     public Bubbly(PooledEngine engine, AssetManager assetManager, MapArea mapArea, Entity player) {
         super(engine, assetManager, mapArea, player);
         displayName = "Bubbly";
-        time = MathUtils.random(3f, 7f);
+        time = 2.5f;
+
+        // Create new EntityCreationData that contains a single circle hitbox that wraps only an attack pattern so that
+        // other map area modifiers can modify the attack pattern accordingly
+        if(attackPattern == null) {
+            EntityCreationData ecd = new EntityCreationData(false);
+            CircleHitbox circleWrapper = new CircleHitbox();
+            circleWrapper.setHitboxTextureType(RenderSystem.HitboxTextureType.ENEMY_BULLET);
+            ecd.getCircleHitboxes().add(circleWrapper);
+            attackPattern = new AttackPattern();
+            circleWrapper.setAttackPattern(attackPattern);
+            attackPattern.setDuration(10f, true);
+            attackPattern.addRandomAttackPatternStatModifiers(mapArea.getMaxPixelPoints() / mapArea.getOriginalEnemyCount());
+            attackPattern.addAttackPart(new AttackPart()
+                    .setAttackPartAngleDeterminant(AttackPart.AttackPartAngleDeterminant.NONE)
+                    .setOriginX(0).setOriginY(0)
+                    .setDelay(0)
+                    .setDamage(1.5f));
+            mapArea.onEnemyDataCreation(ecd);
+        }
     }
 
     @Override
@@ -40,7 +66,7 @@ public class Bubbly extends MapAreaModifier {
 
     @Override
     public void onEnemyDataCreation(EntityCreationData ecd) {
-        ecd.multiplyPpGain(1.15f);
+        ecd.multiplyPpGain(1.4f);
     }
 
     @Override
@@ -56,29 +82,24 @@ public class Bubbly extends MapAreaModifier {
     @Override
     public void update(float deltaTime) {
         if(time < 0) {
-            float radius = MathUtils.random(Map.MIN_OBSTACLE_RADIUS, Map.MAX_OBSTACLE_RADIUS);
+            for(AttackPart ap : attackPattern.getAttackParts()) {
+                float radius = MathUtils.random(50f, 75f);
+                float speed = MathUtils.random(3f, 5f);
 
-            EntityCreationData ecd = new EntityCreationData();
-            ecd.setIsEnemy(false);
-            ecd.setObstacle(true);
+                float angle = MathUtils.random(MathUtils.PI2);
+                float distance = mapArea.getRadius() + 600f;
 
-            CircleHitbox c = new CircleHitbox();
-            // Set health to be > 0 to prevent death instantly
-            float hp = mapArea.getMaxPixelPoints() * Map.OBSTACLE_HEALTH_PP_SCALE * MathUtils.random(Map.MIN_OBSTACLE_HEALTH_MULTIPLIER, Map.MAX_OBSTACLE_HEALTH_MULTIPLIER);
-            c.setBaseMaxHealth(hp);
-            c.setHealth(hp);
-            c.setRadius(radius);
-            c.setHitboxTextureType(RenderSystem.HitboxTextureType.OBSTACLE);
-            ecd.getCircleHitboxes().add(c);
+                // Determine angle of travel
+                float a = MathUtils.atan2(distance, mapArea.getRadius()) * 0.8f;
+                float travelAngle = MathUtils.random(-a , a) + angle + MathUtils.PI;
 
-            float angle = MathUtils.random(MathUtils.PI2);
-            float distance = MathUtils.random(radius, mapArea.getRadius() - radius);
-            ecd.setSpawnPosition(distance * MathUtils.cos(angle), distance * MathUtils.sin(angle));
-
-            mapArea.entityCreationDataArrayList.add(ecd);
-            mapArea.onEnemyDataCreation(ecd);
-
-            time = MathUtils.random(3f, 7f);
+                ap.setSpeed(speed);
+                ap.setRadius(radius);
+                ap.setAngleInRadians(travelAngle);
+                ap.fire(engine, null, null, distance * MathUtils.cos(angle), distance * MathUtils.sin(angle), travelAngle, mapArea.getRadius());
+            }
+            time = MathUtils.random(2.5f, 3.75f);
         }
+        time -= deltaTime;
     }
 }

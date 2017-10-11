@@ -583,8 +583,16 @@ public class MovementSystem extends EntitySystem {
             }
 
             if (isValidMovement) {
-                float deltaX = (velocity.x + velocity2.x) * deltaTime * Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER;
-                float deltaY = (velocity.y + velocity2.y) * deltaTime * Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER;
+                float deltaX;
+                float deltaY;
+                if(hitbox.isInvertMovementAndShooting() && !hitbox.isTravelling()) {
+                    // Because velocity2 is from the environment, it is not inverted
+                    deltaX = (-velocity.x + velocity2.x) * deltaTime * Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER;
+                    deltaY = (-velocity.y + velocity2.y) * deltaTime * Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER;
+                } else {
+                    deltaX = (velocity.x + velocity2.x) * deltaTime * Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER;
+                    deltaY = (velocity.y + velocity2.y) * deltaTime * Options.GLOBAL_MOVEMENT_SPEED_MULTIPLIER;
+                }
 
                 if(velocityAdditionDueToGravity == null) {
                     hitbox.setOrigin(origin.x + deltaX, origin.y + deltaY);

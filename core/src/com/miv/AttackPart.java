@@ -65,7 +65,7 @@ public class AttackPart {
         RenderSystem.HitboxTextureType hitboxTextureType;
 
         Entity e = engine.createEntity();
-        if(Mappers.player.has(parent)) {
+        if(parent != null && Mappers.player.has(parent)) {
             e.add(engine.createComponent(PlayerBulletComponent.class).setDamage(damage).setLifestealMultiplier(parent, lifestealPercent).setPlayerAttractionLerpFactor(playerAttractionLerpFactor));
             hitboxTextureType = RenderSystem.HitboxTextureType.PLAYER_BULLET;
         } else {
