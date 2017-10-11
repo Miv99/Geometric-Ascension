@@ -49,9 +49,10 @@ public class Map {
 
     public static final float INITIAL_MAP_AREA_PIXEL_POINTS = 20f;
     /**
-     * How much {@link map.Map#maxPixelPoints} increases by each time the player enters a new floor
+     * How much {@link map.Map#maxPixelPoints} increases by each time the player enters a new map area/floor
      */
-    private static final float MAP_AREA_PIXEL_POINTS_INCREMENT = 7.5f;
+    private static final float MAP_AREA_PIXEL_POINTS_MAP_AREA_INCREMENT = 2.5f;
+    private static final float MAP_AREA_PIXEL_POINTS_FLOOR_INCREMENT = 10f;
 
     private static final int MIN_ENEMIES_PER_MAP_AREA = 3;
     private static final int MAX_ENEMIES_PER_MAP_AREA = 8;
@@ -102,12 +103,15 @@ public class Map {
     }
 
     public void enterNewFloor(int floor) {
+        int deltaFloor = floor - this.floor;
         this.floor = floor;
         setFocus(0, 0);
         areas.clear();
 
         newMapAreasUntilBoss = NEW_MAP_AREAS_UNTIL_BOSS;
-        maxPixelPoints = INITIAL_MAP_AREA_PIXEL_POINTS + MAP_AREA_PIXEL_POINTS_INCREMENT*(float)floor;
+        maxPixelPoints += MAP_AREA_PIXEL_POINTS_FLOOR_INCREMENT * deltaFloor;
+        // Account for skipping map areas
+        maxPixelPoints += (deltaFloor - 1) * MAP_AREA_PIXEL_POINTS_MAP_AREA_INCREMENT * NEW_MAP_AREAS_UNTIL_BOSS;
 
         float enemyCountIncrease = floor/10f;
         minEnemiesPerMapArea = MIN_ENEMIES_PER_MAP_AREA + enemyCountIncrease/2f;
@@ -137,6 +141,8 @@ public class Map {
             increaseChanceOfNextAreaHavingStairs = true;
             newMapArea = generateRandomMapArea(newPos);
             areas.put(newPos.toString(), newMapArea);
+
+            maxPixelPoints += MAP_AREA_PIXEL_POINTS_MAP_AREA_INCREMENT;
         } else {
             newMapArea = areas.get(new Point(x, y).toString());
             newMapArea.loadMods(main.getEngine(), main.getAssetManager(), main.getPlayer());
