@@ -43,7 +43,7 @@ public class HitboxComponent implements Component, Pool.Poolable {
     private Point origin;
     // Velocity of hitbox, in meters/sec
     private Vector2 velocity;
-    // Secondary velocity (added to primary) from environment
+    // Secondary velocity (added to primary) from environment; unaffected by speed limit
     private Vector2 velocity2;
     // Acceleration of hitbox, in meters/sec^2
     private Vector2 acceleration;
@@ -140,7 +140,11 @@ public class HitboxComponent implements Component, Pool.Poolable {
                 int index = 0;
                 for (AttackPart ap : attackPattern.getAttackParts()) {
                     if (!fired[index] && c.getTime() >= ap.getDelay()) {
-                        ap.fire(engine, parent, player, origin.x + c.x, origin.y + c.y, aimingAngle + attackPattern.getAngleOffset(), mapAreaRadius);
+                        if(invertMovementAndShooting) {
+                            ap.fire(engine, parent, player, origin.x + c.x, origin.y + c.y, aimingAngle + attackPattern.getAngleOffset() + MathUtils.PI, mapAreaRadius);
+                        } else {
+                            ap.fire(engine, parent, player, origin.x + c.x, origin.y + c.y, aimingAngle + attackPattern.getAngleOffset(), mapAreaRadius);
+                        }
                         fired[index] = true;
                     } else {
                         break;
@@ -390,9 +394,6 @@ public class HitboxComponent implements Component, Pool.Poolable {
 
     public void setTargetAngle(float targetAngle) {
         this.targetAngle = targetAngle;
-        if(invertMovementAndShooting) {
-            this.targetAngle += MathUtils.PI;
-        }
     }
 
     public Vector2 getVelocity() {
@@ -404,10 +405,6 @@ public class HitboxComponent implements Component, Pool.Poolable {
     }
 
     public void setVelocity(float x, float y) {
-        if(invertMovementAndShooting) {
-            x *= -1f;
-            y *= -1f;
-        }
         velocity.set(x, y);
 
         if(!ignoreSpeedLimit) {
@@ -416,10 +413,6 @@ public class HitboxComponent implements Component, Pool.Poolable {
     }
 
     public void setVelocity(float x, float y, boolean ignoreSpeedLimit) {
-        if(invertMovementAndShooting) {
-            x *= -1f;
-            y *= -1f;
-        }
         velocity.set(x, y);
 
         if(!ignoreSpeedLimit) {
@@ -700,9 +693,6 @@ public class HitboxComponent implements Component, Pool.Poolable {
 
     public void setAimingAngle(float aimingAngle) {
         this.aimingAngle = aimingAngle;
-        if(invertMovementAndShooting) {
-            this.aimingAngle += MathUtils.PI;
-        }
     }
 
     public float getBaseMaxSpeed() {

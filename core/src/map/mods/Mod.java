@@ -5,6 +5,7 @@ package map.mods;
  */
 public enum Mod {
     UNDERSIZED(Undersized.class),
+    INVERTED(Inverted.class),
     BUBBLY(Bubbly.class),
     SHRINKING_MAP(ShrinkingMap.class),
     EXPLOSIVE(Explosive.class),

@@ -26,7 +26,7 @@ public class ShrinkingMap extends MapAreaModifier {
         super(engine, assetManager, mapArea, player);
         displayName = "Shrinking map";
 
-        minMapAreaRadius = mapArea.getRadius()/2f;
+        minMapAreaRadius = mapArea.getRadius()/MathUtils.random(2.2f, 3.5f);
         time = MathUtils.random(30f, 60f);
         speed = (mapArea.getRadius() - minMapAreaRadius)/time;
     }

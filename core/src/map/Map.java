@@ -13,8 +13,6 @@ import com.miv.Options;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Set;
 
 import ai.AI;
 import ai.SimpleFollowTarget;
@@ -46,29 +44,6 @@ import static map.MapArea.BOSS_MAP_AREA_SIZE;
  * Created by Miv on 5/23/2017.
  */
 public class Map {
-    public static class GridLine {
-        private float startX;
-        private float startY;
-        private float endX;
-        private float endY;
-
-        public float getStartX() {
-            return startX;
-        }
-
-        public float getStartY() {
-            return startY;
-        }
-
-        public float getEndX() {
-            return endX;
-        }
-
-        public float getEndY() {
-            return endY;
-        }
-    }
-
     //------------------------------------------------------------- MAP AREA GENERATION --------------------------------------------------
     private static final float NEW_MAP_AREAS_UNTIL_BOSS = 20;
 
@@ -90,8 +65,6 @@ public class Map {
     public static final float OBSTACLE_HEALTH_PP_SCALE = 0.5f;
     //-----------------------------------------------------------------------------------------------------
 
-    private static final float GRID_LINE_SEPARATION_DISTANCE = 150f;
-
     private transient Main main;
 
     // Starts at 0
@@ -111,9 +84,6 @@ public class Map {
 
     private transient MapArea currentArea;
 
-    // Positions of grid lines; purely visual effects
-    private ArrayList<GridLine> gridLines;
-
     /**
      * For Json files
      */
@@ -122,7 +92,6 @@ public class Map {
     public Map(Main main) {
         this.main = main;
 
-        gridLines = new ArrayList<GridLine>();
         areas = new HashMap<String, MapArea>();
         focus = new Point(0, 0);
         newMapAreasUntilBoss = NEW_MAP_AREAS_UNTIL_BOSS;
@@ -144,7 +113,7 @@ public class Map {
         minEnemiesPerMapArea = MIN_ENEMIES_PER_MAP_AREA + enemyCountIncrease/2f;
         maxEnemiesPerMapArea = MAX_ENEMIES_PER_MAP_AREA + enemyCountIncrease;
 
-        MapArea mapArea = new MapArea(MapArea.MAP_AREA_MIN_SIZE, maxPixelPoints);
+        MapArea mapArea = new MapArea(main.getEngine(), MapArea.MAP_AREA_MIN_SIZE, maxPixelPoints);
         areas.put(new Point(0, 0).toString(), mapArea);
         Mappers.hitbox.get(main.getPlayer()).setOrigin(0, 0);
         enterNewArea(main.getEngine(), main.getPlayer(), 0, 0, true);
@@ -174,28 +143,6 @@ public class Map {
         }
         currentArea = newMapArea;
 
-        // Calculate grid line locations
-        gridLines.clear();
-        float gridPadding = (newMapArea.getRadius() % GRID_LINE_SEPARATION_DISTANCE)/2f;
-        // Lines from quadrants 1 and 2, extending down
-        for(float gridX = -newMapArea.getRadius() + gridPadding; gridX < newMapArea.getRadius() - gridPadding; gridX += GRID_LINE_SEPARATION_DISTANCE) {
-            GridLine gl = new GridLine();
-            gl.startX = gridX;
-            gl.startY = (float)Math.sqrt(newMapArea.getRadius()*newMapArea.getRadius() - gridX*gridX);
-            gl.endX = gridX;
-            gl.endY = -gl.startY;
-            gridLines.add(gl);
-        }
-        // Lines from quadrants 1 and 4, extending left
-        for(float gridY = -newMapArea.getRadius() + gridPadding; gridY < newMapArea.getRadius() - gridPadding; gridY += GRID_LINE_SEPARATION_DISTANCE) {
-            GridLine gl = new GridLine();
-            gl.startX = (float)Math.sqrt(newMapArea.getRadius()*newMapArea.getRadius() - gridY*gridY);
-            gl.startY = gridY;
-            gl.endX = -gl.startX;
-            gl.endY = gridY;
-            gridLines.add(gl);
-        }
-
         /**
          * Store all enemies currently in the engine as {@link map.EntityCreationData} objects inside {@link MapArea#entityCreationDataArrayList}
          */
@@ -211,7 +158,7 @@ public class Map {
         if(!(x == 0 && y == 0) && !newMapArea.isBossArea()) {
             populateWithObstacles(newMapArea);
         }
-        newMapArea.spawnEntities(engine, player, clearNewMapAreaEntityCreationDataAfterSpawningEnemies);
+        newMapArea.spawnEntities(player, clearNewMapAreaEntityCreationDataAfterSpawningEnemies);
 
         focus.x = x;
         focus.y = y;
@@ -238,14 +185,14 @@ public class Map {
     private MapArea generateRandomMapArea(Point pos) {
         MapArea mapArea;
         if(pos.x == 0 && pos.y == 0) {
-            mapArea = new MapArea(MapArea.MAP_AREA_MIN_SIZE, maxPixelPoints);
+            mapArea = new MapArea(main.getEngine(), MapArea.MAP_AREA_MIN_SIZE, maxPixelPoints);
         } else {
             if(newMapAreasUntilBoss <= 0) {
-                mapArea = new MapArea(BOSS_MAP_AREA_SIZE, maxPixelPoints);
+                mapArea = new MapArea(main.getEngine(), BOSS_MAP_AREA_SIZE, maxPixelPoints);
                 mapArea.addStairs(floor + 1);
                 populateWithBoss(mapArea);
             } else {
-                mapArea = new MapArea(MathUtils.random(MapArea.MAP_AREA_MIN_SIZE, MapArea.MAP_AREA_MAX_SIZE), maxPixelPoints);
+                mapArea = new MapArea(main.getEngine(), MathUtils.random(MapArea.MAP_AREA_MIN_SIZE, MapArea.MAP_AREA_MAX_SIZE), maxPixelPoints);
                 mapArea.randomizeRarity();
                 mapArea.loadMods(main.getEngine(), main.getAssetManager(), main.getPlayer());
                 // Populate map area with enemies
@@ -342,14 +289,14 @@ public class Map {
             // Scale circle health to radius
             float c1Health = c1Radius/totalCircleRadius * ecd.getMaxHealth();
             c1.setBaseMaxHealth(c1Health);
-            c1.setHealth(c1Health);
+            c1.setHealth(c1.getMaxHealth());
             for(int a = 0; a < circlesCount - 1; a++) {
                 CircleHitbox c = circles.get(a);
 
                 // Set health
                 float health = c.radius/totalCircleRadius * ecd.getMaxHealth();
                 c.setBaseMaxHealth(health);
-                c.setHealth(health);
+                c.setHealth(c.getMaxHealth());
             }
 
             // Calculate max size of entity hitbox
@@ -404,7 +351,7 @@ public class Map {
             // Set health to be > 0 to prevent death instantly
             float hp = maxPixelPoints * OBSTACLE_HEALTH_PP_SCALE * MathUtils.random(MIN_OBSTACLE_HEALTH_MULTIPLIER, MAX_OBSTACLE_HEALTH_MULTIPLIER);
             c.setBaseMaxHealth(hp);
-            c.setHealth(hp);
+            c.setHealth(c.getMaxHealth());
             c.setRadius(radius);
             c.setHitboxTextureType(RenderSystem.HitboxTextureType.OBSTACLE);
             ecd.getCircleHitboxes().add(c);
@@ -532,10 +479,6 @@ public class Map {
 
     public MapArea getCurrentArea() {
         return currentArea;
-    }
-
-    public ArrayList<GridLine> getGridLines() {
-        return gridLines;
     }
 
     public float getMaxPixelPoints() {

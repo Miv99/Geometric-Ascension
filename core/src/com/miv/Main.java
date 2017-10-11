@@ -197,6 +197,9 @@ public class Main extends Game {
 		Mappers.hitbox.get(player).setLastFacedAngle(MathUtils.PI / 2f);
 		Mappers.hitbox.get(player).setTargetAngle(MathUtils.PI / 2f);
 		playerDead = false;
+		for(MapArea area : map.getAllSavedMapAreas()) {
+			area.setEngine(engine);
+		}
 		map.enterNewArea(engine, player, (int) map.getFocus().x, (int) map.getFocus().y, true);
 		if (camera != null) {
 			camera.setLockedPosition(false);

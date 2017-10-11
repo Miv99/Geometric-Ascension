@@ -27,6 +27,7 @@ import java.util.ArrayList;
 
 import components.HitboxComponent;
 import map.Map;
+import map.MapArea;
 import utils.CircleHitbox;
 import utils.Point;
 
@@ -229,7 +230,7 @@ public class RenderSystem extends EntitySystem {
             // Draw grid lines
             if(main.getState() != Main.GameState.MAIN_MENU) {
                 shapeRenderer.setColor(gridLineColor);
-                for (Map.GridLine gl : map.getGridLines()) {
+                for (MapArea.GridLine gl : map.getCurrentArea().getGridLines()) {
                     shapeRenderer.rectLine(gl.getStartX(), gl.getStartY(), gl.getEndX(), gl.getEndY(), 2.5f);
                 }
             }

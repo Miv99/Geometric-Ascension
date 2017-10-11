@@ -19,10 +19,8 @@ import components.BossComponent;
 import components.EnemyComponent;
 import components.HitboxComponent;
 import components.ObstacleComponent;
-import map.mods.HomingBullets;
 import map.mods.MapAreaModifier;
 import map.mods.Mod;
-import map.mods.Windy;
 import utils.CircleHitbox;
 
 /**
@@ -30,6 +28,29 @@ import utils.CircleHitbox;
  * Created by Miv on 5/23/2017.
  */
 public class MapArea {
+    public static class GridLine {
+        private float startX;
+        private float startY;
+        private float endX;
+        private float endY;
+
+        public float getStartX() {
+            return startX;
+        }
+
+        public float getStartY() {
+            return startY;
+        }
+
+        public float getEndX() {
+            return endX;
+        }
+
+        public float getEndY() {
+            return endY;
+        }
+    }
+
     public static final float MAP_AREA_MIN_SIZE = 800f;
     public static final float MAP_AREA_MAX_SIZE = 1600f;
 
@@ -38,8 +59,13 @@ public class MapArea {
     private static final float CHANCE_OF_RARE_MAP = 0.04f;
     private static final float CHANCE_OF_UNCOMMON_MAP = 0.08f;
 
+    private static final float GRID_LINE_SEPARATION_DISTANCE = 150f;
+
+    private transient PooledEngine engine;
+
     public ArrayList<EntityCreationData> entityCreationDataArrayList;
     private float radius;
+    private float originalRadius;
 
     private int enemyCount;
     private int originalEnemyCount;
@@ -54,9 +80,13 @@ public class MapArea {
 
     private float maxPixelPoints;
 
+    // Positions of grid lines; purely visual effects
+    // Calculated on map area creation
+    private transient ArrayList<GridLine> gridLines;
+
     /**
      * Set to -1 if no stairs exist in this MapArea. Otherwise, an entity with an OnCollision event will be spawned in the middle of the MapArea
-     * when {@link MapArea#spawnEntities(PooledEngine, Entity, boolean)} is called.
+     * when {@link MapArea#spawnEntities(Entity, boolean)} is called.
      */
     private int stairsDestination = -1;
 
@@ -67,13 +97,18 @@ public class MapArea {
 
     }
 
-    public MapArea(float radius, float maxPixelPoints) {
+    public MapArea(PooledEngine engine, float radius, float maxPixelPoints) {
+        this.engine = engine;
         this.radius = radius;
+        originalRadius = radius;
         entityCreationDataArrayList = new ArrayList<EntityCreationData>();
+        gridLines = new ArrayList<GridLine>();
         enemies = new ArrayList<Entity>();
         modTypes = new ArrayList<Mod>();
         mods = new ArrayList<MapAreaModifier>();
         this.maxPixelPoints = maxPixelPoints;
+
+        calculateAndSetGridLines();
     }
 
     public void addStairs(int destinationFloor) {
@@ -83,7 +118,7 @@ public class MapArea {
     /**
      * Spawns all entities in {@link map.MapArea#entityCreationDataArrayList}
      */
-    public void spawnEntities(final PooledEngine engine, Entity player, boolean clearEntityCreationDataAfterSpawning) {
+    public void spawnEntities(Entity player, boolean clearEntityCreationDataAfterSpawning) {
         if(enemies == null) {
             enemies = new ArrayList<Entity>();
         } else {
@@ -99,7 +134,7 @@ public class MapArea {
                 continue;
             }
 
-            spawnEntity(engine, player, ecd);
+            spawnEntity(player, ecd);
         }
 
         // Spawn obstacles
@@ -108,7 +143,7 @@ public class MapArea {
                 continue;
             }
 
-            spawnEntity(engine, player, ecd);
+            spawnEntity(player, ecd);
         }
 
         if(clearEntityCreationDataAfterSpawning && !isBossArea()) {
@@ -116,7 +151,7 @@ public class MapArea {
         }
     }
 
-    private void spawnEntity(PooledEngine engine, Entity player, EntityCreationData ecd) {
+    public Entity spawnEntity(Entity player, EntityCreationData ecd) {
         Entity e = engine.createEntity();
 
         if(ecd.isBoss()) {
@@ -156,6 +191,8 @@ public class MapArea {
 
         engine.addEntity(e);
         onEntityEnter(e);
+
+        return e;
     }
 
     public void randomizeRarity() {
@@ -163,10 +200,9 @@ public class MapArea {
 
         float rand = MathUtils.random();
         // Rare map area
-        if(rand < 1f) {
+        if(rand < CHANCE_OF_RARE_MAP) {
             isRare = true;
-            //modTypes.addAll(pickNRandomMods(Arrays.asList(Mod.values()), MathUtils.random(3, 4)));
-            modTypes.add(Mod.SHRINKING_MAP);
+            modTypes.addAll(pickNRandomMods(Arrays.asList(Mod.values()), MathUtils.random(3, 4)));
         }
         // Uncommon map area
         else if(rand < CHANCE_OF_UNCOMMON_MAP + CHANCE_OF_RARE_MAP) {
@@ -244,6 +280,47 @@ public class MapArea {
         }
     }
 
+    private void calculateAndSetGridLines() {
+        gridLines.clear();
+
+        // Lines from quadrant 1, extending down
+        for(float gridX = GRID_LINE_SEPARATION_DISTANCE/2f; gridX < radius; gridX += GRID_LINE_SEPARATION_DISTANCE) {
+            GridLine gl = new GridLine();
+            gl.startX = gridX;
+            gl.startY = (float)Math.sqrt(radius*radius - gridX*gridX);
+            gl.endX = gridX;
+            gl.endY = -gl.startY;
+            gridLines.add(gl);
+        }
+        // Lines from quadrant 2, extending down
+        for(float gridX = GRID_LINE_SEPARATION_DISTANCE/2f - GRID_LINE_SEPARATION_DISTANCE; gridX > -radius; gridX -= GRID_LINE_SEPARATION_DISTANCE) {
+            GridLine gl = new GridLine();
+            gl.startX = gridX;
+            gl.startY = (float)Math.sqrt(radius*radius - gridX*gridX);
+            gl.endX = gridX;
+            gl.endY = -gl.startY;
+            gridLines.add(gl);
+        }
+        // Lines from quadrant 1, extending left
+        for(float gridY = GRID_LINE_SEPARATION_DISTANCE/2f; gridY < radius; gridY += GRID_LINE_SEPARATION_DISTANCE) {
+            GridLine gl = new GridLine();
+            gl.startX = (float)Math.sqrt(radius*radius - gridY*gridY);
+            gl.startY = gridY;
+            gl.endX = -gl.startX;
+            gl.endY = gridY;
+            gridLines.add(gl);
+        }
+        // Lines from quadrant 4, extending left
+        for(float gridY = GRID_LINE_SEPARATION_DISTANCE/2f - GRID_LINE_SEPARATION_DISTANCE; gridY > -radius; gridY -= GRID_LINE_SEPARATION_DISTANCE) {
+            GridLine gl = new GridLine();
+            gl.startX = (float)Math.sqrt(radius*radius - gridY*gridY);
+            gl.startY = gridY;
+            gl.endX = -gl.startX;
+            gl.endY = gridY;
+            gridLines.add(gl);
+        }
+    }
+
     /**
      * Called from {@link Map#randomlyPopulate(MapArea)}
      */
@@ -269,7 +346,7 @@ public class MapArea {
     }
 
     /**
-     * Called from {@link #spawnEntities(PooledEngine, Entity, boolean)} (for enemies) and {@link Map#enterNewArea(PooledEngine, Entity, int, int, boolean)} (for player)
+     * Called from {@link #spawnEntities(Entity, boolean)} (for enemies) and {@link Map#enterNewArea(PooledEngine, Entity, int, int, boolean)} (for player)
      */
     public void onEntityEnter(Entity entity) {
         if(mods != null) {
@@ -379,9 +456,22 @@ public class MapArea {
 
     public void setRadius(float radius) {
         this.radius = radius;
+        calculateAndSetGridLines();
     }
 
     public float getMaxPixelPoints() {
         return maxPixelPoints;
+    }
+
+    public float getOriginalRadius() {
+        return originalRadius;
+    }
+
+    public ArrayList<GridLine> getGridLines() {
+        return gridLines;
+    }
+
+    public void setEngine(PooledEngine engine) {
+        this.engine = engine;
     }
 }
