@@ -81,13 +81,13 @@ public class Map {
     private static final int MIN_ENEMIES_PER_MAP_AREA = 3;
     private static final int MAX_ENEMIES_PER_MAP_AREA = 8;
 
-    private static final float MIN_OBSTACLE_RADIUS = 25f;
-    private static final float MAX_OBSTACLE_RADIUS = 125f;
+    public static final float MIN_OBSTACLE_RADIUS = 25f;
+    public static final float MAX_OBSTACLE_RADIUS = 125f;
 
-    private static final float MIN_OBSTACLE_HEALTH_MULTIPLIER = 0.8f;
-    private static final float MAX_OBSTACLE_HEALTH_MULTIPLIER = 1.6f;
+    public static final float MIN_OBSTACLE_HEALTH_MULTIPLIER = 0.8f;
+    public static final float MAX_OBSTACLE_HEALTH_MULTIPLIER = 1.6f;
 
-    private static final float OBSTACLE_HEALTH_PP_SCALE = 0.5f;
+    public static final float OBSTACLE_HEALTH_PP_SCALE = 0.5f;
     //-----------------------------------------------------------------------------------------------------
 
     private static final float GRID_LINE_SEPARATION_DISTANCE = 150f;
@@ -144,7 +144,7 @@ public class Map {
         minEnemiesPerMapArea = MIN_ENEMIES_PER_MAP_AREA + enemyCountIncrease/2f;
         maxEnemiesPerMapArea = MAX_ENEMIES_PER_MAP_AREA + enemyCountIncrease;
 
-        MapArea mapArea = new MapArea(MapArea.MAP_AREA_MIN_SIZE);
+        MapArea mapArea = new MapArea(MapArea.MAP_AREA_MIN_SIZE, maxPixelPoints);
         areas.put(new Point(0, 0).toString(), mapArea);
         Mappers.hitbox.get(main.getPlayer()).setOrigin(0, 0);
         enterNewArea(main.getEngine(), main.getPlayer(), 0, 0, true);
@@ -238,14 +238,14 @@ public class Map {
     private MapArea generateRandomMapArea(Point pos) {
         MapArea mapArea;
         if(pos.x == 0 && pos.y == 0) {
-            mapArea = new MapArea(MapArea.MAP_AREA_MIN_SIZE);
+            mapArea = new MapArea(MapArea.MAP_AREA_MIN_SIZE, maxPixelPoints);
         } else {
             if(newMapAreasUntilBoss <= 0) {
-                mapArea = new MapArea(BOSS_MAP_AREA_SIZE);
+                mapArea = new MapArea(BOSS_MAP_AREA_SIZE, maxPixelPoints);
                 mapArea.addStairs(floor + 1);
                 populateWithBoss(mapArea);
             } else {
-                mapArea = new MapArea(MathUtils.random(MapArea.MAP_AREA_MIN_SIZE, MapArea.MAP_AREA_MAX_SIZE));
+                mapArea = new MapArea(MathUtils.random(MapArea.MAP_AREA_MIN_SIZE, MapArea.MAP_AREA_MAX_SIZE), maxPixelPoints);
                 mapArea.randomizeRarity();
                 mapArea.loadMods(main.getEngine(), main.getAssetManager(), main.getPlayer());
                 // Populate map area with enemies

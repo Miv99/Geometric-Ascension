@@ -52,6 +52,8 @@ public class MapArea {
     private boolean isUncommon;
     private boolean isRare;
 
+    private float maxPixelPoints;
+
     /**
      * Set to -1 if no stairs exist in this MapArea. Otherwise, an entity with an OnCollision event will be spawned in the middle of the MapArea
      * when {@link MapArea#spawnEntities(PooledEngine, Entity, boolean)} is called.
@@ -65,12 +67,13 @@ public class MapArea {
 
     }
 
-    public MapArea(float radius) {
+    public MapArea(float radius, float maxPixelPoints) {
         this.radius = radius;
         entityCreationDataArrayList = new ArrayList<EntityCreationData>();
         enemies = new ArrayList<Entity>();
         modTypes = new ArrayList<Mod>();
         mods = new ArrayList<MapAreaModifier>();
+        this.maxPixelPoints = maxPixelPoints;
     }
 
     public void addStairs(int destinationFloor) {
@@ -163,7 +166,7 @@ public class MapArea {
         if(rand < 1f) {
             isRare = true;
             //modTypes.addAll(pickNRandomMods(Arrays.asList(Mod.values()), MathUtils.random(3, 4)));
-            modTypes.add(Mod.EXPLOSIVE);
+            modTypes.add(Mod.SHRINKING_MAP);
         }
         // Uncommon map area
         else if(rand < CHANCE_OF_UNCOMMON_MAP + CHANCE_OF_RARE_MAP) {
@@ -372,5 +375,13 @@ public class MapArea {
 
     public boolean isRare() {
         return isRare;
+    }
+
+    public void setRadius(float radius) {
+        this.radius = radius;
+    }
+
+    public float getMaxPixelPoints() {
+        return maxPixelPoints;
     }
 }

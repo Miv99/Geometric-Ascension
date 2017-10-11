@@ -4,6 +4,8 @@ package map.mods;
  * Created by Miv on 9/28/2017.
  */
 public enum Mod {
+    BUBBLY(Bubbly.class),
+    SHRINKING_MAP(ShrinkingMap.class),
     EXPLOSIVE(Explosive.class),
     BULKY(Bulky.class),
     SPEEDY(Speedy.class),
