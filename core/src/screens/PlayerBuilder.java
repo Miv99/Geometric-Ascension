@@ -87,7 +87,11 @@ public class PlayerBuilder implements Screen {
             cancelChoosing.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
-                    playHideAnimation();
+                    if(descriptionWindowIsShowing) {
+                        hideDescriptionWindow();
+                    } else {
+                        playHideAnimation();
+                    }
                 }
             });
             cancelChoosing.setTouchable(Touchable.disabled);
