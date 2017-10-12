@@ -53,4 +53,12 @@ public abstract class MapAreaModifier {
     public void setMapArea(MapArea mapArea) {
         this.mapArea = mapArea;
     }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setEngine(PooledEngine engine) {
+        this.engine = engine;
+    }
 }

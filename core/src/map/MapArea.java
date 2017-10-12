@@ -71,7 +71,7 @@ public class MapArea {
     private int originalEnemyCount;
 
     private ArrayList<Mod> modTypes;
-    private transient ArrayList<MapAreaModifier> mods;
+    private ArrayList<MapAreaModifier> mods;
 
     private transient ArrayList<Entity> enemies;
 
@@ -82,7 +82,7 @@ public class MapArea {
 
     // Positions of grid lines; purely visual effects
     // Calculated on map area creation
-    private transient ArrayList<GridLine> gridLines;
+    private ArrayList<GridLine> gridLines;
 
     /**
      * Set to -1 if no stairs exist in this MapArea. Otherwise, an entity with an OnCollision event will be spawned in the middle of the MapArea
@@ -200,7 +200,7 @@ public class MapArea {
 
         float rand = MathUtils.random();
         // Rare map area
-        if(rand < CHANCE_OF_RARE_MAP) {
+        if(rand < 1f) {
             isRare = true;
             modTypes.addAll(pickNRandomMods(Arrays.asList(Mod.values()), MathUtils.random(3, 4)));
         }
@@ -227,13 +227,6 @@ public class MapArea {
                     e.printStackTrace();
                 }
             }
-        }
-    }
-
-    public void unloadMods() {
-        if(mods != null) {
-            mods.clear();
-            mods = null;
         }
     }
 

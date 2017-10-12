@@ -75,6 +75,8 @@ public class Save {
                 // Load map
                 main.setMap(data.map);
 
+                main.setMapAreaModFields();
+
                 return false;
             } catch(Exception e) {
                 createNewSave(engine, main);

@@ -24,6 +24,7 @@ public class Explosive extends MapAreaModifier {
 
     public Explosive(PooledEngine engine, AssetManager assetManager, MapArea mapArea, Entity player) {
         super(engine, assetManager, mapArea, player);
+        displayName = "Explosive";
     }
 
     @Override

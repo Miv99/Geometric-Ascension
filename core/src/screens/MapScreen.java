@@ -11,6 +11,8 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
@@ -20,6 +22,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
@@ -63,6 +66,7 @@ public class MapScreen implements Screen {
     }
 
     public static class MapScreenArea {
+        public ArrayList<String> modNames;
         public boolean areaCleared;
         public int colorIndex;
         public Color borderColor;
@@ -120,6 +124,9 @@ public class MapScreen implements Screen {
     private InputMultiplexer inputMultiplexer;
     private ImageButton teleportButton;
 
+    private BitmapFont mapAreaModsFont;
+    private float modsFontHeight;
+
     private HashMap<Point, MapScreenArea> mapAreas;
     private ShapeRenderer shapeRenderer;
 
@@ -128,6 +135,8 @@ public class MapScreen implements Screen {
     private MapScreenArea selectedMapArea;
     private float currentMapAreaScreenX;
     private float currentMapAreaScreenY;
+
+    private float screenHeight;
 
     private boolean disableMapAreaButtons;
 
@@ -142,6 +151,8 @@ public class MapScreen implements Screen {
         this.player = player;
         this.map = map;
         this.inputMultiplexer = inputMultiplexer;
+
+        screenHeight = Gdx.graphics.getHeight();
 
         shapeRenderer = new ShapeRenderer();
         shapeRenderer.setAutoShapeType(true);
@@ -169,6 +180,15 @@ public class MapScreen implements Screen {
         stage = new Stage();
         stageCamera = (OrthographicCamera)stage.getViewport().getCamera();
         noCameraStage = new Stage();
+
+        Skin skin = assetManager.get(assetManager.getFileHandleResolver().resolve(Main.SKIN_PATH).path());
+        BitmapFont font = skin.getFont("font-big");
+        mapAreaModsFont = new BitmapFont(font.getData(), font.getRegion(), font.usesIntegerPositions());
+        mapAreaModsFont.getData().setScale(0.7f, 0.7f);
+        mapAreaModsFont.setColor(Color.BLACK);
+        GlyphLayout layout = new GlyphLayout();
+        layout.setText(mapAreaModsFont, "A");
+        modsFontHeight = layout.height + 10f;
 
         lastKnownTouchDraggedPoint = new Point(-1, -1);
 
@@ -329,7 +349,8 @@ public class MapScreen implements Screen {
         createMap();
         inputMultiplexer.addProcessor(noCameraStage);
         inputMultiplexer.addProcessor(stage);
-        selectedMapArea = null;
+        // Select current location
+        selectedMapArea = mapAreas.get(map.getFocus());
         stageCamera.zoom = 1;
         updateActors();
     }
@@ -418,6 +439,20 @@ public class MapScreen implements Screen {
         }
 
         Gdx.gl.glDisable(GL20.GL_BLEND);
+
+        // Show all mods of selected map area
+        if(selectedMapArea != null) {
+            noCameraStage.getBatch().begin();
+            if(selectedMapArea.modNames == null || selectedMapArea.modNames.size() == 0) {
+                mapAreaModsFont.draw(noCameraStage.getBatch(), "Mods: None", 25, screenHeight - 25);
+            } else {
+                mapAreaModsFont.draw(noCameraStage.getBatch(), "Mods:", 25, screenHeight - 25);
+                for (int i = 0; i < selectedMapArea.modNames.size(); i++) {
+                    mapAreaModsFont.draw(noCameraStage.getBatch(), selectedMapArea.modNames.get(i), 25, screenHeight - 25 - (modsFontHeight)*(i + 1));
+                }
+            }
+            noCameraStage.getBatch().end();
+        }
 
         noCameraStage.draw();
     }

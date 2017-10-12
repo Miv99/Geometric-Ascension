@@ -526,6 +526,18 @@ public class Main extends Game {
 			shootingSystem.setMap(map);
 		}
 		this.map = map;
+		map.setCurrentArea(map.getFocus());
+	}
+
+	public void setMapAreaModFields() {
+		for(MapArea area : map.getAllSavedMapAreas()) {
+			for(MapAreaModifier m : area.getMods()) {
+				m.setMapArea(area);
+				m.setPlayer(player);
+				m.setAssetManager(assetManager);
+				m.setEngine(engine);
+			}
+		}
 	}
 
 	public Camera getCamera() {

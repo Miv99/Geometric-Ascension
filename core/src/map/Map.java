@@ -27,6 +27,7 @@ import components.PlayerBulletComponent;
 import components.PpOrbComponent;
 import factories.AttackPatternFactory;
 import factories.BossFactory;
+import map.mods.MapAreaModifier;
 import screens.MapScreen;
 import systems.RenderSystem;
 import utils.CircleHitbox;
@@ -129,9 +130,6 @@ public class Map {
         main.getRenderSystem().clearFloatingTexts();
 
         MapArea oldMapArea = areas.get(focus.toString());
-        if(oldMapArea != null) {
-            oldMapArea.unloadMods();
-        }
 
         boolean increaseChanceOfNextAreaHavingStairs = false;
 
@@ -145,7 +143,6 @@ public class Map {
             maxPixelPoints += MAP_AREA_PIXEL_POINTS_MAP_AREA_INCREMENT;
         } else {
             newMapArea = areas.get(new Point(x, y).toString());
-            newMapArea.loadMods(main.getEngine(), main.getAssetManager(), main.getPlayer());
         }
         currentArea = newMapArea;
 
@@ -512,6 +509,15 @@ public class Map {
             MapScreen.MapScreenArea area = new MapScreen.MapScreenArea();
             area.areaCleared = (mapArea.getEnemyCount() == 0);
 
+            // Map area mod names
+            ArrayList<MapAreaModifier> mods = mapArea.getMods();
+            if(mods != null) {
+                area.modNames = new ArrayList<String>();
+                for (MapAreaModifier m : mods) {
+                    area.modNames.add(m.getDisplayName());
+                }
+            }
+
             // Create red circles on map area display equal to number of enemies in the area
             // Position of red circle depends on position of enemy spawn
             if(!area.areaCleared) {
@@ -549,7 +555,6 @@ public class Map {
             area.x = Float.valueOf(strArr[0]);
             area.y = Float.valueOf(strArr[1]);
 
-            //TODO: different color for uncommon/rare map areas
             /**
              * See {@link MapScreen#loadBubbleTextures()} for color indexes
              */
@@ -577,5 +582,9 @@ public class Map {
 
     public void setNewMapAreasUntilBoss(float newMapAreasUntilBoss) {
         this.newMapAreasUntilBoss = newMapAreasUntilBoss;
+    }
+
+    public void setCurrentArea(Point currentArea) {
+        this.currentArea = areas.get(currentArea.toString());
     }
 }
