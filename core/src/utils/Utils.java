@@ -2,7 +2,9 @@ package utils;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.PooledEngine;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.utils.Array;
 import com.miv.Mappers;
 import com.miv.Options;
 
@@ -232,5 +234,21 @@ public class Utils {
 
             engine.addEntity(e);
         }
+    }
+
+    /**
+     * Plays a random sound from the given array whose volume decreases as distance from ear position increases
+     */
+    public static void playDecayingSound(Sound sound, float volume, float soundOriginX, float soundOriginY, Point earPos) {
+        float distance = Utils.getDistance(earPos, soundOriginX, soundOriginY);
+        float distanceVolume = 0;
+        if(distance < Options.MIN_BUBBLE_POP_VOLUME_DROP_OFF_DISTANCE) {
+            distanceVolume = 1f;
+        } else if(distanceVolume < Options.MAX_BUBBLE_POP_VOLUME_DROP_OFF_DISTANCE) {
+            distanceVolume = 1f - (distance - Options.MIN_BUBBLE_POP_VOLUME_DROP_OFF_DISTANCE)/(Options.MAX_BUBBLE_POP_VOLUME_DROP_OFF_DISTANCE - Options.MIN_BUBBLE_POP_VOLUME_DROP_OFF_DISTANCE);
+        } else {
+            return;
+        }
+        sound.play(distanceVolume * volume * Options.MASTER_VOLUME * Options.SOUND_VOLUME);
     }
 }

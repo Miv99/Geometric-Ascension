@@ -163,6 +163,7 @@ public class Main extends Game {
 		camera.setFocus(player);
 
 		movementSystem.loadAssets(assetManager);
+		shootingSystem.loadAssets(assetManager);
 		renderSystem.loadTextures(assetManager);
 		loadMainMenu();
 	}

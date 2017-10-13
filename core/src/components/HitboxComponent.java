@@ -130,7 +130,12 @@ public class HitboxComponent implements Component, Pool.Poolable {
         travellingMapAreaDestination = null;
     }
 
-    public void update(PooledEngine engine, Entity parent, Entity player, float mapAreaRadius, float deltaTime) {
+    /**
+     * Returns true if a bullet is fired.
+     */
+    public boolean update(PooledEngine engine, Entity parent, Entity player, float mapAreaRadius, float deltaTime) {
+        boolean firedBullet = false;
+
         for (CircleHitbox c : circles) {
             AttackPattern attackPattern = c.getAttackPattern();
             if (attackPattern != null) {
@@ -145,6 +150,7 @@ public class HitboxComponent implements Component, Pool.Poolable {
                         } else {
                             ap.fire(engine, parent, player, origin.x + c.x, origin.y + c.y, aimingAngle + attackPattern.getAngleOffset(), mapAreaRadius);
                         }
+                        firedBullet = true;
                         fired[index] = true;
                     } else {
                         break;
@@ -159,6 +165,8 @@ public class HitboxComponent implements Component, Pool.Poolable {
                 }
             }
         }
+
+        return firedBullet;
     }
 
     public void recenterOriginalCirclePositions() {

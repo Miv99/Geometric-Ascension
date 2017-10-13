@@ -193,21 +193,8 @@ public class MovementSystem extends EntitySystem {
 
             // Play pop sound
             Point origin = Mappers.hitbox.get(bullet).getOrigin();
-            playRandomPopSound(Options.BULLET_BUBBLE_POP_VOLUME, origin.x + victimCircleHit.x, origin.y + victimCircleHit.y, playerHitbox.getOrigin());
+            Utils.playDecayingSound(popSounds.random(), Options.BULLET_BUBBLE_POP_VOLUME, origin.x + victimCircleHit.x, origin.y + victimCircleHit.y, playerHitbox.getOrigin());
         }
-    }
-
-    private void playRandomPopSound(float volume, float soundOriginX, float soundOriginY, Point playerPos) {
-        float distance = Utils.getDistance(playerPos, soundOriginX, soundOriginY);
-        float distanceVolume = 0;
-        if(distance < Options.MIN_BUBBLE_POP_VOLUME_DROP_OFF_DISTANCE) {
-            distanceVolume = 1f;
-        } else if(distanceVolume < Options.MAX_BUBBLE_POP_VOLUME_DROP_OFF_DISTANCE) {
-            distanceVolume = 1f - (distance - Options.MIN_BUBBLE_POP_VOLUME_DROP_OFF_DISTANCE)/(Options.MAX_BUBBLE_POP_VOLUME_DROP_OFF_DISTANCE - Options.MIN_BUBBLE_POP_VOLUME_DROP_OFF_DISTANCE);
-        } else {
-            return;
-        }
-        popSounds.random().play(distanceVolume * volume * Options.MASTER_VOLUME * Options.SOUND_VOLUME);
     }
 
     private boolean bulletIsOutsideBoundary(Entity e, Point origin, float boundary) {
@@ -628,9 +615,9 @@ public class MovementSystem extends EntitySystem {
             // Remove circles in hitbox circle removal queue from array list of circles in the hitbox component
             for(CircleHitbox c : hitbox.getCircleRemovalQueue()) {
                 if(Mappers.player.has(e)) {
-                    playRandomPopSound(Options.PLAYER_BUBBLE_POP_VOLUME, origin.x + c.x, origin.y + c.y, playerHitbox.getOrigin());
+                    Utils.playDecayingSound(popSounds.random(), Options.PLAYER_BUBBLE_POP_VOLUME, origin.x + c.x, origin.y + c.y, playerHitbox.getOrigin());
                 } else if(Mappers.enemy.has(e)) {
-                    playRandomPopSound(Options.ENEMY_BUBBLE_POP_VOLUME, origin.x + c.x, origin.y + c.y, playerHitbox.getOrigin());
+                    Utils.playDecayingSound(popSounds.random(), Options.ENEMY_BUBBLE_POP_VOLUME, origin.x + c.x, origin.y + c.y, playerHitbox.getOrigin());
                 }
 
                 ArrayList<Entity> subEntities = hitbox.removeCircle(engine, e, c, (map.getCurrentArea().isBossArea() && Mappers.boss.has(e)));
