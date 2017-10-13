@@ -89,4 +89,7 @@ public class Options {
     public static boolean SHOW_PLAYER_HEALTH_BARS = true;
     public static boolean SHOW_ENEMY_HEALTH_BARS = true;
     public static boolean SHOW_PP_GAIN_FLOATING_TEXT = true;
+
+    // Strings used for user customization preferences file
+    public static String UC_COINS_STRING = "coins";
 }

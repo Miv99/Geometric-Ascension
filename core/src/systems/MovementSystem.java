@@ -646,6 +646,18 @@ public class MovementSystem extends EntitySystem {
                 map.getCurrentArea().setEnemyCount(main, map.getCurrentArea().getEnemyCount() - 1);
 
                 if(map.getCurrentArea().getEnemyCount() == 0) {
+                    MapArea area = map.getCurrentArea();
+                    int coins = 0;
+                    if(area.isBossArea()) {
+                        coins += 10 + (map.getFloor() * 6);
+                    }
+                    if(area.isUncommon()) {
+                        coins += 5 + (map.getFloor() * 2);
+                    } else if(area.isRare()) {
+                        coins += 10 + (map.getFloor() * 4);
+                    }
+                    main.addCoins(coins);
+
                     main.save();
                 }
             }

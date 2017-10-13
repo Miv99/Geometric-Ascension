@@ -118,6 +118,7 @@ public class Main extends Game {
 	private AssetManager assetManager;
 	private Preferences preferences;
 	private Preferences highScores;
+	private Preferences userCustomization;
 
 	private GameState state;
 	private HUD hud;
@@ -127,6 +128,8 @@ public class Main extends Game {
 	private PlayerBuilder playerBuilder;
 	private screens.Options options;
 	private MapScreen mapScreen;
+
+	private int ucCoins;
 
 	@Override
 	public void create() {
@@ -139,6 +142,8 @@ public class Main extends Game {
 
 		preferences = Gdx.app.getPreferences("Geometric Ascension");
 		highScores = Gdx.app.getPreferences("Geometric Ascension High Scores");
+		userCustomization = Gdx.app.getPreferences("Geometric Ascension Purchases");
+		loadPlayerCustomization();
 		loadPreferences();
 		savePreferences();
 		loadAssets();
@@ -327,6 +332,11 @@ public class Main extends Game {
 		preferences.flush();
 	}
 
+	public void loadPlayerCustomization() {
+		//TODO: load customizations
+		ucCoins = userCustomization.getInteger(Options.UC_COINS_STRING);
+	}
+
 	public void loadPreferences() {
 		Options.MUSIC_VOLUME = preferences.getFloat(Options.MUSIC_VOLUME_STRING, Options.MUSIC_VOLUME);
 		Options.SOUND_VOLUME = preferences.getFloat(Options.SOUND_VOLUME_STRING, Options.SOUND_VOLUME);
@@ -345,6 +355,12 @@ public class Main extends Game {
 		} else if(state == GameState.MAP) {
 			mapScreen.updateActors();
 		}
+	}
+
+	public void addCoins(int coins) {
+		ucCoins += coins;
+		userCustomization.putInteger(Options.UC_COINS_STRING, ucCoins);
+		userCustomization.flush();
 	}
 
 	/**
